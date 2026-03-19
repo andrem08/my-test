@@ -1,0 +1,56 @@
+{
+  "name": "RT_ENGENHARIA_VHSYS",
+  "displayName": "RT ENGENHARIA - VHSYS",
+  "version": "1.0.0",
+  "description": "Extensão do google chrome para aquisição de dados do VHSYS",
+  "author": "RT Engenharia. <rtadmin@rtengenharia.ind.br>",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package",
+    "prepare": "husky"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "cheerio": "^1.0.0",
+    "eslint": "^8.57.1",
+    "plasmo": "^0.90.5",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.9",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-loading-indicators": "^1.0.1",
+    "styled-components": "^6.1.14",
+    "svgo": "^3.3.2"
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "4.1.1",
+    "@types/chrome": "0.0.258",
+    "@types/node": "20.11.5",
+    "@types/react": "18.2.48",
+    "@types/react-dom": "18.2.18",
+    "@typescript-eslint/eslint-plugin": "^8.40.0",
+    "@typescript-eslint/parser": "^8.40.0",
+    "eslint-plugin-react": "^7.37.5",
+    "husky": "^9.1.7",
+    "prettier": "3.2.4",
+    "stream-browserify": "^3.0.0",
+    "typescript": "5.3.3"
+  },
+  "manifest": {
+    "permissions": [
+      "scripting",
+      "tabs",
+      "activeTab",
+      "cookies",
+      "storage"
+    ],
+    "host_permissions": [
+      "https://*/*",
+      "http://*/*"
+    ],
+    "background": {
+      "persistent": false
+    }
+  }
+}

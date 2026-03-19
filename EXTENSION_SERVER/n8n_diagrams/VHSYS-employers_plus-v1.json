@@ -1,0 +1,100 @@
+{
+  "name": "VHSYS-employers_plus-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "employers-plus-trigger-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.xml_ref) {\n  throw new Error('Missing required field: xml_ref');\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_received'\n}));\n\nreturn { xml_ref: body.xml_ref };"
+      },
+      "id": "employers-plus-validate-002",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract employee codes from XML CDATA\nconst xmlString = $input.first().json.xml_ref;\n\n// Extract CDATA content\nconst cdataMatch = xmlString.match(/<!\\[CDATA\\[(.*?)\\]\\]>/s);\nif (!cdataMatch) {\n  throw new Error('No CDATA section found in the provided XML.');\n}\n\nconst htmlContent = cdataMatch[1].trim();\n\n// Parse HTML to extract tr elements with codigo attribute\nconst trRegex = /<tr[^>]*class=\"table-row-body\"[^>]*codigo=\"([^\"]+)\"/g;\nconst codes = [];\nlet match;\n\nwhile ((match = trRegex.exec(htmlContent)) !== null) {\n  codes.push({ codigo: match[1] });\n}\n\nif (codes.length === 0) {\n  throw new Error('No table rows with class \"table-row-body\" and codigo attribute found.');\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_extracted',\n  codes_count: codes.length\n}));\n\nreturn { ids: codes };"
+      },
+      "id": "employers-plus-extract-003",
+      "name": "Extract Codes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build response\nconst data = $input.first().json;\n\nreturn {\n  statusCode: 200,\n  body: {\n    message: 'Employee codes extracted successfully.',\n    ids: data.ids\n  }\n};"
+      },
+      "id": "employers-plus-response-004",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Extract Codes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Codes": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "VHSYS",
+      "id": "vhsys-tag"
+    },
+    {
+      "name": "EMPLOYERS",
+      "id": "employers-tag"
+    },
+    {
+      "name": "Phase-4",
+      "id": "phase4-tag"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-18T05:30:00.000Z",
+  "versionId": "employers-plus-v1-001"
+}

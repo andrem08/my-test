@@ -1,0 +1,56 @@
+{
+  "name": "VHSYS-health-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-health-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Health check - retorna objeto para router\n// Compatível com extensão Chrome VHSYS\n\nconst response = \"Extension report manager\";\n\nreturn {\n  statusCode: 200,\n  body: response\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "id": "code-health-response",
+      "name": "Build Health Response"
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Build Health Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "health-v1-001",
+  "meta": {
+    "instanceId": "vhsys-health-production"
+  },
+  "id": "VHSYS-health-v1",
+  "tags": [
+    {
+      "name": "vhsys"
+    },
+    {
+      "name": "phase2"
+    },
+    {
+      "name": "core"
+    }
+  ]
+}

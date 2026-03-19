@@ -1,0 +1,531 @@
+{
+  "name": "VHSYS-employers_plus_info-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "employers-info-trigger-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.xml_ref) {\n  throw new Error('Missing required field: xml_ref');\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_info_received'\n}));\n\nreturn { xml_ref: body.xml_ref };"
+      },
+      "id": "employers-info-validate-002",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse XML to dictionary\nconst xmlString = $input.first().json.xml_ref;\nconst xml2js = require('xml2js');\n\nconst parser = new xml2js.Parser({ explicitArray: false });\nconst result = await parser.parseStringPromise(xmlString);\n\nconst cmdItems = result.xjx?.cmd || [];\nif (!Array.isArray(cmdItems) && cmdItems) {\n  cmdItems = [cmdItems];\n}\n\nif (cmdItems.length === 0) {\n  throw new Error('XML must contain a <xjx><cmd> structure.');\n}\n\nconst infoDict = {};\nfor (const item of cmdItems) {\n  if (item.$ && item.$['t']) {\n    infoDict[item.$['t']] = item._ || '';\n  }\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_info_parsed',\n  fields_count: Object.keys(infoDict).length\n}));\n\nreturn { info_dict: infoDict };"
+      },
+      "id": "employers-info-parse-003",
+      "name": "Parse XML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Transform user data: separate dependentes and beneficios by suffix\nconst infoDict = $input.first().json.info_dict;\n\nconst dependentes = {};\nconst beneficios = {};\nconst globalData = {};\n\nconst pattern = /_(\\d+)$/;\n\nfor (const [key, value] of Object.entries(infoDict)) {\n  const match = key.match(pattern);\n  \n  if (!match) {\n    globalData[key] = value;\n    continue;\n  }\n  \n  const number = match[1];\n  const baseKey = key.substring(0, match.index);\n  \n  if (baseKey.includes('dependente')) {\n    if (!dependentes[number]) dependentes[number] = {};\n    dependentes[number][baseKey] = value;\n  } else if (baseKey.includes('beneficio')) {\n    if (!beneficios[number]) beneficios[number] = {};\n    beneficios[number][baseKey] = value;\n  }\n}\n\nconst transformedData = {\n  ...globalData,\n  dependentes: Object.values(dependentes),\n  beneficios: Object.values(beneficios)\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_info_transformed',\n  id_funcionario: transformedData.id_funcionario,\n  dependentes_count: transformedData.dependentes.length,\n  beneficios_count: transformedData.beneficios.length\n}));\n\nreturn { transformed_data: transformedData };"
+      },
+      "id": "employers-info-transform-004",
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decode HTML entities in all string fields\nconst data = $input.first().json.transformed_data;\n\nfunction decodeHtmlEntities(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g, '&')\n      .replace(/&lt;/g, '<')\n      .replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g, \"'\")\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (typeof obj === 'object' && obj !== null) {\n    const decoded = Array.isArray(obj) ? [] : {};\n    for (const key in obj) {\n      decoded[key] = decodeHtmlEntities(obj[key]);\n    }\n    return decoded;\n  }\n  return obj;\n}\n\nconst decodedData = decodeHtmlEntities(data);\n\nreturn { transformed_data: decodedData };"
+      },
+      "id": "employers-info-decode-005",
+      "name": "Decode HTML Entities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse dates from DD/MM/YYYY to ISO datetime\nconst data = $input.first().json.transformed_data;\n\nfunction parseDate(dateStr) {\n  if (!dateStr || typeof dateStr !== 'string') return null;\n  const match = dateStr.match(/(\\d{2})\\/(\\d{2})\\/(\\d{4})/);\n  if (!match) return null;\n  const [_, day, month, year] = match;\n  return new Date(`${year}-${month}-${day}`).toISOString();\n}\n\nif (data.data_admissao_funcionario) {\n  data.data_admissao_funcionario = parseDate(data.data_admissao_funcionario);\n}\n\nif (data.data_nascimento_funcionario) {\n  data.data_nascimento_funcionario = parseDate(data.data_nascimento_funcionario);\n}\n\n// Parse dependentes dates\nif (data.dependentes) {\n  data.dependentes = data.dependentes.map(dep => ({\n    ...dep,\n    data_nascimento_dependente: parseDate(dep.data_nascimento_dependente)\n  }));\n}\n\nreturn { transformed_data: data };"
+      },
+      "id": "employers-info-dates-006",
+      "name": "Parse Dates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse float values from Brazilian format (1.234,56 -> 1234.56)\nconst data = $input.first().json.transformed_data;\n\nfunction parseFloat(value) {\n  if (!value) return 0.0;\n  let cleaned = String(value).replace(/[^\\d,.]/g, '');\n  if (cleaned.includes(',') && cleaned.includes('.')) {\n    cleaned = cleaned.replace(/\\./g, '').replace(',', '.');\n  } else if (cleaned.includes(',')) {\n    cleaned = cleaned.replace(',', '.');\n  }\n  try {\n    return parseFloat(cleaned) || 0.0;\n  } catch (e) {\n    return 0.0;\n  }\n}\n\nif (data.salario_funcionario) {\n  data.salario_funcionario = parseFloat(data.salario_funcionario);\n}\n\nif (data.beneficios) {\n  data.beneficios = data.beneficios.map(ben => ({\n    ...ben,\n    valor_beneficio: parseFloat(ben.valor_beneficio)\n  }));\n}\n\nreturn { transformed_data: data };"
+      },
+      "id": "employers-info-parse-float-007",
+      "name": "Parse Floats",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Check if employer exists\nSELECT \"id_funcionario\"\nFROM \"employersData\"\nWHERE \"id_funcionario\" = '{{ $json.transformed_data.id_funcionario }}';",
+        "options": {}
+      },
+      "id": "employers-info-check-009",
+      "name": "Check Employer Exists",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1780, 300],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id_funcionario }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "employers-info-exists-010",
+      "name": "Employer Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Insert or update employer main data\nINSERT INTO \"employersData\" (\n  \"id_funcionario\",\n  \"nome_funcionario\",\n  \"rg_funcionario\",\n  \"cpf_funcionario\",\n  \"matricula_funcionario\",\n  \"sexo_funcionario\",\n  \"local_nascimento_funcionario\",\n  \"orgao_emissor_rg\",\n  \"serie_ctps_funcionario\",\n  \"cep_funcionario\",\n  \"endereco_funcionario\",\n  \"numero_funcionario\",\n  \"bairro_funcionario\",\n  \"cidade_funcionario\",\n  \"uf_funcionario\",\n  \"complemento_funcionario\",\n  \"celular_funcionario\",\n  \"fone_funcionario\",\n  \"email_funcionario\",\n  \"nome_pai_funcionario\",\n  \"nome_mae_funcionario\",\n  \"observacoes_funcionario\",\n  \"pis_funcionario\",\n  \"ctps_funcionario\",\n  \"uf_ctps_funcionario\",\n  \"banco_funcionario\",\n  \"agencia_funcionario\",\n  \"conta_funcionario\",\n  \"cargo_funcionario\",\n  \"cbo_funcionario\",\n  \"departamento_funcionario\",\n  \"trabalho_inicio\",\n  \"trabalho_termino\",\n  \"intervalo_inicio\",\n  \"intervalo_termino\",\n  \"salario_funcionario\",\n  \"status_funcionario\",\n  \"data_admissao_funcionario\",\n  \"data_nascimento_funcionario\",\n  \"created_at\",\n  \"updated_at\"\n) VALUES (\n  '{{ $json.transformed_data.id_funcionario }}',\n  '{{ $json.transformed_data.nome_funcionario }}',\n  '{{ $json.transformed_data.rg_funcionario }}',\n  '{{ $json.transformed_data.cpf_funcionario }}',\n  '{{ $json.transformed_data.matricula_funcionario }}',\n  '{{ $json.transformed_data.sexo_funcionario }}',\n  '{{ $json.transformed_data.local_nascimento_funcionario }}',\n  '{{ $json.transformed_data.orgao_emissor_rg }}',\n  '{{ $json.transformed_data.serie_ctps_funcionario }}',\n  '{{ $json.transformed_data.cep_funcionario }}',\n  '{{ $json.transformed_data.endereco_funcionario }}',\n  '{{ $json.transformed_data.numero_funcionario }}',\n  '{{ $json.transformed_data.bairro_funcionario }}',\n  '{{ $json.transformed_data.cidade_funcionario }}',\n  '{{ $json.transformed_data.uf_funcionario }}',\n  '{{ $json.transformed_data.complemento_funcionario }}',\n  '{{ $json.transformed_data.celular_funcionario }}',\n  '{{ $json.transformed_data.fone_funcionario }}',\n  '{{ $json.transformed_data.email_funcionario }}',\n  '{{ $json.transformed_data.nome_pai_funcionario }}',\n  '{{ $json.transformed_data.nome_mae_funcionario }}',\n  '{{ $json.transformed_data.observacoes_funcionario }}',\n  '{{ $json.transformed_data.pis_funcionario }}',\n  '{{ $json.transformed_data.ctps_funcionario }}',\n  '{{ $json.transformed_data.uf_ctps_funcionario }}',\n  '{{ $json.transformed_data.banco_funcionario }}',\n  '{{ $json.transformed_data.agencia_funcionario }}',\n  '{{ $json.transformed_data.conta_funcionario }}',\n  '{{ $json.transformed_data.cargo_funcionario }}',\n  '{{ $json.transformed_data.cbo_funcionario }}',\n  '{{ $json.transformed_data.departamento_funcionario }}',\n  '{{ $json.transformed_data.trabalho_inicio }}',\n  '{{ $json.transformed_data.trabalho_termino }}',\n  '{{ $json.transformed_data.intervalo_inicio }}',\n  '{{ $json.transformed_data.intervalo_termino }}',\n  {{ $json.transformed_data.salario_funcionario }},\n  '{{ $json.transformed_data.status_funcionario }}',\n  '{{ $json.transformed_data.data_admissao_funcionario }}'::timestamp,\n  '{{ $json.transformed_data.data_nascimento_funcionario }}'::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"id_funcionario\") DO UPDATE SET\n  \"nome_funcionario\" = EXCLUDED.\"nome_funcionario\",\n  \"rg_funcionario\" = EXCLUDED.\"rg_funcionario\",\n  \"cpf_funcionario\" = EXCLUDED.\"cpf_funcionario\",\n  \"matricula_funcionario\" = EXCLUDED.\"matricula_funcionario\",\n  \"sexo_funcionario\" = EXCLUDED.\"sexo_funcionario\",\n  \"local_nascimento_funcionario\" = EXCLUDED.\"local_nascimento_funcionario\",\n  \"orgao_emissor_rg\" = EXCLUDED.\"orgao_emissor_rg\",\n  \"serie_ctps_funcionario\" = EXCLUDED.\"serie_ctps_funcionario\",\n  \"cep_funcionario\" = EXCLUDED.\"cep_funcionario\",\n  \"endereco_funcionario\" = EXCLUDED.\"endereco_funcionario\",\n  \"numero_funcionario\" = EXCLUDED.\"numero_funcionario\",\n  \"bairro_funcionario\" = EXCLUDED.\"bairro_funcionario\",\n  \"cidade_funcionario\" = EXCLUDED.\"cidade_funcionario\",\n  \"uf_funcionario\" = EXCLUDED.\"uf_funcionario\",\n  \"complemento_funcionario\" = EXCLUDED.\"complemento_funcionario\",\n  \"celular_funcionario\" = EXCLUDED.\"celular_funcionario\",\n  \"fone_funcionario\" = EXCLUDED.\"fone_funcionario\",\n  \"email_funcionario\" = EXCLUDED.\"email_funcionario\",\n  \"nome_pai_funcionario\" = EXCLUDED.\"nome_pai_funcionario\",\n  \"nome_mae_funcionario\" = EXCLUDED.\"nome_mae_funcionario\",\n  \"observacoes_funcionario\" = EXCLUDED.\"observacoes_funcionario\",\n  \"pis_funcionario\" = EXCLUDED.\"pis_funcionario\",\n  \"ctps_funcionario\" = EXCLUDED.\"ctps_funcionario\",\n  \"uf_ctps_funcionario\" = EXCLUDED.\"uf_ctps_funcionario\",\n  \"banco_funcionario\" = EXCLUDED.\"banco_funcionario\",\n  \"agencia_funcionario\" = EXCLUDED.\"agencia_funcionario\",\n  \"conta_funcionario\" = EXCLUDED.\"conta_funcionario\",\n  \"cargo_funcionario\" = EXCLUDED.\"cargo_funcionario\",\n  \"cbo_funcionario\" = EXCLUDED.\"cbo_funcionario\",\n  \"departamento_funcionario\" = EXCLUDED.\"departamento_funcionario\",\n  \"trabalho_inicio\" = EXCLUDED.\"trabalho_inicio\",\n  \"trabalho_termino\" = EXCLUDED.\"trabalho_termino\",\n  \"intervalo_inicio\" = EXCLUDED.\"intervalo_inicio\",\n  \"intervalo_termino\" = EXCLUDED.\"intervalo_termino\",\n  \"salario_funcionario\" = EXCLUDED.\"salario_funcionario\",\n  \"status_funcionario\" = EXCLUDED.\"status_funcionario\",\n  \"data_admissao_funcionario\" = EXCLUDED.\"data_admissao_funcionario\",\n  \"data_nascimento_funcionario\" = EXCLUDED.\"data_nascimento_funcionario\",\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING \"id_funcionario\", \"nome_funcionario\";",
+        "options": {}
+      },
+      "id": "employers-info-upsert-main-011",
+      "name": "Upsert Employer Main Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2220, 240],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process dependents\nconst empData = $input.first().json.transformed_data;\nconst dependentes = empData.dependentes || [];\n\nconst crypto = require('crypto');\n\nfunction generateHash(input) {\n  return crypto.createHash('sha256').update(String(input)).digest('hex');\n}\n\nconst dependentsRecords = dependentes\n  .filter(dep => dep.nome_dependente)\n  .map(dep => {\n    const dependentIdString = `${empData.id_funcionario}-${dep.nome_dependente}`;\n    return {\n      dependents_id: generateHash(dependentIdString),\n      id_funcionario: empData.id_funcionario,\n      nome_funcionario: empData.nome_funcionario,\n      nome_dependente: dep.nome_dependente,\n      tipo_dependente: dep.tipo_dependente,\n      fone_dependente: dep.fone_dependente,\n      rg: dep.rg,\n      cpf: dep.cpf,\n      data_nascimento: dep.data_nascimento_dependente\n    };\n  });\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_dependents_processed',\n  id_funcionario: empData.id_funcionario,\n  count: dependentsRecords.length\n}));\n\nreturn dependentsRecords.length > 0 ? dependentsRecords : [{ _skip: true, id_funcionario: empData.id_funcionario }];"
+      },
+      "id": "employers-info-dependents-012",
+      "name": "Process Dependents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 180]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "employers-info-has-deps-013",
+      "name": "Has Dependents?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2660, 180]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Upsert dependent\nINSERT INTO \"employersDependents\" (\n  \"dependents_id\",\n  \"id_funcionario\",\n  \"nome_funcionario\",\n  \"nome_dependente\",\n  \"tipo_dependente\",\n  \"fone_dependente\",\n  \"rg\",\n  \"cpf\",\n  \"data_nascimento\",\n  \"created_at\",\n  \"updated_at\"\n) VALUES (\n  '{{ $json.dependents_id }}',\n  '{{ $json.id_funcionario }}',\n  '{{ $json.nome_funcionario }}',\n  '{{ $json.nome_dependente }}',\n  '{{ $json.tipo_dependente }}',\n  '{{ $json.fone_dependente }}',\n  '{{ $json.rg }}',\n  '{{ $json.cpf }}',\n  '{{ $json.data_nascimento }}'::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"dependents_id\") DO UPDATE SET\n  \"nome_dependente\" = EXCLUDED.\"nome_dependente\",\n  \"tipo_dependente\" = EXCLUDED.\"tipo_dependente\",\n  \"fone_dependente\" = EXCLUDED.\"fone_dependente\",\n  \"rg\" = EXCLUDED.\"rg\",\n  \"cpf\" = EXCLUDED.\"cpf\",\n  \"data_nascimento\" = EXCLUDED.\"data_nascimento\",\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING \"dependents_id\";",
+        "options": {}
+      },
+      "id": "employers-info-upsert-dep-014",
+      "name": "Upsert Dependent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2880, 120],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process benefits\nconst empData = $input.first().json.transformed_data;\nconst beneficios = empData.beneficios || [];\n\nconst crypto = require('crypto');\n\nfunction generateHash(input) {\n  return crypto.createHash('sha256').update(String(input)).digest('hex');\n}\n\nconst benefitRecords = beneficios\n  .filter(ben => ben.nome_beneficio)\n  .map(ben => {\n    const benefitIdString = `${empData.id_funcionario}-${ben.nome_beneficio}`;\n    return {\n      benefit_id: generateHash(benefitIdString),\n      id_funcionario: empData.id_funcionario,\n      nome_funcionario: empData.nome_funcionario,\n      nome: ben.nome_beneficio,\n      valor: ben.valor_beneficio || 0.0\n    };\n  });\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_benefits_processed',\n  id_funcionario: empData.id_funcionario,\n  count: benefitRecords.length\n}));\n\nreturn benefitRecords.length > 0 ? benefitRecords : [{ _skip: true, id_funcionario: empData.id_funcionario }];"
+      },
+      "id": "employers-info-benefits-015",
+      "name": "Process Benefits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "employers-info-has-benefits-016",
+      "name": "Has Benefits?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2660, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Upsert benefit\nINSERT INTO \"employersBenefits\" (\n  \"benefit_id\",\n  \"id_funcionario\",\n  \"nome_funcionario\",\n  \"nome\",\n  \"valor\",\n  \"created_at\",\n  \"updated_at\"\n) VALUES (\n  '{{ $json.benefit_id }}',\n  '{{ $json.id_funcionario }}',\n  '{{ $json.nome_funcionario }}',\n  '{{ $json.nome }}',\n  {{ $json.valor }},\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"benefit_id\") DO UPDATE SET\n  \"nome\" = EXCLUDED.\"nome\",\n  \"valor\" = EXCLUDED.\"valor\",\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING \"benefit_id\";",
+        "options": {}
+      },
+      "id": "employers-info-upsert-benefit-017",
+      "name": "Upsert Benefit",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [2880, 300],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Cleanup obsolete dependents\nDELETE FROM \"employersDependents\"\nWHERE \"id_funcionario\" = '{{ $json.id_funcionario }}'\n  AND \"dependents_id\" NOT IN (\n    SELECT unnest(ARRAY[{{ $json.current_dependents_ids }}]::text[])\n  )\nRETURNING \"dependents_id\", \"nome_dependente\";",
+        "options": {}
+      },
+      "id": "employers-info-cleanup-deps-018",
+      "name": "Cleanup Obsolete Dependents",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [3100, 180],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Cleanup obsolete benefits\nDELETE FROM \"employersBenefits\"\nWHERE \"id_funcionario\" = '{{ $json.id_funcionario }}'\n  AND \"benefit_id\" NOT IN (\n    SELECT unnest(ARRAY[{{ $json.current_benefits_ids }}]::text[])\n  )\nRETURNING \"benefit_id\", \"nome\";",
+        "options": {}
+      },
+      "id": "employers-info-cleanup-benefits-019",
+      "name": "Cleanup Obsolete Benefits",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [3100, 300],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build success response\nconst empData = $input.first().json.transformed_data;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_plus_info_completed',\n  id_funcionario: empData.id_funcionario,\n  nome_funcionario: empData.nome_funcionario\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Data processed and saved successfully.',\n    transformed_data: empData\n  }\n};"
+      },
+      "id": "employers-info-response-020",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3320, 300]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Parse XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse XML": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Decode HTML Entities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode HTML Entities": {
+      "main": [
+        [
+          {
+            "node": "Parse Dates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Dates": {
+      "main": [
+        [
+          {
+            "node": "Parse Floats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Floats": {
+      "main": [
+        [
+          {
+            "node": "Check Employer Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Employer Exists": {
+      "main": [
+        [
+          {
+            "node": "Employer Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Employer Exists?": {
+      "main": [
+        [
+          {
+            "node": "Upsert Employer Main Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Upsert Employer Main Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Employer Main Data": {
+      "main": [
+        [
+          {
+            "node": "Process Dependents",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Process Benefits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Dependents": {
+      "main": [
+        [
+          {
+            "node": "Has Dependents?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Dependents?": {
+      "main": [
+        [
+          {
+            "node": "Upsert Dependent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Dependent": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Obsolete Dependents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Benefits": {
+      "main": [
+        [
+          {
+            "node": "Has Benefits?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Benefits?": {
+      "main": [
+        [
+          {
+            "node": "Upsert Benefit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Benefit": {
+      "main": [
+        [
+          {
+            "node": "Cleanup Obsolete Benefits",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup Obsolete Dependents": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cleanup Obsolete Benefits": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "VHSYS",
+      "id": "vhsys-tag"
+    },
+    {
+      "name": "EMPLOYERS",
+      "id": "employers-tag"
+    },
+    {
+      "name": "Phase-4",
+      "id": "phase4-tag"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-18T05:30:00.000Z",
+  "versionId": "employers-plus-info-v1-001"
+}

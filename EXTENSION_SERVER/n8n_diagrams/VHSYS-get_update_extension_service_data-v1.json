@@ -1,0 +1,82 @@
+{
+  "name": "VHSYS-get_update_extension_service_data-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-get-status-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Atualiza LAST_UPDATE e calcula SHOULD_RUN\n-- Compatível 100% com extensão Chrome\n\nWITH tz AS (\n  SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp AS brazil_now\n),\nupdated AS (\n  UPDATE update_extension_services u\n  SET \"LAST_UPDATE\" = tz.brazil_now\n  FROM tz\n  RETURNING u.*\n)\nSELECT\n  \"ACTION\",\n  \"RUN_AFTER\",\n  \"RUN_STATUS\",\n  \"PROGRESS_VALUE\",\n  \"LAST_RUN\",\n  \"LAST_UPDATE\",\n  CASE\n    WHEN \"LAST_RUN\" IS NULL THEN false\n    WHEN \"RUN_STATUS\" = 0 THEN false\n    ELSE ((SELECT brazil_now FROM tz) - \"LAST_RUN\") > make_interval(mins => COALESCE(\"RUN_AFTER\", 0))\n  END AS \"SHOULD_RUN\"\nFROM updated\nORDER BY \"ACTION\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [460, 300],
+      "id": "postgres-get-status",
+      "name": "Refresh and Read Extension Services"
+    },
+    {
+      "parameters": {
+        "jsCode": "// CRÍTICO: Retorna ARRAY DIRETO (não objeto encapsulado)\n// Compatibilidade com extensão Chrome VHSYS\n\nconst allRecords = $input.all();\nconst actions = allRecords.map(item => item.json);\n\n// Log estruturado\nconst logEntry = {\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  method: 'GET',\n  total_actions: actions.length,\n  success: true\n};\n\nconsole.log('[VHSYS] get_status:', JSON.stringify(logEntry));\n\n// IMPORTANTE: Retornar como array no body\nreturn {\n  statusCode: 201,\n  body: actions\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300],
+      "id": "code-format-array",
+      "name": "Format as Direct Array"
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Refresh and Read Extension Services",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refresh and Read Extension Services": {
+      "main": [
+        [
+          {
+            "node": "Format as Direct Array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "get-status-v1-001",
+  "meta": {
+    "instanceId": "vhsys-get-status-production"
+  },
+  "id": "VHSYS-get-status-v1",
+  "tags": [
+    {
+      "name": "vhsys"
+    },
+    {
+      "name": "phase2"
+    },
+    {
+      "name": "core"
+    }
+  ]
+}

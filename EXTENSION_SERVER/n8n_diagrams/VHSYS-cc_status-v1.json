@@ -1,0 +1,87 @@
+{
+  "name": "VHSYS-cc_status-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "cc-status-start-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Get CC Report Status with counts\nSELECT \n  COUNT(*) as total_lines,\n  SUM(CASE WHEN entries_runned = 1 THEN 1 ELSE 0 END) as number_of_entries,\n  SUM(CASE WHEN outputs_runned = 1 THEN 1 ELSE 0 END) as number_of_outputs\nFROM update_cc_report_status;",
+        "options": {}
+      },
+      "id": "cc-status-query-002",
+      "name": "Query CC Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [460, 300],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Calculate running status\nconst data = $input.first().json;\n\nconst totalLines = parseInt(data.total_lines) || 0;\nconst numberOfEntries = parseInt(data.number_of_entries) || 0;\nconst numberOfOutputs = parseInt(data.number_of_outputs) || 0;\n\n// running = NOT (entries == outputs == total_lines)\nconst running = !(numberOfEntries === numberOfOutputs && numberOfEntries === totalLines);\n\n// Structured logging\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_status_calculated',\n  total_lines: totalLines,\n  entries: numberOfEntries,\n  outputs: numberOfOutputs,\n  running: running\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    running: running,\n    total_lines: totalLines,\n    number_of_entries: numberOfEntries,\n    number_of_outputs: numberOfOutputs\n  }\n};"
+      },
+      "id": "cc-status-calc-003",
+      "name": "Calculate Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Query CC Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query CC Status": {
+      "main": [
+        [
+          {
+            "node": "Calculate Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "VHSYS",
+      "id": "vhsys-tag"
+    },
+    {
+      "name": "CC_REPORT",
+      "id": "cc-report-tag"
+    },
+    {
+      "name": "Phase-3",
+      "id": "phase3-tag"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-18T04:45:00.000Z",
+  "versionId": "cc-status-v1-001"
+}

@@ -1,0 +1,417 @@
+{
+  "name": "Extensão - VHSYS",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "8e1d053b-4df1-4cdd-b532-bc6b596a14ed",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2112,
+        -208
+      ],
+      "id": "33aed6aa-ec23-4b43-a7ec-7a3528abafa1",
+      "name": "Webhook",
+      "webhookId": "8e1d053b-4df1-4cdd-b532-bc6b596a14ed"
+    },
+    {
+      "parameters": {
+        "jsCode": "const incoming = $json ?? {}\n\nconst routeRaw = (incoming.query?.route ?? incoming.route ?? incoming.routePath ?? '').toString().trim()\nconst [routePathRaw, routeQuery = ''] = routeRaw.split('?')\nconst routePath = routePathRaw.replace(/^\\/+|\\/+$/g, '')\n\nconst requestBody = incoming.body ?? incoming.requestBody ?? {}\n\nfunction collectRows(payload) {\n  if (Array.isArray(payload)) return payload\n  if (!payload || typeof payload !== 'object') return []\n\n  if (Array.isArray(payload?.data?.source?.itens)) return payload.data.source.itens\n  if (Array.isArray(payload?.source?.itens)) return payload.source.itens\n  if (Array.isArray(payload?.itens)) return payload.itens\n  if (Array.isArray(payload?.rows)) return payload.rows\n  if (Array.isArray(payload?.items)) return payload.items\n\n  return [payload]\n}\n\nfunction norm(v) {\n  if (v === undefined) return null\n  if (typeof v !== 'string') return v\n  const t = v.trim()\n  return t === '' ? null : t\n}\n\nconst now = new Date().toISOString()\nconst routeKey = routePath || 'unknown_route'\n\nif (routePath === 'get_update_extension_service_data') {\n  return [{\n    json: {\n      _mode: 'status_refresh',\n      _routePath: routePath,\n      routePath,\n      routeQuery,\n      receivedAt: now\n    }\n  }]\n}\n\nconst rows = collectRows(requestBody)\n  .filter((row) => row && typeof row === 'object' && !Array.isArray(row))\n  .map((row) => {\n    const normalized = {}\n    for (const [k, v] of Object.entries(row)) normalized[k] = norm(v)\n    if (!Object.prototype.hasOwnProperty.call(normalized, 'updated_at')) normalized.updated_at = now\n    return {\n      ...normalized,\n      _routePath: routePath,\n      _routeKey: routeKey\n    }\n  })\n\nif (rows.length === 0) {\n  return [{\n    json: {\n      ok: false,\n      skipUpsert: true,\n      routePath,\n      routeQuery,\n      message: 'No rows found to populate for this route.',\n      receivedAt: now\n    }\n  }]\n}\n\nreturn rows.map((row) => ({ json: row }))"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1856,
+        -208
+      ],
+      "id": "738243e3-6051-45c4-a781-d6be52c8a2f7",
+      "name": "Resolve Route"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.skipUpsert === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1616,
+        -208
+      ],
+      "id": "66a33299-c722-4911-b77d-ff5caaf96f08",
+      "name": "Has rows to upsert?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ ($json._mode ?? '') === 'status_refresh' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1736,
+        -208
+      ],
+      "id": "e2c0fd36-c8d9-40e2-b02f-8522f7f0dc33",
+      "name": "Is get_update_extension_service_data?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH tz AS (\n  SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp AS brazil_now\n),\nupdated AS (\n  UPDATE update_extension_services u\n  SET \"LAST_UPDATE\" = tz.brazil_now\n  FROM tz\n  RETURNING u.*\n)\nSELECT\n  \"ACTION\",\n  \"RUN_AFTER\",\n  \"RUN_STATUS\",\n  \"PROGRESS_VALUE\",\n  \"LAST_RUN\",\n  \"LAST_UPDATE\",\n  CASE\n    WHEN \"LAST_RUN\" IS NULL THEN false\n    WHEN \"RUN_STATUS\" = 0 THEN false\n    ELSE ((SELECT brazil_now FROM tz) - \"LAST_RUN\") > make_interval(mins => COALESCE(\"RUN_AFTER\", 0))\n  END AS \"SHOULD_RUN\"\nFROM updated\nORDER BY \"ACTION\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -1496,
+        -384
+      ],
+      "id": "3c8a3a55-b175-4ff2-a218-d7354144f45f",
+      "name": "Refresh and read extension services"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ (() => {\nconst row = $json;\nconst schema = 'raw_data';\nconst routePath = String(row._routePath || row._routeKey || '').trim();\nif (!routePath) return 'SELECT 1;';\n\nconst payload = Object.fromEntries(\n  Object.entries(row).filter(([key]) => !key.startsWith('_'))\n);\n\nconst fields = Object.keys(payload).filter((key) => !key.startsWith('$') && key !== 'json' && key !== 'pairedItem');\nif (fields.length === 0) return 'SELECT 1;';\n\nconst idCandidates = [\n  'id',\n  'codigo',\n  'matricula',\n  'matricula_funcionario',\n  ...fields.filter((f) => /^id_/i.test(f)),\n  ...fields.filter((f) => /_id$/i.test(f))\n];\n\nconst conflictField = idCandidates.find((f) => fields.includes(f)) || fields[0];\n\nconst columns = fields.map((f) => quoteIdentifier(f)).join(', ');\nconst values = fields.map((f) => escapeSqlValue(payload[f])).join(', ');\nconst updateSet = fields\n  .filter((f) => f !== conflictField)\n  .map((f) => `${quoteIdentifier(f)} = EXCLUDED.${quoteIdentifier(f)}`)\n  .join(', ');\n\nconst tableRef = `${quoteIdentifier(schema)}.${quoteIdentifier(routePath)}`;\n\nif (!updateSet) {\n  return `INSERT INTO ${tableRef} (${columns}) VALUES (${values}) ON CONFLICT (${quoteIdentifier(conflictField)}) DO NOTHING;`;\n}\n\nreturn `INSERT INTO ${tableRef} (${columns}) VALUES (${values}) ON CONFLICT (${quoteIdentifier(conflictField)}) DO UPDATE SET ${updateSet};`;\n\nfunction quoteIdentifier(id) {\n  return `\"${String(id).replace(/\"/g, '\"\"')}\"`;\n}\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === '') return 'NULL';\n  if (typeof value === 'number') return value;\n  if (typeof value === 'boolean') return value ? 'true' : 'false';\n  if (Array.isArray(value) || typeof value === 'object') {\n    return `'${JSON.stringify(value).replace(/'/g, \"''\")}'::jsonb`;\n  }\n  return `'${String(value).replace(/'/g, \"''\")}'`;\n}\n})() }}",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -1136,
+        -304
+      ],
+      "id": "4f8a6c74-6eff-45b9-82e9-c6f9b5502d8f",
+      "name": "UPSERT raw_data.{routePath}"
+    },
+    {
+      "parameters": {
+        "jsCode": "const all = $input.all()\nconst first = all[0]?.json ?? {}\nreturn [{\n  json: {\n    ok: true,\n    routePath: first._routePath ?? null,\n    targetTable: first._routePath ? `raw_data.${first._routePath}` : null,\n    message: 'Rows upserted to Postgres schema raw_data using routePath as table name.',\n    rows_processed: all.length,\n    processed_at: new Date().toISOString()\n  }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        -304
+      ],
+      "id": "7606fb9b-ff6d-4a17-8d8d-12a5f6ce4349",
+      "name": "Success Payload"
+    },
+    {
+      "parameters": {
+        "jsCode": "const actions = $input.all().map((item) => item.json)\nreturn [{\n  json: {\n    ok: true,\n    routePath: 'get_update_extension_service_data',\n    message: 'Extension services status refreshed and fetched from database.',\n    total_actions: actions.length,\n    data: actions,\n    processed_at: new Date().toISOString()\n  }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1256,
+        -384
+      ],
+      "id": "4a9134e3-f1ea-429a-bf74-0b76a1236362",
+      "name": "Status Route Payload"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    routePath: $json.routePath ?? null,\n    message: $json.message ?? 'Payload does not contain rows to upsert.',\n    processed_at: new Date().toISOString()\n  }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -96
+      ],
+      "id": "2ecf2818-4f7d-4704-9713-48f06ca09380",
+      "name": "Not Implemented Payload"
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "route": "employers_general_data?rt_token=YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": [
+            {
+              "id_funcionario": "17731",
+              "nome_funcionario": "Gabriel Alves de Souza",
+              "rg_funcionario": "626991079",
+              "cpf_funcionario": "239.075.828-29",
+              "matricula_funcionario": "67",
+              "sexo_funcionario": "Masculino",
+              "local_nascimento_funcionario": "Sao Bernardo do Campo",
+              "orgao_emissor_rg": "SSP/SP",
+              "serie_ctps_funcionario": "02829",
+              "cep_funcionario": "09.840-460",
+              "endereco_funcionario": "Rua Carlos Wunderlick",
+              "numero_funcionario": "190",
+              "bairro_funcionario": "Dos Casa",
+              "cidade_funcionario": "Sao Bernardo do Campo",
+              "uf_funcionario": "SP",
+              "complemento_funcionario": "casa 1",
+              "celular_funcionario": "(11) 94832-7233",
+              "fone_funcionario": "",
+              "email_funcionario": "gasouza@rtengenharia.ind.br",
+              "nome_pai_funcionario": "Rosenildo Alves de Brito",
+              "nome_mae_funcionario": "Juberlandia de Souza Bezerra",
+              "observacoes_funcionario": "",
+              "pis_funcionario": "",
+              "ctps_funcionario": "02390758",
+              "uf_ctps_funcionario": "SP",
+              "banco_funcionario": "341",
+              "agencia_funcionario": "7463",
+              "conta_funcionario": "60680-1",
+              "cargo_funcionario": "5197",
+              "cbo_funcionario": "313215",
+              "departamento_funcionario": "RT-ENG",
+              "trabalho_inicio": "",
+              "trabalho_termino": "",
+              "intervalo_inicio": "",
+              "intervalo_termino": "",
+              "salario_funcionario": "2556,36",
+              "status_funcionario": "Ativo",
+              "data_admissao_funcionario": "2025-01-20 00:00:00.000",
+              "data_nascimento_funcionario": "2005-10-05 00:00:00.000",
+              "created_at": "2025-01-31 16:36:02.359",
+              "updated_at": "2026-02-13 17:13:20.936",
+              "nome_cargo_funcionario": "T9.1"
+            },
+            {
+              "id_funcionario": "18906",
+              "nome_funcionario": "Matheus Carvalho da Silva",
+              "rg_funcionario": "",
+              "cpf_funcionario": "449.728.938-93",
+              "matricula_funcionario": "992",
+              "sexo_funcionario": "Masculino",
+              "local_nascimento_funcionario": "",
+              "orgao_emissor_rg": "",
+              "serie_ctps_funcionario": "",
+              "cep_funcionario": "",
+              "endereco_funcionario": "",
+              "numero_funcionario": "",
+              "bairro_funcionario": "",
+              "cidade_funcionario": "",
+              "uf_funcionario": "",
+              "complemento_funcionario": "",
+              "celular_funcionario": "(11)98198-9053",
+              "fone_funcionario": "",
+              "email_funcionario": "mcsilva@rtengenharia.ind.br",
+              "nome_pai_funcionario": "",
+              "nome_mae_funcionario": "",
+              "observacoes_funcionario": "",
+              "pis_funcionario": "",
+              "ctps_funcionario": "",
+              "uf_ctps_funcionario": "",
+              "banco_funcionario": "",
+              "agencia_funcionario": "",
+              "conta_funcionario": "",
+              "cargo_funcionario": "5241",
+              "cbo_funcionario": "",
+              "departamento_funcionario": "",
+              "trabalho_inicio": "",
+              "trabalho_termino": "",
+              "intervalo_inicio": "",
+              "intervalo_termino": "",
+              "salario_funcionario": "0,00",
+              "status_funcionario": "Ativo",
+              "data_admissao_funcionario": "",
+              "data_nascimento_funcionario": "",
+              "created_at": "2026-02-05 16:49:13.874",
+              "updated_at": "2026-02-13 17:27:01.107",
+              "nome_cargo_funcionario": "T3.6"
+            },
+            {
+              "id_funcionario": "17043",
+              "nome_funcionario": "Ricardo Hideki Tuboi",
+              "rg_funcionario": "18.987.278-0",
+              "cpf_funcionario": "118.033.998-30",
+              "matricula_funcionario": "1",
+              "sexo_funcionario": "Masculino",
+              "local_nascimento_funcionario": "Sao Paulo",
+              "orgao_emissor_rg": "SSP/SP",
+              "serie_ctps_funcionario": "",
+              "cep_funcionario": "04.130-010",
+              "endereco_funcionario": "Avenida Ramalho Ortigao",
+              "numero_funcionario": "188",
+              "bairro_funcionario": "Vila Gumercindo",
+              "cidade_funcionario": "Sao Paulo",
+              "uf_funcionario": "SP",
+              "complemento_funcionario": "apto 102",
+              "celular_funcionario": "(11) 95488-4433",
+              "fone_funcionario": "(11) 5666-2860",
+              "email_funcionario": "rhtuboi@rtengenharia.ind.br",
+              "nome_pai_funcionario": "Hiroshi Tuboi",
+              "nome_mae_funcionario": "Ana Hiroko Tuboi",
+              "observacoes_funcionario": "",
+              "pis_funcionario": "",
+              "ctps_funcionario": "",
+              "uf_ctps_funcionario": "",
+              "banco_funcionario": "341",
+              "agencia_funcionario": "0796",
+              "conta_funcionario": "79439-4",
+              "cargo_funcionario": "5139",
+              "cbo_funcionario": "",
+              "departamento_funcionario": "RT-ADM",
+              "trabalho_inicio": "",
+              "trabalho_termino": "",
+              "intervalo_inicio": "",
+              "intervalo_termino": "",
+              "salario_funcionario": "1621,00",
+              "status_funcionario": "Ativo",
+              "data_admissao_funcionario": "2004-08-11 00:00:00.000",
+              "data_nascimento_funcionario": "1969-10-22 00:00:00.000",
+              "created_at": "2024-09-17 13:06:54.283",
+              "updated_at": "2026-02-13 17:12:45.112",
+              "nome_cargo_funcionario": "A0"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Resolve Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Route": {
+      "main": [
+        [
+          {
+            "node": "Is get_update_extension_service_data?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is get_update_extension_service_data?": {
+      "main": [
+        [
+          {
+            "node": "Refresh and read extension services",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has rows to upsert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has rows to upsert?": {
+      "main": [
+        [
+          {
+            "node": "UPSERT raw_data.{routePath}",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not Implemented Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Refresh and read extension services": {
+      "main": [
+        [
+          {
+            "node": "Status Route Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPSERT raw_data.{routePath}": {
+      "main": [
+        [
+          {
+            "node": "Success Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7bbdd136-7bd0-4a96-9e81-6be0bfc4fb0a",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "MpWw50CbQALWFUyW",
+  "tags": []
+}

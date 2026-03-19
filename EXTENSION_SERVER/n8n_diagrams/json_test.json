@@ -1,0 +1,3483 @@
+{
+    "tables": [
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_produtos",
+            "fields": [
+                {
+                    "name": "id_produto",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_registro",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_empresa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "cod_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "marca_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "desc_produto",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "atalho_produto",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "fornecedor_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "fornecedor_produto_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "produto_variado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_produto_parent",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "minimo_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "maximo_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "estoque_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "unidade_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "valor_custo_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "peso_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "peso_liq_produto",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "icms_produto",
+                    "type": "DECIMAL(5,2)"
+                },
+                {
+                    "name": "ipi_produto",
+                    "type": "DECIMAL(5,2)"
+                },
+                {
+                    "name": "pis_produto",
+                    "type": "DECIMAL(5,2)"
+                },
+                {
+                    "name": "cofins_produto",
+                    "type": "DECIMAL(5,2)"
+                },
+                {
+                    "name": "unidade_tributavel",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "cest_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "beneficio_fiscal",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "ncm_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "origem_produto",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "codigo_barra_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "codigo_barras_internos",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "obs_produto",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "tipo_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tamanho_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "localizacao_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "kit_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "baixar_kit",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "desmembrar_kit",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "loja_visivel",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "loja_video_url",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "valor_tributos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_tributosEst",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "status_produto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_comissionamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_regra_comissionamento_servico",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_produto",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_produto",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_estoque",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "multiempresa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "endereco_fixo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "controla_lote",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "controla_validade",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "lista_preco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "subcategoria",
+                    "type": "JSONB"
+                },
+                {
+                    "name": "grades",
+                    "type": "JSONB"
+                },
+                {
+                    "name": "variacoes",
+                    "type": "JSONB"
+                },
+                {
+                    "name": "imagens",
+                    "type": "JSONB"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "kit_produto IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "tipo_produto IN ('Produto', 'Servico')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_produtos_empresa",
+                    "columns": [
+                        "id_empresa"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_categoria",
+                    "columns": [
+                        "id_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_codigo",
+                    "columns": [
+                        "cod_produto"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_tipo",
+                    "columns": [
+                        "tipo_produto"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_status",
+                    "columns": [
+                        "status_produto"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_produtos_fornecedor",
+                    "columns": [
+                        "fornecedor_produto_id"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Produtos e Serviços do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_produto",
+                    "comment": "Chave primária - ID do produto"
+                },
+                {
+                    "type": "column",
+                    "column": "tipo_produto",
+                    "comment": "Tipo de produto: Produto ou Servico"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_categorias_financeiras",
+            "fields": [
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_grupo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_categoria_pai",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_categoria",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "desc_categoria",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "visivel_dre",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_contabilizacao",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "created_at",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "updated_at",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "grupo_financeiro",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "categoria_pai",
+                    "type": "VARCHAR(500)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "visivel_dre IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "tipo_categoria IN ('Despesa', 'Receita')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_categorias_tipo",
+                    "columns": [
+                        "tipo_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_categorias_grupo",
+                    "columns": [
+                        "id_grupo"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_categorias_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_categorias_pai",
+                    "columns": [
+                        "id_categoria_pai"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Categorias Financeiras do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_categoria",
+                    "comment": "Chave primária - ID da categoria"
+                },
+                {
+                    "type": "column",
+                    "column": "tipo_categoria",
+                    "comment": "Tipo de categoria: Despesa ou Receita"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_bancos",
+            "fields": [
+                {
+                    "name": "id_banco_cad",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "nome_banco_cad",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "gerar_boletos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "conta_tipo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_carteira",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "carteira_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "convenio_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "cedente_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agencia_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agencia_dv_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "conta_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "conta_dv_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "codigo_cedente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "instrucoes_boleto",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "dias_multa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "correcao_dia",
+                    "type": "DECIMAL(10,3)"
+                },
+                {
+                    "name": "taxa_boleto",
+                    "type": "DECIMAL(10,2)"
+                },
+                {
+                    "name": "cobrar_juros",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "dias_juros",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "msg_juros",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_desconto",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "status_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "com_registro",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "especie_cobranca",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "numero_contrato",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_cad_banco",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_banco",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "sequencia",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "padrao_receita",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "padrao_despesa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "open_finance",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_item_pluggy",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_conta_pluggy",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "trampolin",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_plugboleto_conta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_plugboleto_convenio",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "plugboleto_api_id",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "plugboleto_secret",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "plugboleto_certificado_vencimento",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "plugboleto_credenciais_status",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "conta_externa_dda",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "gerencianet",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "layout_cobranca_cad",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "protesto_codigo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "juros_codigo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "multa_codigo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "aceite_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_conta_ob",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "consentimento_ob",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "hash_ob",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "liquida_taxa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_especie_titulo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "criar_conta_stone",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "conta_stone",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_consentimento",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "boleto_facil_observacao_boleto",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "segmento_S",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "open_finance_updated_at",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "titulo_caucionavel",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "saldo_inicial_open_finance",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "saldo_inicial_open_finance_data",
+                    "type": "DATE"
+                },
+                {
+                    "name": "saldo_atual_open_finance",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "numero_banco",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "multa_atraso",
+                    "type": "DECIMAL(10,2)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "aceite_banco IN ('S', 'N')"
+                },
+                {
+                    "constraint": "consentimento_ob IN ('S', 'N')"
+                },
+                {
+                    "constraint": "titulo_caucionavel IN ('S', 'N')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_bancos_status",
+                    "columns": [
+                        "status_banco"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_bancos_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_bancos_numero",
+                    "columns": [
+                        "numero_banco"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_bancos_padrao_receita",
+                    "columns": [
+                        "padrao_receita"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_bancos_padrao_despesa",
+                    "columns": [
+                        "padrao_despesa"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Contas Bancárias do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_banco_cad",
+                    "comment": "Chave primária - ID da conta bancária"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_contas_pagar",
+            "fields": [
+                {
+                    "name": "id_conta_pag",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_empresa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_registro",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "identificacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nome_conta",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "categoria_pag",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_banco",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_fornecedor",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_fornecedor",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vencimento_pag",
+                    "type": "DATE"
+                },
+                {
+                    "name": "valor_pag",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_pago",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "data_emissao",
+                    "type": "DATE"
+                },
+                {
+                    "name": "n_documento_pag",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "observacoes_pag",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "id_centro_custos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "centro_custos_pag",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "liquidado_pag",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_pagamento",
+                    "type": "DATE"
+                },
+                {
+                    "name": "obs_pagamento",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "forma_pagamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_juros",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_desconto",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_acrescimo",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_taxa",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "vinculo_dda",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_pag",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pag",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "agrupado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "agrupado_data",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "agrupado_user",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agrupamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "situacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "status",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_pagamento_ob",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "codigo_barras",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "descricao_ob",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "valor_baixa",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "codigo_pagamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agendamento_vh_conta",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "centro_custo",
+                    "type": "JSONB"
+                },
+                {
+                    "name": "parciais",
+                    "type": "JSONB"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "liquidado_pag IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_contas_pagar_empresa",
+                    "columns": [
+                        "id_empresa"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_categoria",
+                    "columns": [
+                        "id_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_banco",
+                    "columns": [
+                        "id_banco"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_fornecedor",
+                    "columns": [
+                        "id_fornecedor"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_vencimento",
+                    "columns": [
+                        "vencimento_pag"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_liquidado",
+                    "columns": [
+                        "liquidado_pag"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_pagar_centro_custos",
+                    "columns": [
+                        "id_centro_custos"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Contas a Pagar do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_conta_pag",
+                    "comment": "Chave primária - ID da conta a pagar"
+                },
+                {
+                    "type": "column",
+                    "column": "liquidado_pag",
+                    "comment": "Status de pagamento: Sim=pago, Nao=pendente"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_contas_receber",
+            "fields": [
+                {
+                    "name": "id_conta_rec",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_empresa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_registro",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "identificacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nome_conta",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "categoria_rec",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_banco",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_boleto",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vencimento_rec",
+                    "type": "DATE"
+                },
+                {
+                    "name": "valor_rec",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_pago",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "data_emissao",
+                    "type": "DATE"
+                },
+                {
+                    "name": "vencimento_original",
+                    "type": "DATE"
+                },
+                {
+                    "name": "n_documento_rec",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "observacoes_rec",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "id_centro_custos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "centro_custos_rec",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "praca_pagamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "liquidado_rec",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_pagamento",
+                    "type": "DATE"
+                },
+                {
+                    "name": "obs_pagamento",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "forma_pagamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_juros",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_desconto",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_acrescimo",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_taxa",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "retorno_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_conta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_cad_rec",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_rec",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "boleto_enviado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "boleto_original",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "duplicata_enviado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "remetido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "registrado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "protestar",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "dias_protestar",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "NossoNumero",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agrupado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "agrupado_data",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "agrupado_user",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "agrupamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "fluxo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_pagamento_ob",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "situacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "status",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_baixa",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "link_boleto",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "brcode",
+                    "type": "TEXT"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "liquidado_rec IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_contas_receber_empresa",
+                    "columns": [
+                        "id_empresa"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_categoria",
+                    "columns": [
+                        "id_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_banco",
+                    "columns": [
+                        "id_banco"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_vencimento",
+                    "columns": [
+                        "vencimento_rec"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_liquidado",
+                    "columns": [
+                        "liquidado_rec"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_contas_receber_centro_custos",
+                    "columns": [
+                        "id_centro_custos"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Contas a Receber do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_conta_rec",
+                    "comment": "Chave primária - ID da conta a receber"
+                },
+                {
+                    "type": "column",
+                    "column": "liquidado_rec",
+                    "comment": "Status de pagamento: Sim=recebido, Nao=pendente"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_extratos",
+            "fields": [
+                {
+                    "name": "id_fluxo",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_banco",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_conta",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_fluxo",
+                    "type": "DATE"
+                },
+                {
+                    "name": "valor_fluxo",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "observacoes_fluxo",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "id_centro_custos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "centro_custos_fluxo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "categoria_fluxo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "forma_pagamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tipo_fluxo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_cad_fluxo",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_fluxo",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_transferencia",
+                    "type": "INTEGER"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "tipo_fluxo IN ('Entrada', 'Saida')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_extratos_banco",
+                    "columns": [
+                        "id_banco"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_data",
+                    "columns": [
+                        "data_fluxo"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_tipo",
+                    "columns": [
+                        "tipo_fluxo"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_categoria",
+                    "columns": [
+                        "id_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_extratos_centro_custos",
+                    "columns": [
+                        "id_centro_custos"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Extratos Bancários do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_fluxo",
+                    "comment": "Chave primária - ID do fluxo de transação"
+                },
+                {
+                    "type": "column",
+                    "column": "tipo_fluxo",
+                    "comment": "Tipo de transação: Entrada=receita, Saida=despesa"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_centro_custos",
+            "fields": [
+                {
+                    "name": "id_centro_custos",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "ref_centros_custo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "desc_centro_custos",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "status_centro_custos",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_cad_centro",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_centro",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                },
+                {
+                    "constraint": "status_centro_custos IN ('Ativo', 'Inativo')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_centro_custos_status",
+                    "columns": [
+                        "status_centro_custos"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_centro_custos_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_centro_custos_data_cad",
+                    "columns": [
+                        "data_cad_centro"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Centros de Custo do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_centro_custos",
+                    "comment": "Chave primária - ID do centro de custo"
+                },
+                {
+                    "type": "column",
+                    "column": "status_centro_custos",
+                    "comment": "Status do centro de custo: Ativo ou Inativo"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_pedidos",
+            "fields": [
+                {
+                    "name": "id_ped",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_local_retirada",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_local_cobranca",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "vendedor_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_pedido_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "listapreco_produtos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_total_produtos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido_porc",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "peso_total_nota",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "peso_total_nota_liq",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "frete_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_nota",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_IPI",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "condicao_pagamento_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "condicao_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "frete_por_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "transportadora_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_transportadora",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_pedido",
+                    "type": "DATE"
+                },
+                {
+                    "name": "prazo_entrega",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "ref_centros_custo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "referencia_pedido",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "obs_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "obs_interno_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "status_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contas_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "comissao_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "estoque_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pdv_emitido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "ordemc_emitido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "id_aplicativo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_pedido_aplicativo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_almoxarifado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "situacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "pagamento_com_vhpay",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pagamento_com_conta_integrada",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pagamento_com_pagar_me",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "link_pgto_gerado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_pedidos_id_pedido",
+                    "columns": [
+                        "id_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_data_pedido",
+                    "columns": [
+                        "data_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_status",
+                    "columns": [
+                        "status_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_vendedor",
+                    "columns": [
+                        "vendedor_pedido_id"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_pedidos_data_cad",
+                    "columns": [
+                        "data_cad_pedido"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Pedidos de Venda do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_ped",
+                    "comment": "Chave primária - ID do pedido"
+                },
+                {
+                    "type": "column",
+                    "column": "status_pedido",
+                    "comment": "Status do pedido: Em Aberto, Em Andamento, Atendido, etc"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_notas_fiscais",
+            "fields": [
+                {
+                    "name": "id_venda",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "tp_nfe",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "serie_nota",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_local_cobranca",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "vendedor_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_pedido_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_total_produtos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido_porc",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "peso_total_nota",
+                    "type": "DECIMAL(15,4)"
+                },
+                {
+                    "name": "peso_total_nota_liq",
+                    "type": "DECIMAL(15,4)"
+                },
+                {
+                    "name": "frete_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_nota",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_vICMSDeson_icms",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_IPI",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_despesas",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_desconto_blocked",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_despesas_blocked",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_frete_blocked",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "condicao_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "frete_por_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "transportadora_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_transportadora",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "volumes_transporta",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "especie_transporta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "marca_transporta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "numeracao_transporta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "placa_transporta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "uf_placa_transporta",
+                    "type": "VARCHAR(2)"
+                },
+                {
+                    "name": "uf_embarque",
+                    "type": "VARCHAR(2)"
+                },
+                {
+                    "name": "rntc_transporta",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "local_embarque",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_pedido",
+                    "type": "DATE"
+                },
+                {
+                    "name": "data_pedido_hora",
+                    "type": "TIME"
+                },
+                {
+                    "name": "data_emissao",
+                    "type": "DATE"
+                },
+                {
+                    "name": "indPres_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "natureza_pedido",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "finalidade_nfe",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_nota_debito",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_nota_credito",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "cnpj_cpf_participantes_comerciais",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "obs_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "obs_interno_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "status_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contas_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "comissao_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "boletos_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "estoque_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_emitida",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_chave",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_protocolo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_codigov",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_recibo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_data_autorizacao",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "nota_usuario_autorizacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_data_cancelamento",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "nota_usuario_cancelamento",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_motivo_cancelamento",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "nota_denegada",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_importada",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_scan",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "xml_importado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_almoxarifado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "ambiente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "seguro_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_seguro_blocked",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_pedido_ref",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "chave_ref_produtos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "cnpj_intermediador",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "ident_no_intermediador",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tipo_intermediador",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "qBCMono",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "vICMSMono",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "qBCMonoReten",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "vICMSMonoReten",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "qBCMonoRet",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "vICMSMonoRet",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "PagAntecipado_refNFe",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_prev_entrega",
+                    "type": "DATE"
+                },
+                {
+                    "name": "vNFTot",
+                    "type": "DECIMAL(15,2)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_notas_fiscais_pedido",
+                    "columns": [
+                        "id_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_data_pedido",
+                    "columns": [
+                        "data_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_data_emissao",
+                    "columns": [
+                        "data_emissao"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_status",
+                    "columns": [
+                        "status_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_nota_chave",
+                    "columns": [
+                        "nota_chave"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_data_cad",
+                    "columns": [
+                        "data_cad_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_notas_fiscais_nota_emitida",
+                    "columns": [
+                        "nota_emitida"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Notas Fiscais (NFe) do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_venda",
+                    "comment": "Chave primária - ID da venda/nota fiscal"
+                },
+                {
+                    "type": "column",
+                    "column": "nota_chave",
+                    "comment": "Chave de acesso da nota fiscal eletrônica (NFe)"
+                },
+                {
+                    "type": "column",
+                    "column": "status_pedido",
+                    "comment": "Status da nota: Em Aberto, Atendido, Cancelado, etc"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_ordens_compra",
+            "fields": [
+                {
+                    "name": "id_ordem",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "solicitante",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "solicitante_tipo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_vendedor",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "vendedor_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_total_produtos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "peso_total_nota",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "frete_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_nota",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_IPI",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "condicao_pagamento_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "condicao_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "transportadora_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_transportadora",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_pedido",
+                    "type": "DATE"
+                },
+                {
+                    "name": "prazo_entrega",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "obs_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "obs_interno_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "status_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contas_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "estoque_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "entrada_emitida",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "usuario_cad_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "usuario_mod_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_ordens_compra_pedido",
+                    "columns": [
+                        "id_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_vendedor",
+                    "columns": [
+                        "id_vendedor"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_data_pedido",
+                    "columns": [
+                        "data_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_status",
+                    "columns": [
+                        "status_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_data_cad",
+                    "columns": [
+                        "data_cad_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_compra_entrada",
+                    "columns": [
+                        "entrada_emitida"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Ordens de Compra do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_ordem",
+                    "comment": "Chave primária - ID da ordem de compra"
+                },
+                {
+                    "type": "column",
+                    "column": "status_pedido",
+                    "comment": "Status da ordem: Em Aberto, Atendido, etc"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_entradas_mercadoria",
+            "fields": [
+                {
+                    "name": "id_entrada",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "valor_total_produtos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "desconto_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "peso_total_nota",
+                    "type": "DECIMAL(15,6)"
+                },
+                {
+                    "name": "frete_pedido",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_nota",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ICMS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_baseST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_ST",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_IPI",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_PIS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_COFINS",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "condicao_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "transportadora_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_transportadora",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_pedido",
+                    "type": "DATE"
+                },
+                {
+                    "name": "id_centro_custos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "centro_custos_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "obs_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "obs_interno_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "status_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contas_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "estoque_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_numero",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_chave",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_protocolo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nota_data_autorizacao",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_cad_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "modelo_nota",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "serie_nota",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "importacao",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "almoxarifado",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "usuario_cad_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "usuario_mod_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_seguros",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_outros",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "importacao_automatica",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "produtos_cadastrados",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cadastro_produto",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "usuario_cadastro_produto",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "fornecedor_cadastrado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cadastro_fornecedor",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "usuario_cadastro_fornecedor",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "manifestacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tipo_manifestacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_manisfestacao",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "usuario_manifestacao",
+                    "type": "INTEGER"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_entradas_mercadoria_pedido",
+                    "columns": [
+                        "id_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_data_pedido",
+                    "columns": [
+                        "data_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_status",
+                    "columns": [
+                        "status_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_nota_chave",
+                    "columns": [
+                        "nota_chave"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_data_cad",
+                    "columns": [
+                        "data_cad_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_centro_custos",
+                    "columns": [
+                        "id_centro_custos"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_entradas_mercadoria_estoque",
+                    "columns": [
+                        "estoque_pedido"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Entradas de Mercadoria do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_entrada",
+                    "comment": "Chave primária - ID da entrada de mercadoria"
+                },
+                {
+                    "type": "column",
+                    "column": "nota_chave",
+                    "comment": "Chave de acesso da nota fiscal eletrônica (NFe)"
+                },
+                {
+                    "type": "column",
+                    "column": "status_pedido",
+                    "comment": "Status da entrada: Em Aberto, Atendido, etc"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_ordens_servico",
+            "fields": [
+                {
+                    "name": "id_ordem",
+                    "type": "INTEGER",
+                    "primary_key": true
+                },
+                {
+                    "name": "id_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nome_contato_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_local_retirada",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_local_cobranca",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_atendimento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_tecnico",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_tecnico",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_cliente_veiculo",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_servico",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_pedido_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "listapreco_produtos",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "valor_total_servicos",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_pecas",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_despesas",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_desconto",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "valor_total_os",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "condicao_pagamento_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "condicao_pagamento",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_pedido",
+                    "type": "DATE"
+                },
+                {
+                    "name": "data_entrega",
+                    "type": "DATE"
+                },
+                {
+                    "name": "data_realizacao",
+                    "type": "DATE"
+                },
+                {
+                    "name": "data_realizacao_hora",
+                    "type": "TIME"
+                },
+                {
+                    "name": "garantia_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "equipamento_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "problema_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "recebimento_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "referencia_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "obs_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "ref_centros_custo",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "obs_interno_pedido",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "laudo_ordem",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "status_pedido",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contas_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "comissao_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "estoque_pedido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pdv_emitido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_servico_emitida",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_venda_emitida",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nota_consumidor_emitida",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "funil_emitido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "loja_emitido",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_almoxarifado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "situacao",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "link_pgto_gerado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pagamento_com_vhpay",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pagamento_com_conta_integrada",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "pagamento_com_pagar_me",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_cad_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_pedido",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_ordens_servico_cliente",
+                    "columns": [
+                        "id_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_servico_pedido",
+                    "columns": [
+                        "id_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_servico_status",
+                    "columns": [
+                        "status_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_servico_data_pedido",
+                    "columns": [
+                        "data_pedido"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_ordens_servico_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Ordens de Serviço do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_ordem",
+                    "comment": "Chave primária - ID da ordem de serviço"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Flag de exclusão lógica: Sim=excluído, Nao=ativo"
+                }
+            ]
+        },
+        {
+            "schema": "raw_data",
+            "table_name": "vhs_clientes",
+            "fields": [
+                {
+                    "name": "id_cliente",
+                    "type": "INTEGER",
+                    "unique": true
+                },
+                {
+                    "name": "id_registro",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "tipo_pessoa",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tipo_cadastro",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "cnpj_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "rg_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "data_emissao_rg_cliente",
+                    "type": "DATE"
+                },
+                {
+                    "name": "orgao_expedidor_rg_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "passaporte_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "estrangeiro_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "negativado",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "negativado_serasa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "razao_cliente",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "fantasia_cliente",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "endereco_cliente",
+                    "type": "VARCHAR(500)"
+                },
+                {
+                    "name": "numero_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "bairro_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "complemento_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "referencia_cliente",
+                    "type": "VARCHAR(1024)"
+                },
+                {
+                    "name": "cep_cliente",
+                    "type": "VARCHAR(20)"
+                },
+                {
+                    "name": "cidade_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "cidade_cliente_cod",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "uf_cliente",
+                    "type": "VARCHAR(2)"
+                },
+                {
+                    "name": "tel_destinatario_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "doc_destinatario_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nome_destinatario_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contato_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "fone_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "fone_contato_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "fone_ramal_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "fax_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "celular_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "email_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "email_contato_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "celular_contato_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "estado_civil_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "website_cliente",
+                    "type": "VARCHAR(1024)"
+                },
+                {
+                    "name": "aposentado_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "empregador_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "profissao_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "genero_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "insc_estadual_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "insc_municipal_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "insc_produtor_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "insc_suframa_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "nif",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "id_categoria",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "situacao_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_cliente",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "vendedor_cliente_id",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "modalidade_frete",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "id_transportadora",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "desc_transportadora",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "observacoes_cliente",
+                    "type": "TEXT"
+                },
+                {
+                    "name": "listapreco_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "condicaopag_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "limite_credito",
+                    "type": "DECIMAL(15,2)"
+                },
+                {
+                    "name": "ultrapassar_limite_credito",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "consumidor_final",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "contribuinte_icms",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "atividade_encerrada_cliente",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "data_nasc_cliente",
+                    "type": "DATE"
+                },
+                {
+                    "name": "data_cad_cliente",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "data_mod_cliente",
+                    "type": "TIMESTAMP"
+                },
+                {
+                    "name": "lixeira",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tpEnteGov",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "pRedutor",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "tpOperGov",
+                    "type": "VARCHAR(255)"
+                },
+                {
+                    "name": "multiempresa",
+                    "type": "INTEGER"
+                },
+                {
+                    "name": "nome_categoria",
+                    "type": "VARCHAR(255)"
+                }
+            ],
+            "checks": [
+                {
+                    "constraint": "lixeira IN ('Sim', 'Nao', 'Não')"
+                },
+                {
+                    "constraint": "tipo_pessoa IN ('PF', 'PJ')"
+                },
+                {
+                    "constraint": "tipo_cadastro IN ('Cliente', 'Fornecedor', 'Ambos')"
+                },
+                {
+                    "constraint": "situacao_cliente IN ('Ativo', 'Inativo')"
+                },
+                {
+                    "constraint": "genero_cliente IN ('Masculino', 'Feminino', 'Outro', '')"
+                }
+            ],
+            "indexes": [
+                {
+                    "name": "idx_vhs_clientes_registro",
+                    "columns": [
+                        "id_registro"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_lixeira",
+                    "columns": [
+                        "lixeira"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_tipo_pessoa",
+                    "columns": [
+                        "tipo_pessoa"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_tipo_cadastro",
+                    "columns": [
+                        "tipo_cadastro"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_situacao",
+                    "columns": [
+                        "situacao_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_data_cad",
+                    "columns": [
+                        "data_cad_cliente"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_categoria",
+                    "columns": [
+                        "id_categoria"
+                    ]
+                },
+                {
+                    "name": "idx_vhs_clientes_vendedor",
+                    "columns": [
+                        "vendedor_cliente_id"
+                    ]
+                }
+            ],
+            "comments": [
+                {
+                    "type": "table",
+                    "comment": "Tabela de clientes e fornecedores do VHSYS"
+                },
+                {
+                    "type": "column",
+                    "column": "id_cliente",
+                    "comment": "ID único do cliente (UNIQUE constraint para FK)"
+                },
+                {
+                    "type": "column",
+                    "column": "id_categoria",
+                    "comment": "ID da categoria do cliente (ex: Funcionario)"
+                },
+                {
+                    "type": "column",
+                    "column": "nome_categoria",
+                    "comment": "Nome da categoria do cliente"
+                },
+                {
+                    "type": "column",
+                    "column": "lixeira",
+                    "comment": "Exclusão lógica: Sim=excluído, Nao=ativo"
+                },
+                {
+                    "type": "column",
+                    "column": "consumidor_final",
+                    "comment": "Indica se é consumidor final: 1=sim, 0=não"
+                },
+                {
+                    "type": "column",
+                    "column": "limite_credito",
+                    "comment": "Limite de crédito disponível para o cliente"
+                }
+            ]
+        }
+    ]
+}

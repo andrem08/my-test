@@ -1,0 +1,88 @@
+═══════════════════════════════════════════════════════════════════════
+  RELATÓRIO DE CORREÇÃO - SUBFLOWS VHSYS
+═══════════════════════════════════════════════════════════════════════
+
+DATA: $(date)
+STATUS: ✅ CONCLUÍDO
+
+ERRO CRÍTICO CORRIGIDO:
+  Subflows estavam usando trigger incorreto para workflows chamados via
+  "Execute Workflow" node do n8n.
+
+ALTERAÇÕES REALIZADAS:
+───────────────────────────────────────────────────────────────────────
+
+1. ✅ VHSYS-health-v1.json
+   Node ID: start-health-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+2. ✅ VHSYS-update_services-v1.json
+   Node ID: start-update-services-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+3. ✅ VHSYS-get_update_extension_service_data-v1.json
+   Node ID: start-get-status-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+4. ✅ VHSYS-cc_status-v1.json
+   Node ID: cc-status-start-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+5. ✅ VHSYS-cc_next_url-v1.json
+   Node ID: cc-next-start-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+6. ✅ VHSYS-cc_report-v1.json
+   Node ID: cc-report-start-001
+   ANTES: "type": "n8n-nodes-base.start"
+   DEPOIS: "type": "n8n-nodes-base.executeWorkflowTrigger"
+   ANTES: "name": "Start"
+   DEPOIS: "name": "When called by another workflow"
+   Conexões: Atualizadas de "Start" para "When called by another workflow"
+
+───────────────────────────────────────────────────────────────────────
+ARQUIVO NÃO ALTERADO (CORRETO):
+───────────────────────────────────────────────────────────────────────
+
+✓ VHSYS-Router-v1.json
+  Motivo: Router usa webhook (n8n-nodes-base.webhook)
+  Status: Não requer alteração
+
+───────────────────────────────────────────────────────────────────────
+VALIDAÇÃO JSON:
+───────────────────────────────────────────────────────────────────────
+
+Todos os 6 arquivos corrigidos mantêm JSON válido e estrutura correta.
+
+───────────────────────────────────────────────────────────────────────
+PRÓXIMOS PASSOS:
+───────────────────────────────────────────────────────────────────────
+
+1. Importar workflows atualizados no n8n
+2. Testar chamadas do Router para cada subflow
+3. Verificar logs de execução
+4. Confirmar que dados são passados corretamente entre workflows
+
+═══════════════════════════════════════════════════════════════════════
+RESUMO: 6 de 6 SUBFLOWS CORRIGIDOS COM SUCESSO ✅
+═══════════════════════════════════════════════════════════════════════

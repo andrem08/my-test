@@ -1,0 +1,159 @@
+{
+  "name": "VHSYS-update_services-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "start-update-services-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Valida e extrai payload de update_services\n// Input esperado: { ACTION: string, RUNNING_STATUS: integer }\n\nconst body = $input.first().json.body || {};\nconst ACTION = (body.ACTION || '').toString().trim();\nconst RUNNING_STATUS = parseInt(body.RUNNING_STATUS, 10);\n\n// Validações\nconst errors = [];\n\nif (!ACTION) {\n  errors.push('Campo ACTION é obrigatório');\n}\n\nif (isNaN(RUNNING_STATUS)) {\n  errors.push('Campo RUNNING_STATUS deve ser um número inteiro');\n}\n\nif (![0, 1, 2, -1].includes(RUNNING_STATUS)) {\n  errors.push('RUNNING_STATUS deve ser 0, 1, 2 ou -1');\n}\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      _valid: false,\n      _errors: errors,\n      _statusCode: 400\n    }\n  }];\n}\n\n// Payload válido\nreturn [{\n  json: {\n    _valid: true,\n    ACTION: ACTION,\n    RUNNING_STATUS: RUNNING_STATUS,\n    _receivedAt: new Date().toISOString(),\n    _routePath: 'update_services'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "id": "code-validate-input",
+      "name": "Validate Input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [680, 300],
+      "id": "if-valid-input",
+      "name": "Is Valid?"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE update_extension_services\nSET \n  \"RUN_STATUS\" = {{ $json.RUNNING_STATUS }},\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"ACTION\" = '{{ $json.ACTION }}'\nRETURNING *;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [900, 240],
+      "id": "postgres-update-status",
+      "name": "UPDATE Extension Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log estruturado (sem campos sensíveis)\nconst input = $input.first().json;\n\nconst logEntry = {\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  method: 'PUT',\n  action: input.ACTION,\n  status_updated_to: input.RUNNING_STATUS,\n  success: true\n};\n\nconsole.log('[VHSYS] update_services:', JSON.stringify(logEntry));\n\nreturn {\n  statusCode: 201,\n  body: {\n    ok: true,\n    message: 'Update extension service status'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 240],
+      "id": "code-success-response",
+      "name": "Build Success Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Resposta de erro para validação falhou\nconst input = $input.first().json;\n\nconst logEntry = {\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  method: 'PUT',\n  errors: input._errors,\n  success: false\n};\n\nconsole.log('[VHSYS] update_services ERROR:', JSON.stringify(logEntry));\n\nreturn {\n  statusCode: 400,\n  body: {\n    ok: false,\n    error: 'Validation failed',\n    details: input._errors\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 380],
+      "id": "code-error-response",
+      "name": "Build Error Response"
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "UPDATE Extension Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Extension Status": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "update-services-v1-001",
+  "meta": {
+    "instanceId": "vhsys-update-services-production"
+  },
+  "id": "VHSYS-update-services-v1",
+  "tags": [
+    {
+      "name": "vhsys"
+    },
+    {
+      "name": "phase2"
+    },
+    {
+      "name": "core"
+    }
+  ]
+}

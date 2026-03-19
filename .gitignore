@@ -1,0 +1,15 @@
+node_modules/
+.plasmo/
+build/
+dist/
+*.mdb
+.vscode/
+RT_ChromeExtension_vhsys/node_modules/
+RT_ChromeExtension_vhsys/build/
+RT_chrome_extension_tangerino/node_modules/
+**/.plasmo/
+**/.husky/
+RT_chrome_extension_tangerino/build/
+**/dist/
+dist/
+*.mdb

@@ -1,0 +1,1093 @@
+{
+  "name": "Fluxo para Popular Tabelas das API's",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -58176,
+        19952
+      ],
+      "id": "ce0d0f65-1a5f-4c84-b83a-5d378efc8fae",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configurar Constantes\n\nDefine variaveis globais do workflow:\n\n• RT_CLOCKFY_WORKSPACE_ID\n• Outras chaves usadas nos requests",
+        "height": 200,
+        "width": 300
+      },
+      "id": "3930df0e-c42a-4dce-bc55-1412107f6035",
+      "name": "📋 Info: Loop",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -58016,
+        19712
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 INICIO DO WORKFLOW\n\n**Fluxo principal:**\n• 13 APIs VHSYS\n• 4 APIs Clockify\n• 1 Lista SharePoint\n\n**Execucao:** manual ou agendada\n**Processamento:** sequencial (1 por vez)\n\nExcel roda em fluxo separado.",
+        "height": 320,
+        "width": 320
+      },
+      "id": "f0b773fb-c6b8-4f02-8e8e-02feb9fb9af1",
+      "name": "📋 Info: Início1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -58528,
+        19872
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## UPSERT NO BANCO\n\n**UPSERT = INSERT + UPDATE**\n\n✅ Usa `id_field` dinamico\n✅ VHSYS: id_cliente, id_produto, etc\n✅ Clockify/SharePoint/Excel: id\n✅ Escape de valores em SQL",
+        "height": 252,
+        "width": 260
+      },
+      "id": "8320fc86-1b9f-4355-9e87-98df917a18a9",
+      "name": "📋 Salvar1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -55296,
+        19344
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🔀 ROTEAMENTO POR SISTEMA\n\n**VHSYS** → HTTP Request\n**Clockify** → HTTP Request\n**SharePoint** → Microsoft SharePoint\n\nAutenticacoes diferentes por sistema.\nExcel nao passa por este roteamento.",
+        "height": 228,
+        "width": 280
+      },
+      "id": "a843d7c5-f2ac-42b3-bbe7-260c10c52554",
+      "name": "📋 Info: Roteamento1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -57088,
+        20128
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚡ PROCESSAMENTO PARALELO\n\n**Processa endpoints em paralelo**\n\n1. Busca API\n2. Busca DB\n3. Extrai/normaliza (NodeJS)\n4. Merge por `id_field`\n5. UPSERT\n\nSharePoint participa do fluxo; Excel roda separado.",
+        "height": 264,
+        "width": 300
+      },
+      "id": "a52821b5-bd16-4356-b2df-24947aeae71c",
+      "name": "📋 Info: Loop6",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -57472,
+        19616
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## ⚙️ Configurar Endpoints\n\n**Centraliza endpoints e chaves do UPSERT:**\n\n• VHSYS (13 endpoints)\n• Clockify (4 endpoints)\n• SharePoint (1 lista)\n\nCampos usados: `table`, `id_field`, `primary_key`, `site_id`.\nExcel nao entra neste loop.",
+        "height": 232,
+        "width": 412
+      },
+      "id": "9a562a32-bf34-487a-8fed-60258b4a91cd",
+      "name": "📋 Info: Loop7",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -57824,
+        20112
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.system}}",
+                    "rightValue": "vhsys",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "91fffa41-31f4-4dd3-9e81-d26a33dca4f2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "da31133d-b6a6-427a-87d2-a08e1584a66c",
+                    "leftValue": "={{$json.system}}",
+                    "rightValue": "clockify",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "48ceca84-2468-4b7a-a7c0-7f7248de1cfb",
+                    "leftValue": "={{$json.system}}",
+                    "rightValue": "clockify_report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ca67a9a0-2125-41bc-9f4a-8955d39f974a",
+                    "leftValue": "={{$json.system}}",
+                    "rightValue": "glpi",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "18927297-519b-4f81-b934-1d2ffa95cc00",
+                    "leftValue": "={{$json.system}}",
+                    "rightValue": "excel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -56576,
+        19920
+      ],
+      "id": "34a0479f-dd5f-4e84-a566-3bcd70191e42",
+      "name": "Select System"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://reports.api.clockify.me/v1/workspaces/{{ $('Configurar Constantes').item.json.RT_CLOCKFY_WORKSPACE_ID }}/reports/{{ $('Select System').item.json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n\t\"dateRangeStart\": $('Select System').item.json.dateRangeStart,\n\t\"dateRangeEnd\": $('Select System').item.json.dateRangeEnd,\n\t\"detailedFilter\": {\n\t\t\"page\": $json.clk_page,\n\t\t\"pageSize\": 1000\n\t},\n\t\"exportType\": \"JSON\"\n}) }}",
+        "options": {}
+      },
+      "id": "3e6c17ba-878a-42fc-b0f5-f59243beeae3",
+      "name": "Buscar API Clockify Report",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -56080,
+        19744
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "options": {
+        "pagination": {
+          "pagination": {
+            "parameters": {
+              "parameters": []
+            },
+            "paginationCompleteWhen": "other",
+            "completeExpression": "={{ !$response.body.timeentries || $response.body.timeentries.length === 0 || (($pageCount + 1) * 1000) > ($response.body.totals && $response.body.totals.entriesCount ? $response.body.totals.entriesCount : 0) }}"
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3qYO2JczLtfLjIZy",
+          "name": "CLOCKIFY KEY"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://rtglpi.ind.br/apirest.php/initSession",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpMultipleHeadersAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "fc4c6768-00c9-4d6a-945c-7ef1e9adf0b5",
+      "name": "GLPI Iniciar Sessão",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -56144,
+        20112
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3qYO2JczLtfLjIZy",
+          "name": "CLOCKIFY KEY"
+        },
+        "httpMultipleHeadersAuth": {
+          "id": "xftOnnnRjwdQhGG3",
+          "name": "GLPI Auth"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "102f6f01-66b7-42eb-88a1-3e3be689f617",
+              "name": "RT_CLOCKFY_WORKSPACE_ID",
+              "value": "608b750c2b299c6bb6e955f7",
+              "type": "string"
+            },
+            {
+              "id": "8f113cb6-16dd-4804-ab66-f5a7610f8b17",
+              "name": "clk_page",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -57920,
+        19952
+      ],
+      "id": "f5cdbec3-be21-4dc6-b937-fa4cc12333e6",
+      "name": "Configurar Constantes"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "endpoints",
+              "name": "endpoints",
+              "type": "array",
+              "value": "={{ [\n  // === VHSYS (13 endpoints em uso) ===\n  {system: 'vhsys', url: 'pedidos', table: 'vhs_pedidos', id_field: 'id_ped', primary_key: 'id_ped'},\n  {system: 'vhsys', url: 'produtos', table: 'vhs_produtos', id_field: 'id_produto', primary_key: 'id_produto'},\n  {system: 'vhsys', url: 'clientes', table: 'vhs_clientes', id_field: 'id_cliente', primary_key: 'id_cliente'},\n  {system: 'vhsys', url: 'categorias-financeiras', table: 'vhs_categorias_financeiras', id_field: 'id_categoria', primary_key: 'id_categoria'},\n  {system: 'vhsys', url: 'contas-bancarias', table: 'vhs_bancos', id_field: 'id_banco_cad', primary_key: 'id_banco_cad'},\n  {system: 'vhsys', url: 'contas-receber', table: 'vhs_contas_receber', id_field: 'id_conta_rec', primary_key: 'id_conta_rec'},\n  {system: 'vhsys', url: 'extratos', table: 'vhs_extratos', id_field: 'id_fluxo', primary_key: 'id_fluxo'},\n  {system: 'vhsys', url: 'centros-custo', table: 'vhs_centro_custos', id_field: 'id_centro_custos', primary_key: 'id_centro_custos'},\n  {system: 'vhsys', url: 'notas-fiscais', table: 'vhs_notas_fiscais', id_field: 'id_venda', primary_key: 'id_venda'},\n  {system: 'vhsys', url: 'ordens-compra', table: 'vhs_ordens_compra', id_field: 'id_ordem', primary_key: 'id_ordem'},\n  {system: 'vhsys', url: 'entradas-mercadoria', table: 'vhs_entradas_mercadoria', id_field: 'id_entrada', primary_key: 'id_entrada'},\n  {system: 'vhsys', url: 'ordens-servico', table: 'vhs_ordens_servico', id_field: 'id_ordem', primary_key: 'id_ordem'},\n\n  // === CLOCKIFY (4 endpoints em uso) ===\n  {system: 'clockify', url: 'users', table: 'clk_usuarios', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'projects', table: 'clk_projetos', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'tags', table: 'clk_tags', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'clients', table: 'clk_clientes', id_field: 'id', primary_key: 'id'},\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 6 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n  {system: 'vhsys', url: 'contas-pagar', table: 'vhs_contas_pagar', id_field: 'id_conta_pag', primary_key: 'id_conta_pag'}\n] }}"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4176a49e-2a9c-4770-bac1-fc63059d1043",
+      "name": "⚙️ Configurar Endpoints",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -57632,
+        19952
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "endpoints",
+        "options": {}
+      },
+      "id": "bb8d7099-4e41-4df2-adcb-b122b794776d",
+      "name": "Split Out",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -57328,
+        19952
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Transform Clockify Time Entries to Database Format\n\nconst timeEntries = $input.first().json.timeentries;\n\nconst transformedEntries = timeEntries.map(entry => {\n  return {\n    json: {\n      id: entry._id,\n      description: entry.description || null,\n      userId: entry.userId,\n      userName: entry.userName || null,\n      userEmail: entry.userEmail || null,\n      projectId: entry.projectId,\n      projectName: entry.projectName || null,\n      projectColor: entry.projectColor || null,\n      clientId: entry.clientId || null,\n      clientName: entry.clientName || null,\n      taskId: entry.taskId,\n      approvalRequestId: entry.approvalRequestId,\n      \n      // Time Interval\n      time_start: entry.timeInterval?.start || null,\n      time_end: entry.timeInterval?.end || null,\n      time_duration: entry.timeInterval?.duration || null,\n      time_timezone: entry.timeInterval?.timeZone || null,\n      time_zoned_start: entry.timeInterval?.zonedStart || null,\n      time_zoned_end: entry.timeInterval?.zonedEnd || null,\n      time_off_start: entry.timeInterval?.offStart || null,\n      time_off_end: entry.timeInterval?.offEnd || null,\n      \n      billable: entry.billable,\n      type: entry.type,\n      isLocked: entry.isLocked,\n      currency: entry.currency,\n      \n      // Financial Values\n      amount: entry.amount,\n      rate: entry.rate,\n      earnedAmount: entry.earnedAmount,\n      earnedRate: entry.earnedRate,\n      costAmount: entry.costAmount,\n      costRate: entry.costRate\n    }\n  };\n});\n\nreturn transformedEntries;"
+      },
+      "id": "8f145223-d8ba-4043-a3cf-a8b7f38d71b1",
+      "name": "Extrair Relatório da API ClockFY",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -55840,
+        19616
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Clockify extraction and normalization\n\nconst pairedItem = $input.first().pairedItem ?? { item: 0 };\n\nfunction withPair(items) {\n  return items.map(item => ({ ...item, pairedItem }));\n}\n\nfunction asList(value) {\n  if (Array.isArray(value)) return value;\n  if (value && typeof value === 'object') {\n    if (Array.isArray(value.data)) return value.data;\n    if (Array.isArray(value.value)) return value.value;\n    return [value];\n  }\n  return [];\n}\n\nfunction collectRecords() {\n  const items = $input.all();\n  let records = [];\n  for (const item of items) {\n    records = records.concat(asList(item.json));\n  }\n  return records;\n}\n\nfunction transformUsers(users) {\n  return withPair(users.map(user => {\n    const settings = user.settings || {};\n    return {\n      json: {\n        id: String(user.id || ''),\n        email: user.email,\n        name: user.name,\n        profilePicture: user.profilePicture,\n        activeWorkspace: user.activeWorkspace,\n        defaultWorkspace: user.defaultWorkspace,\n        status: user.status,\n        weekStart: settings.weekStart,\n        timeZone: settings.timeZone,\n        timeFormat: settings.timeFormat,\n        dateFormat: settings.dateFormat,\n        sendNewsletter: settings.sendNewsletter,\n        weeklyUpdates: settings.weeklyUpdates,\n        longRunning: settings.longRunning,\n        scheduledReports: settings.scheduledReports,\n        approval: settings.approval,\n        pto: settings.pto,\n        alerts: settings.alerts,\n        reminders: settings.reminders,\n        timeTrackingManual: settings.timeTrackingManual,\n        isCompactViewOn: settings.isCompactViewOn,\n        dashboardSelection: settings.dashboardSelection,\n        dashboardViewType: settings.dashboardViewType,\n        dashboardPinToTop: settings.dashboardPinToTop,\n        projectListCollapse: settings.projectListCollapse,\n        collapseAllProjectLists: settings.collapseAllProjectLists,\n        groupSimilarEntriesDisabled: settings.groupSimilarEntriesDisabled,\n        myStartOfDay: settings.myStartOfDay,\n        projectPickerTaskFilter: settings.projectPickerTaskFilter,\n        lang: settings.lang,\n        multiFactorEnabled: settings.multiFactorEnabled,\n        theme: settings.theme,\n        scheduling: settings.scheduling,\n        onboarding: settings.onboarding,\n        invoiceReminders: settings.invoiceReminders,\n        showOnlyWorkingDays: settings.showOnlyWorkingDays,\n        memberships: user.memberships,\n        summaryReportSettings: settings.summaryReportSettings,\n        customFields: user.customFields\n      }\n    };\n  }));\n}\n\nfunction transformProjects(projects) {\n  return withPair(projects.map(project => {\n    const hourlyRate = project.hourlyRate || {};\n    const costRate = project.costRate || {};\n    const estimate = project.estimate || {};\n    const timeEstimate = project.timeEstimate || {};\n    const budgetEstimate = project.budgetEstimate || {};\n    return {\n      json: {\n        id: String(project.id || ''),\n        name: project.name,\n        clientId: project.clientId,\n        workspaceId: project.workspaceId,\n        billable: project.billable,\n        archived: project.archived,\n        color: project.color,\n        duration: project.duration,\n        clientName: project.clientName,\n        note: project.note,\n        public: project.public,\n        template: project.template,\n        hourly_amount: hourlyRate.amount,\n        hourly_currency: hourlyRate.currency,\n        cost_amount: costRate.amount,\n        cost_currency: costRate.currency,\n        estimate_value: estimate.estimate,\n        estimate_type: estimate.type,\n        time_est_estimate: timeEstimate.estimate,\n        time_est_type: timeEstimate.type,\n        time_est_reset_option: timeEstimate.resetOption,\n        time_est_active: timeEstimate.active,\n        time_est_include_non_billable: timeEstimate.includeNonBillable,\n        budget_est_estimate: budgetEstimate.estimate,\n        budget_est_type: budgetEstimate.type,\n        budget_est_reset_option: budgetEstimate.resetOption,\n        budget_est_active: budgetEstimate.active,\n        memberships: project.memberships\n      }\n    };\n  }));\n}\n\nfunction transformClients(clients) {\n  return withPair(clients.map(client => ({\n    json: {\n      id: String(client.id || ''),\n      name: client.name,\n      email: client.email,\n      ccEmails: client.ccEmails,\n      workspaceId: client.workspaceId,\n      archived: client.archived,\n      address: client.address,\n      note: client.note,\n      currencyId: client.currencyId,\n      currencyCode: client.currencyCode\n    }\n  })));\n}\n\nfunction transformTags(tags) {\n  return withPair(tags.map(tag => ({\n    json: {\n      id: String(tag.id || ''),\n      name: tag.name,\n      workspaceId: tag.workspaceId,\n      archived: tag.archived\n    }\n  })));\n}\n\nfunction detectKind(sample) {\n  if (!sample || typeof sample !== 'object') return 'generic';\n  if ('settings' in sample) return 'users';\n  if ('hourlyRate' in sample || 'estimate' in sample || 'timeEstimate' in sample || 'budgetEstimate' in sample) return 'projects';\n  if ('ccEmails' in sample || 'currencyId' in sample || 'currencyCode' in sample) return 'clients';\n  if ('workspaceId' in sample && 'name' in sample && 'id' in sample) return 'tags';\n  return 'generic';\n}\n\nconst records = collectRecords();\nif (records.length === 0) return [];\n\nconst kind = detectKind(records[0]);\nif (kind === 'users') return transformUsers(records);\nif (kind === 'projects') return transformProjects(records);\nif (kind === 'clients') return transformClients(records);\nif (kind === 'tags') return transformTags(records);\n\nreturn withPair(records.map(item => {\n  if (item && typeof item === 'object') {\n    return { json: { ...item, id: String(item.id || '') } };\n  }\n  return { json: { id: String(item || ''), value: item } };\n}));"
+      },
+      "id": "b58e1102-9967-462b-b15b-567fba470061",
+      "name": "Extrair Data da API ClockFY",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -55984,
+        19520
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vhsys.com/v2/{{ $json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpMultipleHeadersAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "0"
+            },
+            {
+              "name": "limit",
+              "value": "250"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cache-Control",
+              "value": "no-cache"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "offset",
+                    "value": "={{ $response.body.paging.offset + $response.body.paging.limit }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ $response.body.data.length === 0 || ($response.body.paging.offset + $response.body.paging.limit) >= $response.body.paging.total }}"
+            }
+          }
+        }
+      },
+      "id": "71e8cb47-d543-4a79-bb9a-b6bd1d00989e",
+      "name": "Buscar API VHSYS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -56288,
+        19312
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "l0uUglUnOTk8fyNB",
+          "name": "RT TOKEN"
+        },
+        "httpMultipleHeadersAuth": {
+          "id": "lUbH3RC2CTV1GD3G",
+          "name": "VHSYS Auth Token"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrai o array 'data' da resposta da API VHSYS\n// Combina dados de todas as páginas e transforma em itens individuais\n\nconst items = $input.all();\nconst pairedItem = $input.first().pairedItem ?? { item: 0 };\n\nlet dataArray = [];\n\n// Coleta dados de todas as páginas\nfor (const inputItem of items) {\n  const data = inputItem.json?.data;\n  if (Array.isArray(data)) {\n    dataArray = dataArray.concat(data);\n  }\n}\n\n// Verifica se existe o campo 'data'\nif (dataArray.length === 0) {\n  return [];\n}\n\nconsole.log(`VHSYS: Processando ${dataArray.length} registros de ${items.length} páginas`);\n\n// Transforma cada elemento do array em um item separado\nreturn dataArray.map(item => ({\n  json: item,\n  pairedItem\n}));"
+      },
+      "id": "877203ca-c416-4122-9b2a-78edb0e64345",
+      "name": "Extrair Data da API VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -55984,
+        19296
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://docs.clockify.me/api/v1/workspaces/{{ $('Configurar Constantes').item.json.RT_CLOCKFY_WORKSPACE_ID }}/{{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "page",
+              "value": "={{ $pageCount || 1}}"
+            },
+            {
+              "name": "page-size",
+              "value": "=200"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          },
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "page",
+                    "value": "={{ $pageCount + 1 }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body || ($response.body.length !== undefined && $response.body.length < 200) }}"
+            }
+          }
+        }
+      },
+      "id": "ffce7b82-4e38-4709-bf23-73761ccd7e90",
+      "name": "Buscar API Clockify",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -56288,
+        19536
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "3qYO2JczLtfLjIZy",
+          "name": "CLOCKIFY KEY"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ (() => {\nconst data = $json;\n\nconst table = $(\"Split Out\").item.json.table;\nconst idField = $(\"Split Out\").item.json.id_field;\nconst schema = \"raw_data\";\n\nconst fields = Object.keys(data).filter(\n  (key) =>\n    !key.startsWith(\"_\") &&\n    !key.startsWith(\"$\") &&\n    key !== \"json\" &&\n    key !== \"pairedItem\",\n);\n\nif (fields.length === 0) {\n  return 'SELECT 1'\n}\n\nconst normalizedIdField = idField.toLowerCase();\nconst columns = fields.map((f) => '\"' + f.toLowerCase() + '\"').join(\", \");\nconst values = fields.map((f) => escapeSqlValue(data[f])).join(\", \");\nconst updateSet = fields\n  .filter((f) => f.toLowerCase() !== normalizedIdField)\n  .map((f) => '\"' + f.toLowerCase() + '\" = EXCLUDED.\"' + f.toLowerCase() + '\"')\n  .join(\", \");\n\nreturn (\n  \"INSERT INTO \" +\n  schema +\n  \".\" +\n  table +\n  \" (\" +\n  columns +\n  \") VALUES (\" +\n  values +\n  ') ON CONFLICT (\"' +\n  normalizedIdField +\n  '\") DO UPDATE SET ' +\n  updateSet +\n  \";\"\n);\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === \"\") {\n    return \"NULL\";\n  }\n  if (typeof value === \"string\" && value.startsWith(\"0000-00-00\")) {\n    return \"NULL\";\n  }\n  if (typeof value === \"number\") {\n    return value;\n  }\n  if (typeof value === \"boolean\") {\n    return value ? \"true\" : \"false\";\n  }\n  if (Array.isArray(value) || typeof value === \"object\") {\n    return \"'\" + JSON.stringify(value).replace(/'/g, \"''\") + \"'::jsonb\";\n  }\n  return \"'\" + String(value).replace(/'/g, \"''\") + \"'\";\n}\n})() }}",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "55bf3fe3-476d-421c-a0ca-0291f4ae51e6",
+      "name": "UPSERT no Banco",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -55152,
+        19696
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -56896,
+        19952
+      ],
+      "id": "cd0be2b2-83fb-4d0a-86d1-c78caf56da39",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "=https://rtglpi.ind.br/apirest.php/Ticket",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            },
+            {
+              "name": "Session-Token",
+              "value": "={{ $json.session_token }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "id": "2a9561e8-4c3a-436a-812b-bf7d6b68208a",
+      "name": "GLPI extrair dados",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -55728,
+        20096
+      ],
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "QWnj5p5kSvbcw6CQ",
+          "name": "GLPI App Token"
+        },
+        "httpMultipleHeadersAuth": {
+          "id": "xftOnnnRjwdQhGG3",
+          "name": "GLPI Auth"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fe8ffa6e-9014-4cef-98ad-fa7370cb8cf2",
+              "leftValue": "={{ $json.timeentries && $json.timeentries.length > 0 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -55872,
+        19824
+      ],
+      "id": "46f8a781-f479-465b-907e-ea8a1f6e1553",
+      "name": "Check if more pages"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f5b04ed2-e9fc-4291-968b-77f10a1a0ce0",
+              "name": "=clk_page",
+              "value": "={{ $('Forward Prev Page Num').isExecuted ? $('Forward Prev Page Num').first().json.prevPage + 1 : $('Configurar Constantes').item.json.clk_page }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -56320,
+        19744
+      ],
+      "id": "acec8ca8-5b2f-4a76-a584-19b5ccf55ba8",
+      "name": "Increment Pagination Clockify"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d1047bae-7d36-4684-86f3-8aaafa575f55",
+              "name": "prevPage",
+              "value": "={{ $('Increment Pagination Clockify').first().json.clk_page }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -55648,
+        19808
+      ],
+      "id": "9b81eaaf-64bb-4b98-a918-8e6b892d10fa",
+      "name": "Forward Prev Page Num"
+    },
+    {
+      "parameters": {
+        "jsCode": "const table = $(\"Split Out\").item.json.table;\n\nreturn items.map(item => {\n    if (table === 'vhs_ordens_servico') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.obs_interno_pedido, item.json.referencia_ordem]);\n    }\n    else if (table === 'vhs_pedidos') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.referencia_pedido, item.json.obs_pedido]);\n    }\n    else if (table === 'vhs_notas_fiscais') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.referencia_pedido, item.json.obs_interno_pedido]);\n    }\n    else if (table === 'vhs_centro_custos') {\n        item.json.ref_centros_custo = extractCostCenter(item.json.desc_centro_custos);\n    }\n    else if (table === 'clk_projetos') {\n        item.json.ref_centros_custo = extractCostCenter(item.json.name);\n          item.json.duration_minutes = convertTimeToMinutes(item.json.duration);\n    }\n    return item;\n});\n\nfunction extractCostCenterByCC(list) {\n    let ref = null;\n\n    for (const key in list) {\n        if (list[key] && typeof list[key] === 'string') {\n                let match = list[key].match(/CC[-\\s]?(\\d{1,10})/i);\n                if (match && match[1]) {\n                      ref = match[1];\n                    break;\n                }\n                if (!ref) {\n                    match = list[key].match(/\\b(\\d{6})\\b/);\n                    if (match && match[1]) {\n                        ref = match[1];\n                        break;\n                    }\n                }\n        }\n    }\n    return ref ? String(ref) : null;\n}\n\nfunction extractCostCenter(text) {\n    if (text === 'Vendas' || text === 'Administração') {\n        return text;\n    }\n    let ref = null;\n    const match6 = text && text.match(/\\b(\\d{6})\\b/);\n    if (match6) ref = match6[1];\n    if (!ref) {\n        const matchPrefix = text && text.match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n        if (matchPrefix) ref = matchPrefix[0];\n    }\n    if (!ref) {\n        const matchCC = text && text.match(/CC[-\\s]*(\\d+)/i);\n        if (matchCC) ref = matchCC[1];\n    }\n    if (!ref) {\n        const index = text && text.indexOf('CC-');\n        if (index !== -1) ref = text.substr(index + 3, 6);\n    }\n    if (!ref) {\n        let desc = text ? text.replace('/', '') : '';\n        const index = desc.indexOf('CC-');\n        if (index !== -1) {\n            const endIndex = desc.indexOf('/', index);\n            if (endIndex === -1) {\n                ref = desc.substr(index + 3, 6);\n            } else {\n                ref = desc.substring(index + 3, endIndex);\n            }\n        }\n    }\n    return ref ? String(ref) : null;\n};\n\n\nfunction convertTimeToMinutes(timeString) {\n  // Example: \"PT47H30M\"\n  const match = timeString && timeString.match(/^PT(\\d+)H(?:(\\d+)M)?(?:(\\d+)S)?$/);\n  if (match) {\n    const hours = parseInt(match[1], 10);\n    const minutes = match[2] ? parseInt(match[2], 10) : 0;\n    const seconds = match[3] ? parseInt(match[3], 10) : 0;\n    return hours * 60 + minutes + seconds / 60;\n  }\n  return 0;\n};"
+      },
+      "id": "a743fe41-62c8-470e-b002-7b70fcd59529",
+      "name": "Padronização e inclusão de campos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -55648,
+        19424
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -57088,
+        19792
+      ],
+      "id": "9f2307ac-d076-4e91-a314-1e8e5f75b9f5",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a286df00-a5f4-4b83-81b6-2e7981143d3b",
+              "leftValue": "={{ $json }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -55632,
+        19632
+      ],
+      "id": "819db685-8a57-4cb5-854c-d46d5676f475",
+      "name": "If1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Select System": {
+      "main": [
+        [
+          {
+            "node": "Buscar API VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar API Clockify",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Increment Pagination Clockify",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Configurar Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configurar Constantes": {
+      "main": [
+        [
+          {
+            "node": "⚙️ Configurar Endpoints",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ Configurar Endpoints": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar API Clockify Report": {
+      "main": [
+        [
+          {
+            "node": "Extrair Relatório da API ClockFY",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check if more pages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrair Relatório da API ClockFY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Relatório da API ClockFY": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar API VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Extrair Data da API VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrair Data da API VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar API Clockify": {
+      "main": [
+        [
+          {
+            "node": "Extrair Data da API ClockFY",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrair Data da API ClockFY",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI Iniciar Sessão": {
+      "main": [
+        [
+          {
+            "node": "GLPI extrair dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Data da API ClockFY": {
+      "main": [
+        [
+          {
+            "node": "Padronização e inclusão de campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Data da API VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Padronização e inclusão de campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPSERT no Banco": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Select System",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GLPI extrair dados": {
+      "main": [
+        [
+          {
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if more pages": {
+      "main": [
+        [
+          {
+            "node": "Forward Prev Page Num",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Pagination Clockify": {
+      "main": [
+        [
+          {
+            "node": "Buscar API Clockify Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Forward Prev Page Num": {
+      "main": [
+        [
+          {
+            "node": "Increment Pagination Clockify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Padronização e inclusão de campos": {
+      "main": [
+        [
+          {
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "96c90aac-043b-414e-a048-6b1db9165634",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "_ewM98crypcdZyn5w39uG",
+  "tags": []
+}

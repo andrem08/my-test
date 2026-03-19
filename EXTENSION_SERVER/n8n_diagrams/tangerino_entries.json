@@ -1,0 +1,713 @@
+{
+  "name": "Extensão - Tagerino",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "PUT",
+        "path": "795e87e0-f4c1-48c2-9d28-945ddb3eb5ef",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1856,
+        688
+      ],
+      "id": "bc9ae368-1a54-4684-b133-dcf01f403f64",
+      "name": "Webhook",
+      "webhookId": "795e87e0-f4c1-48c2-9d28-945ddb3eb5ef"
+    },
+    {
+      "parameters": {
+        "url": "https://employer.tangerino.com.br/employee/find-all",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json;charset=UTF-8"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Webhook').first().json.body.tangerino_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1600,
+        688
+      ],
+      "id": "1d151595-f8e4-4247-902a-10cd0508ffcd",
+      "name": "Buscar Funcionários"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1344,
+        688
+      ],
+      "id": "b71e878f-f283-45f2-a350-e8018ed8c0c6",
+      "name": "Separar Funcionários"
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $('Webhook').first().json.body.tangerino_token;\nconst START_LIMIT = new Date('2020-01-01');\n\nfunction getDateBefore(dateStr, days) {\n  const d = new Date(dateStr);\n  d.setUTCDate(d.getUTCDate() - days);\n  return d.toISOString().split('T')[0];\n}\n\nconst output = [];\n\nfor (const item of $input.all()) {\n  const empId = String(item.json.id);\n  let endDate = new Date().toISOString().split('T')[0];\n\n  while (new Date(endDate) > START_LIMIT) {\n    let startDate = getDateBefore(endDate, 1600);\n    if (new Date(startDate) < START_LIMIT) startDate = '2020-01-01';\n    output.push({ json: { empId, token, startDate, endDate } });\n    endDate = getDateBefore(startDate, 20);\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        688
+      ],
+      "id": "196db340-8a13-4644-b926-822d6ada6a69",
+      "name": "Preparar Intervalos de Datas"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://report.tangerino.com.br/async-reports",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json, text/plain, */*"
+            },
+            {
+              "name": "accept-language",
+              "value": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "tng-web-token",
+              "value": "={{ $json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ \n{\n\t\"filter\": {\n\t\t\"format\": \"CSV\",\n\t\t\"statusEmployee\": \"ADMITIDOS\",\n\t\t\"startDate\": $json.startDate,\n\t\t\"endDate\": $json.endDate,\n\t\t\"employeeId\": $json.empId\n\t},\n\t\"type\": \"TIME_SHEET\"\n}\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -848,
+        688
+      ],
+      "id": "ad394808-8ef0-49d1-9ba6-ef2d5fa195ae",
+      "name": "Buscar Relatório",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "bszXy1Nwtbb21R9h",
+          "name": "Tangerino Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "merge-fileurl",
+              "name": "fileUrl",
+              "value": "={{ $json.fileUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "merge-empid",
+              "name": "empId",
+              "value": "={{ $('Preparar Intervalos de Datas').item.json.empId }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        688
+      ],
+      "id": "f77feaa7-8c4d-4fd6-b430-34bc1bc47c45",
+      "name": "Mesclar empId"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-file-url",
+              "leftValue": "={{ $json.fileUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        688
+      ],
+      "id": "d79d9c20-7e4f-4bf0-a5fd-e5de309f83ba",
+      "name": "Tem fileUrl?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.fileUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -128,
+        688
+      ],
+      "id": "890e216d-72f5-4989-8a1f-f218929dee72",
+      "name": "Baixar CSV"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const crypto = require('crypto');\n\nconst csvText = $input.item.json.data || '';\nconst empId = $('Mesclar empId').item.json.empId || '';\n\nif (!csvText || typeof csvText !== 'string') return [];\n\nconst lines = csvText.split('\\n').filter(l => l.trim());\nif (lines.length < 2) return [];\n\nconst sep = lines[0].includes(';') ? ';' : ',';\nconst headers = lines[0].split(sep).map(h => h.trim().replace(/^\"|\"$/g, '').trim());\n\nfunction createHash(s1, s2) {\n  return crypto.createHash('sha256').update(s1 + s2).digest('hex');\n}\n\nfunction timeToMinutes(timeStr) {\n  if (!timeStr || typeof timeStr !== 'string') return 0;\n  const match = timeStr.match(/^(\\d{2}):(\\d{2})$/);\n  if (!match) return 0;\n  return Number(match[1]) * 60 + Number(match[2]);\n}\n\nfunction getDatetime(dateStr, timeStr) {\n  if (!timeStr || !timeStr.trim()) return null;\n  try {\n    const [day, month, year] = dateStr.split('/');\n    const [hours, minutes] = timeStr.trim().split(':');\n    return new Date(Number(year), Number(month) - 1, Number(day), Number(hours), Number(minutes)).toISOString();\n  } catch(e) { return null; }\n}\n\nfunction formatDay(dateStr) {\n  try {\n    const [day, month, year] = dateStr.split('/');\n    return `${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}`;\n  } catch(e) { return null; }\n}\n\nconst now = new Date().toISOString();\n\nconst records = lines.slice(1)\n  .map(line => {\n    const values = line.split(sep).map(v => v.trim().replace(/^\"|\"$/g, '').trim());\n    const obj = {};\n    headers.forEach((h, i) => { obj[h] = values[i] ?? ''; });\n    return obj;\n  })\n  .filter(reg => reg['03 - DIA / MÊS'])\n  .map(reg => {\n    const DAY_REF = reg['03 - DIA / MÊS'];\n    const horasTrabalhadas = reg['05 - TRABALHADAS'] || '';\n    const horasPrevistas = reg['07 - PREVISTAS'] || '';\n    return {\n      ID: createHash(DAY_REF, empId),\n      DAY_REF,\n      DAY: formatDay(DAY_REF),\n      EMPLOYER: reg['01 - NOME'] || '',\n      EMPLOYER_CPF: reg['02 - CPF'] || '',\n      worked_hours: horasTrabalhadas,\n      worked_hours_minutes: timeToMinutes(horasTrabalhadas),\n      work_expect: horasPrevistas,\n      work_expect_minutes: timeToMinutes(horasPrevistas),\n      TURN_01_START: getDatetime(DAY_REF, reg['09 - TURNO 1 - INICIO']),\n      TURN_01_END:   getDatetime(DAY_REF, reg['10 - TURNO 1 - FIM']),\n      TURN_02_START: getDatetime(DAY_REF, reg['11 - TURNO 2 - INICIO']),\n      TURN_02_END:   getDatetime(DAY_REF, reg['12 - TURNO 2 - FIM']),\n      TURN_03_START: getDatetime(DAY_REF, reg['13 - TURNO 3 - INICIO']),\n      TURN_03_END:   getDatetime(DAY_REF, reg['14 - TURNO 3 - FIM']),\n      TURN_04_START: getDatetime(DAY_REF, reg['15 - TURNO 4 - INICIO']),\n      TURN_04_END:   getDatetime(DAY_REF, reg['16 - TURNO 4 - FIM']),\n      created_at: now,\n      updated_at: now\n    };\n  });\n\nreturn records.map(r => ({ json: r }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        688
+      ],
+      "id": "674117e0-9d85-48f2-a0b8-6d6226f88fc3",
+      "name": "Parsear e Mapear CSV"
+    },
+    {
+      "parameters": {
+        "content": "## Entrada\nRecebe requisição PUT com `tangerino_token` no body.\nO token é reutilizado em todos os nós seguintes.",
+        "height": 146,
+        "width": 220
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        672
+      ],
+      "id": "46a7ace8-3d23-4c1e-9765-41312c5b5875",
+      "name": "Nota - Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Funcionários\nFaz GET em `/employee/find-all` e separa cada funcionário em um item individual via Split Out.",
+        "height": 130,
+        "width": 268
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1664,
+        496
+      ],
+      "id": "e548f9d5-4594-4026-9371-472fe23bf956",
+      "name": "Nota - Funcionários"
+    },
+    {
+      "parameters": {
+        "content": "## Intervalos de Datas\nPara cada funcionário gera lotes de até 1600 dias retroativos desde hoje até 2020-01-01 (com gap de 20 dias entre chunks).\nSaída: `{ empId, token, startDate, endDate }`",
+        "height": 176,
+        "width": 282
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        848
+      ],
+      "id": "a8392cca-dd28-4855-8a9d-5d0071f7bfb4",
+      "name": "Nota - Intervalos"
+    },
+    {
+      "parameters": {
+        "content": "## Buscar Relatório\nPOST em `/async-reports` para cada par (funcionário × intervalo).\nRetorna `{ fileUrl }` quando o relatório está pronto.",
+        "height": 140,
+        "width": 283
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        496
+      ],
+      "id": "84e201f4-0e64-4952-8334-e0fb0e903b21",
+      "name": "Nota - Relatório"
+    },
+    {
+      "parameters": {
+        "content": "## Mesclar empId\nO HTTP Request sobrescreve o item, perdendo o `empId`.\nEste nó recupera o `empId` do nó anterior e o mantém junto com o `fileUrl`.",
+        "height": 150,
+        "width": 279
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        848
+      ],
+      "id": "ddf36918-2922-4fd5-9c52-6d7d5ca1f6aa",
+      "name": "Nota - Mesclar"
+    },
+    {
+      "parameters": {
+        "content": "## Filtro\nDescarta itens sem `fileUrl` (relatório vazio ou intervalo sem registros).",
+        "height": 120,
+        "width": 216
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        544
+      ],
+      "id": "77801881-4604-4e62-a6d7-ae26dddd9370",
+      "name": "Nota - Filtro"
+    },
+    {
+      "parameters": {
+        "content": "## Baixar CSV\nGET no `fileUrl`. Retorna o conteúdo bruto como texto em `$json.data`.",
+        "height": 120,
+        "width": 200
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        832
+      ],
+      "id": "090ff59b-8fb8-4283-86cc-2124f5c19662",
+      "name": "Nota - CSV"
+    },
+    {
+      "parameters": {
+        "content": "## Parsear CSV\nDetecta separador (`;` ou `,`), extrai headers e mapeia cada linha para o modelo do banco:\n- `ID` = SHA256(DAY_REF + empId)\n- `DAY` = yyyy-mm-dd\n- horas e minutos trabalhados/previstos\n- 4 turnos (start/end)",
+        "height": 254,
+        "width": 235
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        416
+      ],
+      "id": "b3b98bf6-03c0-49d5-bbac-20ae1465e359",
+      "name": "Nota - Parsear"
+    },
+    {
+      "parameters": {
+        "content": "## Inserir no Banco\nINSERT na tabela `raw_data.tan_time_entries`.\nConflito por `id` → **ignora** (não sobrescreve registros existentes).",
+        "height": 156,
+        "width": 273
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        656
+      ],
+      "id": "c0d7cf24-678b-4f52-bebc-046d3e6a0fc8",
+      "name": "Nota - Banco"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "raw_data",
+          "mode": "list",
+          "cachedResultName": "raw_data"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tan_time_entries",
+          "mode": "list",
+          "cachedResultName": "tan_time_entries"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "worked_hours": "={{ $json.worked_hours }}",
+            "worked_hours_minutes": "={{ $json.worked_hours_minutes }}",
+            "work_expect": "={{ $json.work_expect }}",
+            "work_expect_minutes": "={{ $json.work_expect_minutes }}",
+            "created_at": "={{ $json.created_at }}",
+            "updated_at": "={{ $json.updated_at }}",
+            "employer_cpf": "={{ $json.employer_cpf }}",
+            "employer": "={{ $json.employer }}",
+            "day": "={{ $json.employer_cpf }}",
+            "id": "={{ $json.id }}",
+            "day_ref": "={{ $json.day_ref }}",
+            "turn_01_end": "={{ $json.turn_01_end }}",
+            "turn_01_start": "={{ $json.turn_01_start }}",
+            "turn_02_start": "={{ $json.turn_02_start }}",
+            "turn_02_end": "={{ $json.turn_02_end }}",
+            "turn_04_end": "={{ $json.turn_04_end }}",
+            "turn_04_start": "={{ $json.turn_04_start }}",
+            "turn_03_end": "={{ $json.turn_03_end }}",
+            "turn_03_start": "={{ $json.turn_03_start }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": true,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "day_ref",
+              "displayName": "day_ref",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "day",
+              "displayName": "day",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "employer",
+              "displayName": "employer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "employer_cpf",
+              "displayName": "employer_cpf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "worked_hours",
+              "displayName": "worked_hours",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "worked_hours_minutes",
+              "displayName": "worked_hours_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "work_expect",
+              "displayName": "work_expect",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "work_expect_minutes",
+              "displayName": "work_expect_minutes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "turn_01_start",
+              "displayName": "turn_01_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_01_end",
+              "displayName": "turn_01_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_02_start",
+              "displayName": "turn_02_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_02_end",
+              "displayName": "turn_02_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_03_start",
+              "displayName": "turn_03_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_03_end",
+              "displayName": "turn_03_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_04_start",
+              "displayName": "turn_04_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "turn_04_end",
+              "displayName": "turn_04_end",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "time",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        352,
+        688
+      ],
+      "id": "0edbd318-f3fe-44c1-95ce-8b6aadcaf5c3",
+      "name": "Inserir no Banco",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Buscar Funcionários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Funcionários": {
+      "main": [
+        [
+          {
+            "node": "Separar Funcionários",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar Funcionários": {
+      "main": [
+        [
+          {
+            "node": "Preparar Intervalos de Datas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Intervalos de Datas": {
+      "main": [
+        [
+          {
+            "node": "Buscar Relatório",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Relatório": {
+      "main": [
+        [
+          {
+            "node": "Mesclar empId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mesclar empId": {
+      "main": [
+        [
+          {
+            "node": "Tem fileUrl?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem fileUrl?": {
+      "main": [
+        [
+          {
+            "node": "Baixar CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar CSV": {
+      "main": [
+        [
+          {
+            "node": "Parsear e Mapear CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsear e Mapear CSV": {
+      "main": [
+        [
+          {
+            "node": "Inserir no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "46b5cfee-224f-44bb-9c1a-8246ad9af5c3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "Eu2kZuWy_VxnH8_e3jXdI",
+  "tags": []
+}

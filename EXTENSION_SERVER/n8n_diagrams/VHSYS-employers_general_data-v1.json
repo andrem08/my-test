@@ -1,0 +1,147 @@
+{
+  "name": "VHSYS-employers_general_data-v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "employers-general-trigger-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate and extract employers_general_data payload\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data || !body.data.source || !body.data.source.itens) {\n  throw new Error('Missing required structure: data.source.itens');\n}\n\nconst itens = body.data.source.itens;\n\nif (!Array.isArray(itens) || itens.length === 0) {\n  throw new Error('itens must be a non-empty array');\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_general_data_received',\n  count: itens.length\n}));\n\nreturn { itens };"
+      },
+      "id": "employers-general-validate-002",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Split itens into individual records for batch processing\nconst data = $input.first().json;\nconst itens = data.itens;\n\nreturn itens.map(item => ({\n  record: item\n}));"
+      },
+      "id": "employers-general-split-003",
+      "name": "Split Records",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Update employer status and position\nUPDATE \"employersData\"\nSET \n  \"status_funcionario\" = '{{ $json.record.Status }}',\n  \"nome_cargo_funcionario\" = '{{ $json.record.Cargo }}',\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"matricula_funcionario\" = '{{ $json.record.Matricula }}'\n  AND (\n    \"status_funcionario\" IS DISTINCT FROM '{{ $json.record.Status }}'\n    OR \"nome_cargo_funcionario\" IS DISTINCT FROM '{{ $json.record.Cargo }}'\n  )\nRETURNING \"matricula_funcionario\", \"nome_funcionario\", \"status_funcionario\", \"nome_cargo_funcionario\";",
+        "options": {}
+      },
+      "id": "employers-general-update-004",
+      "name": "Update Status and Position",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [900, 300],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Delete employers that exist in DB but not in API\nDELETE FROM \"employersData\"\nWHERE \"matricula_funcionario\" NOT IN (\n  SELECT DISTINCT \"matricula_funcionario\"\n  FROM \"employersData\"\n  WHERE \"matricula_funcionario\" = ANY(ARRAY[{{ $json.matriculas_list }}]::text[])\n)\nRETURNING \"matricula_funcionario\", \"nome_funcionario\";",
+        "options": {}
+      },
+      "id": "employers-general-cleanup-005",
+      "name": "Cleanup Obsolete Records",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [1120, 240],
+      "credentials": {
+        "postgres": {
+          "id": "vhsys-postgres-prod",
+          "name": "vhsys-postgres-prod"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build success response\nconst allItems = $input.all();\nconst updatedCount = allItems.filter(item => item.json.matricula_funcionario).length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'employers_general_data_completed',\n  updated_count: updatedCount\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    status: 'success',\n    message: 'Employers general data processed successfully.'\n  }\n};"
+      },
+      "id": "employers-general-response-006",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Split Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Records": {
+      "main": [
+        [
+          {
+            "node": "Update Status and Position",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status and Position": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "VHSYS",
+      "id": "vhsys-tag"
+    },
+    {
+      "name": "EMPLOYERS",
+      "id": "employers-tag"
+    },
+    {
+      "name": "Phase-4",
+      "id": "phase4-tag"
+    }
+  ],
+  "triggerCount": 0,
+  "updatedAt": "2026-03-18T05:30:00.000Z",
+  "versionId": "employers-general-v1-001"
+}
