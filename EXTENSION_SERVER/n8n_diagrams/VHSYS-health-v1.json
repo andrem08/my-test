@@ -11,7 +11,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Health check - retorna objeto para router\n// Compatível com extensão Chrome VHSYS\n\nconst response = \"Extension report manager\";\n\nreturn {\n  statusCode: 200,\n  body: response\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: health\n// Rota   : GET /health\n// Fase 2 : Núcleo de status e controle\n// ─────────────────────────────────────────────\n// Sem efeitos no banco. Retorna liveness do n8n.\n\nconst now = new Date().toISOString();\n\nconsole.log(JSON.stringify({\n  timestamp: now,\n  route: 'health',\n  method: 'GET',\n  event: 'health_check',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    status: 'ok',\n    service: 'VHSYS Extension Router',\n    version: 'v1',\n    timestamp: now\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -37,20 +37,14 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "health-v1-001",
+  "versionId": "health-v1-002",
   "meta": {
     "instanceId": "vhsys-health-production"
   },
   "id": "VHSYS-health-v1",
   "tags": [
-    {
-      "name": "vhsys"
-    },
-    {
-      "name": "phase2"
-    },
-    {
-      "name": "core"
-    }
+    { "name": "vhsys" },
+    { "name": "phase2" },
+    { "name": "core" }
   ]
 }

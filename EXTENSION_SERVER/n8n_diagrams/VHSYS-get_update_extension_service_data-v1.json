@@ -3,16 +3,19 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "start-get-status-001",
+      "id": "35bddab4-6580-42cc-896f-9004f258feb8",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [
+        -448,
+        96
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Atualiza LAST_UPDATE e calcula SHOULD_RUN\n-- Compatível 100% com extensão Chrome\n\nWITH tz AS (\n  SELECT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp AS brazil_now\n),\nupdated AS (\n  UPDATE update_extension_services u\n  SET \"LAST_UPDATE\" = tz.brazil_now\n  FROM tz\n  RETURNING u.*\n)\nSELECT\n  \"ACTION\",\n  \"RUN_AFTER\",\n  \"RUN_STATUS\",\n  \"PROGRESS_VALUE\",\n  \"LAST_RUN\",\n  \"LAST_UPDATE\",\n  CASE\n    WHEN \"LAST_RUN\" IS NULL THEN false\n    WHEN \"RUN_STATUS\" = 0 THEN false\n    ELSE ((SELECT brazil_now FROM tz) - \"LAST_RUN\") > make_interval(mins => COALESCE(\"RUN_AFTER\", 0))\n  END AS \"SHOULD_RUN\"\nFROM updated\nORDER BY \"ACTION\";",
+        "query": "SELECT\n  \"ACTION\",\n  \"RUN_AFTER\",\n  \"RUN_STATUS\",\n  \"PROGRESS_VALUE\",\n  \"LAST_RUN\",\n  \"LAST_UPDATE\",\n  CASE\n    WHEN \"LAST_RUN\" IS NULL         THEN false\n    WHEN \"RUN_STATUS\" = 0           THEN false\n    ELSE\n      EXTRACT(EPOCH FROM (\n        (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n        - \"LAST_RUN\"\n      )) / 60 > COALESCE(\"RUN_AFTER\", 720)\n  END AS \"SHOULD_RUN\"\nFROM auxiliary.update_extension_services\nORDER BY \"ACTION\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -20,34 +23,105 @@
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
-      "position": [460, 300],
-      "id": "postgres-get-status",
-      "name": "Refresh and Read Extension Services"
+      "position": [
+        -224,
+        96
+      ],
+      "id": "35082128-6989-44fe-8806-7f0d6abb2a55",
+      "name": "SELECT Extension Services",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// CRÍTICO: Retorna ARRAY DIRETO (não objeto encapsulado)\n// Compatibilidade com extensão Chrome VHSYS\n\nconst allRecords = $input.all();\nconst actions = allRecords.map(item => item.json);\n\n// Log estruturado\nconst logEntry = {\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  method: 'GET',\n  total_actions: actions.length,\n  success: true\n};\n\nconsole.log('[VHSYS] get_status:', JSON.stringify(logEntry));\n\n// IMPORTANTE: Retornar como array no body\nreturn {\n  statusCode: 201,\n  body: actions\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// CRÍTICO: Retorna ARRAY DIRETO — NÃO encapsulado\n// A extensão Chrome espera: [...] não { data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\nconst actions = allRecords.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'status_read',\n  total_actions: actions.length,\n  level: 'info'\n}));\n\n// statusCode 201 preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: actions\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [680, 300],
-      "id": "code-format-array",
+      "position": [
+        176,
+        -16
+      ],
+      "id": "9d089808-2e1b-4a86-a61d-454db1827d3b",
       "name": "Format as Direct Array"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro de leitura do banco ──\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'db_read_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: 'Could not read extension services status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        176
+      ],
+      "id": "b88f3756-17f7-424a-bb00-7e38f281ffb6",
+      "name": "Build DB Error Response"
     }
   ],
+  "pinData": {
+    "When called by another workflow": [
+      {
+        "json": {
+          "route": "get_update_extension_service_data",
+          "method": "GET",
+          "body": {},
+          "query": {
+            "route": "get_update_extension_service_data"
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19u8XipXWxnQv4mhhRiWX2%2FTLrtS7b43HRuHAftIiocEbNaYsGMFwwu7BgD5knEGMR4gYrKzAwe9w%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19H9wGqLFzGbv%2FsghvJYWSLZUZ9ZsD%2BKfSocRA%2FnMbfAI%2FfoTJxRFleEt%2F1AT1%2BuRVv69GRxWXBLW1NNSP208IVf%2BIJoAt%2F4iV2%2FljiCKOwuu3nPoJcWTMd%2BI9Tlq4Zv1BNsc8t7xdV7ayq3fXgjusolvSfMIqSJBI%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19FmsqfmCF%2F7GoqOUnZ0ax9yxGrvODbuH0hEeuPFkZyD2dDjFt4Nbo1cUnPv8XxQ3lufJci9FWQAo4N%2BFFQt8q95H06AV6lu%2BRWZRk9FpMNeNmaXE8VBrgPjOwTghasdHZ2qNwqp%2FK9idmBA8Kay3ZQc32aewLSwZo%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2Bd%2FfToVCj7pJt7fzcNIrdsVAz6Bx3MwpjFFj2xUwNzY9PYP0NjjQ4L3UNMtHg31bLfpbyRoKn1LMtOTL1UDPpXYQCZ%2BhEvrIS4Cx1qLL4%2FBGD2847OFImNg8uZOWiq%2FphMlPuFFe7B7g%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774035024837%2C%22019d0c73-9a0e-7017-883b-a61d08bc4443%22%2C1774030395916%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "none",
+              "sec-fetch-storage-access": "active",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "fda5ae5afd08",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "get_update_extension_service_data"
+            },
+            "body": {},
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "When called by another workflow": {
       "main": [
         [
           {
-            "node": "Refresh and Read Extension Services",
+            "node": "SELECT Extension Services",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Refresh and Read Extension Services": {
+    "SELECT Extension Services": {
       "main": [
         [
           {
@@ -55,28 +129,28 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "versionId": "get-status-v1-001",
+  "versionId": "f712b4e4-9814-4979-bed4-5c80f37ebc0c",
   "meta": {
-    "instanceId": "vhsys-get-status-production"
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
-  "id": "VHSYS-get-status-v1",
-  "tags": [
-    {
-      "name": "vhsys"
-    },
-    {
-      "name": "phase2"
-    },
-    {
-      "name": "core"
-    }
-  ]
+  "id": "ul6IjUpAqixCTDc3",
+  "tags": []
 }

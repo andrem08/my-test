@@ -3,69 +3,109 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "cc-report-start-001",
+      "id": "2fe4c68b-a9aa-4083-8a6d-74e2696a914d",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [
+        -2576,
+        528
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Validate input payload\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data || !body.type || !body.cc_id) {\n  throw new Error('Missing required fields: data, type, cc_id');\n}\n\nif (body.type !== 'entrada' && body.type !== 'saida') {\n  throw new Error('Invalid type: must be \"entrada\" or \"saida\"');\n}\n\n// Structured logging\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_report_received',\n  cc_id: body.cc_id,\n  type: body.type,\n  has_data: !!body.data\n}));\n\nreturn body;"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: cc_report\n// Rota   : POST /cc_report\n// Fase 3 : Fluxo CC_REPORT completo\n// ─────────────────────────────────────────────\n// Input  : { data: {...}, type: 'entrada'|'saida', cc_id: string }\n// Output : { message: 'GET A NEW CC_REPORT BY CC id' } HTTP 201\n// Banco  : INSERT/DELETE relatorio_cc + UPDATE update_cc_report_status\n// Chave  : ID = SHA-256(INDEX-CC_ID-NOME_DESPESA-VENCIMENTO-...)\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data || !body.type || !body.cc_id) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required fields: data, type, cc_id' }\n  };\n}\n\nif (body.type !== 'entrada' && body.type !== 'saida') {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Invalid type: must be \"entrada\" or \"saida\"' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'cc_report_received',\n  cc_id: body.cc_id,\n  type: body.type,\n  level: 'info'\n}));\n\nreturn { _valid: true, ...body };"
       },
-      "id": "cc-report-validate-002",
+      "id": "daf42e6c-0f50-4cd4-8974-e679cc69e566",
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [460, 300]
+      "position": [
+        -2352,
+        528
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Decode HTML entities in the payload\nconst data = $input.first().json;\n\nfunction decodeHtmlEntities(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g, '&')\n      .replace(/&lt;/g, '<')\n      .replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g, \"'\")\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (typeof obj === 'object' && obj !== null) {\n    const decoded = Array.isArray(obj) ? [] : {};\n    for (const key in obj) {\n      decoded[key] = decodeHtmlEntities(obj[key]);\n    }\n    return decoded;\n  }\n  return obj;\n}\n\nconst decodedData = decodeHtmlEntities(data);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_report_decoded',\n  cc_id: decodedData.cc_id\n}));\n\nreturn decodedData;"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "cc-report-decode-003",
-      "name": "Decode HTML Entities",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [680, 300]
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2128,
+        528
+      ],
+      "id": "8e9112a3-e7fe-4c91-a090-b997e8833821",
+      "name": "Is Valid?"
     },
     {
       "parameters": {
-        "jsCode": "// Extract and transform CC report data\nconst payload = $input.first().json;\nconst ccData = payload.data;\nconst type = payload.type;\nconst ccIdReference = payload.cc_id;\n\n// Check if page is valid\nif (!ccData.source || !ccData.source.subItens) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    event: 'cc_report_invalid_page',\n    cc_id: ccIdReference,\n    level: 'warn'\n  }));\n  return {\n    cc_id: ccIdReference,\n    type: type,\n    records: [],\n    valid: false\n  };\n}\n\nconst source = ccData.source;\nconst ccLabel = source.itens[0].CentroCustos;\nconst subItens = source.subItens.ID1 || [];\n\n// Group and flatten records\nfunction groupEqualDicts(arr) {\n  const grouped = [];\n  let index = 0;\n  while (arr.length > 0) {\n    const current = arr.shift();\n    const group = [{ index, ...current }];\n    for (let i = arr.length - 1; i >= 0; i--) {\n      if (JSON.stringify(current) === JSON.stringify(arr[i])) {\n        group.push({ index, ...arr[i] });\n        arr.splice(i, 1);\n      }\n    }\n    grouped.push(group);\n    index++;\n  }\n  return grouped.flat();\n}\n\nconst groupedRegs = groupEqualDicts([...subItens]);\n\n// Generate ID tokens\nfunction generateIdToken(seed) {\n  const crypto = require('crypto');\n  return crypto.createHash('sha256').update(seed).digest('hex');\n}\n\nconst formattedRecords = groupedRegs.map(subItem => {\n  const INDEX = subItem.index;\n  const VENCIMENTO = subItem.Vencimento;\n  const FORNECEDOR = subItem.Fornecedor;\n  const NOME_DESPESA = subItem.NomeDespesa;\n  const SITUACAO = subItem.Situacao;\n  const VALOR = subItem.Valor;\n  const CATEGORIA = subItem.Categoria;\n  \n  const SEED = `${INDEX}-${ccIdReference}-${NOME_DESPESA}-${VENCIMENTO}-${FORNECEDOR}-${VALOR}-${SITUACAO}-${type}-${CATEGORIA}`;\n  const TOKEN = generateIdToken(SEED);\n  \n  return {\n    INDEX,\n    CC_LABEL: ccLabel,\n    CC_ID: ccIdReference,\n    VENCIMENTO,\n    FORNECEDOR,\n    NOME_DESPESA,\n    SITUACAO,\n    CATEGORIA,\n    VALOR,\n    ID_SEED: SEED,\n    ID: TOKEN,\n    TYPE: type\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_report_transformed',\n  cc_id: ccIdReference,\n  type: type,\n  records_count: formattedRecords.length\n}));\n\nreturn {\n  cc_id: ccIdReference,\n  type: type,\n  cc_label: ccLabel,\n  records: formattedRecords,\n  valid: true\n};"
+        "jsCode": "// ── Decode HTML entities + Transform ──\n// Combina decode + transform em 1 nó para evitar problema\n// de passar contexto entre nós separados.\n\nconst payload = $input.first().json;\n\n// Decode HTML entities recursivamente\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\nconst decoded   = decodeHtml(payload);\nconst ccData    = decoded.data;\nconst type      = decoded.type;\nconst ccId      = decoded.cc_id;\n\n// Verificar se a página tem dados válidos\nif (!ccData || !ccData.source || !ccData.source.subItens) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'cc_report_page_invalid',\n    cc_id: ccId,\n    level: 'warn'\n  }));\n  return { cc_id: ccId, type, records: [], valid: false };\n}\n\nconst source  = ccData.source;\nconst ccLabel = source.itens && source.itens[0] ? source.itens[0].CentroCustos : '';\nconst subItens = (source.subItens && source.subItens.ID1) ? [...source.subItens.ID1] : [];\n\n// Agrupar registros iguais e flattar com índice\n// (replica lógica de group_equal_dicts do Flask)\nconst grouped = [];\nlet index = 0;\nconst remaining = [...subItens];\nwhile (remaining.length > 0) {\n  const current = remaining.shift();\n  const group = [{ _index: index, ...current }];\n  for (let i = remaining.length - 1; i >= 0; i--) {\n    if (JSON.stringify(current) === JSON.stringify(remaining[i])) {\n      group.push({ _index: index, ...remaining[i] });\n      remaining.splice(i, 1);\n    }\n  }\n  group.forEach(item => grouped.push(item));\n  index++;\n}\n\n// Gerar tokens SHA-256\n// SEED exata: \"{INDEX}-{CC_ID}-{NOME_DESPESA}-{VENCIMENTO}-{FORNECEDOR}-{VALOR}-{SITUACAO}-{TYPE}-{CATEGORIA}\"\nconst crypto = require('crypto');\n\nconst records = grouped.map(item => {\n  const IDX        = item._index;\n  const VENCIMENTO = item.Vencimento  || '';\n  const FORNECEDOR = item.Fornecedor  || '';\n  const NOME       = item.NomeDespesa || '';\n  const SITUACAO   = item.Situacao    || '';\n  const VALOR      = item.Valor       || '';\n  const CATEGORIA  = item.Categoria   || '';\n\n  const SEED  = `${IDX}-${ccId}-${NOME}-${VENCIMENTO}-${FORNECEDOR}-${VALOR}-${SITUACAO}-${type}-${CATEGORIA}`;\n  const TOKEN = crypto.createHash('sha256').update(SEED).digest('hex');\n\n  return {\n    ID:          TOKEN,\n    ID_SEED:     SEED,\n    CC_LABEL:    ccLabel,\n    CC_ID:       ccId,\n    VENCIMENTO,\n    FORNECEDOR,\n    NOME_DESPESA: NOME,\n    SITUACAO,\n    CATEGORIA,\n    VALOR,\n    TYPE:        type\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'cc_report_transformed',\n  cc_id: ccId,\n  type,\n  records_count: records.length,\n  level: 'info'\n}));\n\nreturn { cc_id: ccId, type, cc_label: ccLabel, records, valid: true };"
       },
-      "id": "cc-report-transform-004",
-      "name": "Transform Data",
+      "id": "038df881-c7e6-4635-acc0-57cb5682a6ff",
+      "name": "Decode + Transform",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 300]
+      "position": [
+        -1904,
+        448
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Get existing records for this CC_ID and TYPE\nSELECT \"ID\"\nFROM \"Relatorio_CC\"\nWHERE \"ID_CC\" = '{{ $json.cc_id }}'\n  AND \"TYPE\" = '{{ $json.type }}';",
-        "options": {}
+        "query": "SELECT \"ID\"\nFROM auxiliary.relatorio_cc\nWHERE \"ID_CC\" = $1\n  AND \"TYPE\"  = $2;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
       },
-      "id": "cc-report-existing-005",
-      "name": "Get Existing Records",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [1120, 300],
+      "typeVersion": 2.3,
+      "position": [
+        -1680,
+        448
+      ],
+      "id": "32dd2d2b-5b91-4591-982f-c1c0bc9829df",
+      "name": "Get Existing IDs",
       "credentials": {
         "postgres": {
-          "id": "vhsys-postgres-prod",
-          "name": "vhsys-postgres-prod"
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Compare and calculate diff\nconst current = $input.first().json;\nconst existing = $input.last().json;\n\n// Extract IDs\nconst extensionIds = new Set(current.records.map(r => r.ID));\nconst dbIds = new Set(Array.isArray(existing) ? existing.map(r => r.ID) : []);\n\n// Calculate differences\nconst toInsert = current.records.filter(r => !dbIds.has(r.ID));\nconst toDelete = Array.from(dbIds).filter(id => !extensionIds.has(id));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_report_diff_calculated',\n  cc_id: current.cc_id,\n  type: current.type,\n  to_insert: toInsert.length,\n  to_delete: toDelete.length\n}));\n\nreturn {\n  cc_id: current.cc_id,\n  type: current.type,\n  cc_label: current.cc_label,\n  to_insert: toInsert,\n  to_delete: toDelete\n};"
+        "jsCode": "// ── Calcular diff: o que inserir e o que deletar ──\n// Bug E corrigido: não usar $input.last().\n// O nó Postgres devolve os registros do banco como items.\n// Os dados do Transform chegam via o mesmo fluxo linear:\n// cada item do Postgres tem o campo json com os IDs do banco.\n// Para recuperar o contexto do Transform usamos $('Decode + Transform').first()\n\nconst transformCtx = $('Decode + Transform').first().json;\nconst cc_id    = transformCtx.cc_id;\nconst type     = transformCtx.type;\nconst cc_label = transformCtx.cc_label;\nconst records  = transformCtx.records;\nconst valid    = transformCtx.valid;\n\n// Se página inválida, pular insert/delete e só atualizar status\nif (!valid || records.length === 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'cc_report_empty_page',\n    cc_id,\n    type,\n    level: 'warn'\n  }));\n  return { cc_id, type, to_insert: [], to_delete: [] };\n}\n\n// IDs da API\nconst apiIds = new Set(records.map(r => r.ID));\n\n// IDs do banco (podem vir como array de items ou vazio)\nconst dbItems  = $input.all();\nconst dbIds    = new Set(\n  dbItems\n    .map(i => i.json.ID)\n    .filter(id => id !== undefined && id !== null)\n);\n\nconst toInsert = records.filter(r => !dbIds.has(r.ID));\nconst toDelete = [...dbIds].filter(id => !apiIds.has(id));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'cc_report_diff',\n  cc_id,\n  type,\n  to_insert: toInsert.length,\n  to_delete: toDelete.length,\n  level: 'info'\n}));\n\nreturn { cc_id, type, cc_label, to_insert: toInsert, to_delete: toDelete };"
       },
-      "id": "cc-report-diff-006",
+      "id": "ac4b3606-e29b-4513-98e1-32045119796b",
       "name": "Calculate Diff",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1340, 300]
+      "position": [
+        -1456,
+        384
+      ]
     },
     {
       "parameters": {
@@ -78,7 +118,7 @@
           "conditions": [
             {
               "leftValue": "={{ $json.to_insert.length }}",
-              "rightValue": "0",
+              "rightValue": 0,
               "operator": {
                 "type": "number",
                 "operation": "gt"
@@ -89,39 +129,52 @@
         },
         "options": {}
       },
-      "id": "cc-report-has-insert-007",
+      "id": "6a81f3a2-86b3-4ba9-9536-c6747d1e87be",
       "name": "Has Inserts?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [1560, 300]
+      "typeVersion": 2.3,
+      "position": [
+        -1232,
+        208
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Split records for batch insert\nconst data = $input.first().json;\nconst records = data.to_insert;\n\nreturn records.map(record => ({\n  ...data,\n  record: record\n}));"
+        "jsCode": "// Expande cada record para um item separado, mantendo contexto cc_id/type\nconst ctx = $input.first().json;\nreturn ctx.to_insert.map(record => ({\n  cc_id:    ctx.cc_id,\n  type:     ctx.type,\n  cc_label: ctx.cc_label,\n  record\n}));"
       },
-      "id": "cc-report-split-008",
-      "name": "Split Records",
+      "id": "ab51219e-1ad9-4bc0-87d6-a228e2d8b369",
+      "name": "Split for Insert",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1780, 220]
+      "position": [
+        -1008,
+        208
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Insert new CC report record\nINSERT INTO \"Relatorio_CC\" (\n  \"ID\",\n  \"ID_SEED\",\n  \"ID_CC\",\n  \"CC\",\n  \"CC_LABEL\",\n  \"VENCIMENTO\",\n  \"FORNECEDOR\",\n  \"NOME_DESPESA\",\n  \"SITUACAO\",\n  \"DATA_PAGAMENTO\",\n  \"CATEGORIA\",\n  \"VALOR\",\n  \"TYPE\",\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $json.record.ID }}',\n  '{{ $json.record.ID_SEED }}',\n  '{{ $json.record.CC_ID }}',\n  'NO-SET',\n  '{{ $json.record.CC_LABEL }}',\n  to_timestamp({{ $json.record.VENCIMENTO }}),\n  '{{ $json.record.FORNECEDOR }}',\n  '{{ $json.record.NOME_DESPESA }}',\n  '{{ $json.record.SITUACAO }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '{{ $json.record.CATEGORIA }}',\n  {{ $json.record.VALOR }},\n  '{{ $json.record.TYPE }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n);",
-        "options": {}
+        "query": "INSERT INTO auxiliary.relatorio_cc (\n  \"ID\", \"ID_SEED\", \"ID_CC\", \"CC\", \"CC_LABEL\",\n  \"VENCIMENTO\", \"FORNECEDOR\", \"NOME_DESPESA\",\n  \"SITUACAO\", \"DATA_PAGAMENTO\", \"CATEGORIA\",\n  \"VALOR\", \"TYPE\", created_at, updated_at\n) VALUES (\n  $1, $2, $3,\n  'NO-SET',\n  $4,\n  to_timestamp($5::bigint),\n  $6, $7, $8, $9, $10,\n  $11::numeric,\n  $12,\n  NOW() AT TIME ZONE 'America/Sao_Paulo',\n  NOW() AT TIME ZONE 'America/Sao_Paulo'\n)\nON CONFLICT (\"ID\") DO NOTHING;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
       },
-      "id": "cc-report-insert-009",
-      "name": "Insert Record",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [2000, 220],
+      "typeVersion": 2.3,
+      "position": [
+        -784,
+        208
+      ],
+      "id": "f6323b83-ef3a-4fff-b273-f25487cdc2d5",
+      "name": "Insert Record",
       "credentials": {
         "postgres": {
-          "id": "vhsys-postgres-prod",
-          "name": "vhsys-postgres-prod"
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -134,7 +187,7 @@
           "conditions": [
             {
               "leftValue": "={{ $json.to_delete.length }}",
-              "rightValue": "0",
+              "rightValue": 0,
               "operator": {
                 "type": "number",
                 "operation": "gt"
@@ -145,69 +198,119 @@
         },
         "options": {}
       },
-      "id": "cc-report-has-delete-010",
+      "id": "9246fcfc-62b2-4b28-9b4b-ef99e105177e",
       "name": "Has Deletes?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [1780, 380]
+      "typeVersion": 2.3,
+      "position": [
+        -1232,
+        592
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Split IDs for batch delete\nconst data = $input.first().json;\nconst ids = data.to_delete;\n\nreturn ids.map(id => ({\n  cc_id: data.cc_id,\n  type: data.type,\n  id_to_delete: id\n}));"
+        "jsCode": "// Expande cada ID a deletar para um item separado\nconst ctx = $input.first().json;\nreturn ctx.to_delete.map(id => ({\n  cc_id: ctx.cc_id,\n  type:  ctx.type,\n  id_to_delete: id\n}));"
       },
-      "id": "cc-report-split-delete-011",
-      "name": "Split Delete IDs",
+      "id": "d4371016-4b78-44fe-99fc-1bb07977abaf",
+      "name": "Split for Delete",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2000, 380]
+      "position": [
+        -1008,
+        592
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Delete record by ID\nDELETE FROM \"Relatorio_CC\"\nWHERE \"ID\" = '{{ $json.id_to_delete }}';",
-        "options": {}
+        "query": "DELETE FROM auxiliary.relatorio_cc\nWHERE \"ID\" = $1;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
       },
-      "id": "cc-report-delete-012",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -784,
+        592
+      ],
+      "id": "775c9b27-980c-4640-8a5d-05946defcbc4",
       "name": "Delete Record",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [2220, 380],
       "credentials": {
         "postgres": {
-          "id": "vhsys-postgres-prod",
-          "name": "vhsys-postgres-prod"
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Preparar dados para Update Status ──\n// Bug G/H corrigido: recuperar cc_id e type do contexto\n// do Calculate Diff independentemente do caminho percorrido.\nconst ctx = $('Calculate Diff').first().json;\nreturn {\n  cc_id: ctx.cc_id,\n  type:  ctx.type\n};"
+      },
+      "id": "1fcf233e-6ec5-479e-827a-66d8ab712969",
+      "name": "Prepare Status Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1232,
+        400
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Update CC report status\nUPDATE update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $json.cc_id }}';",
-        "options": {}
+        "query": "UPDATE auxiliary.update_cc_report_status\nSET\n  entries_runned = CASE WHEN $1 = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN $1 = 'saida'   THEN 1 ELSE outputs_runned END,\n  updated_at     = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = $2;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
       },
-      "id": "cc-report-update-status-013",
-      "name": "Update Status",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [2220, 220],
+      "typeVersion": 2.3,
+      "position": [
+        -1008,
+        400
+      ],
+      "id": "c37e1706-c049-466b-83ba-76f83c79363e",
+      "name": "Update CC Status",
       "credentials": {
         "postgres": {
-          "id": "vhsys-postgres-prod",
-          "name": "vhsys-postgres-prod"
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Build success response\nconst diff = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_report_completed',\n  cc_id: diff.cc_id,\n  type: diff.type,\n  inserted: diff.to_insert.length,\n  deleted: diff.to_delete.length\n}));\n\nreturn {\n  message: 'CC_REPORT processed successfully',\n  cc_id: diff.cc_id,\n  type: diff.type,\n  inserted: diff.to_insert.length,\n  deleted: diff.to_delete.length\n};"
+        "jsCode": "// Bug F corrigido: retornar statusCode + body\nconst ctx = $('Calculate Diff').first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'cc_report_completed',\n  cc_id: ctx.cc_id,\n  type:  ctx.type,\n  inserted: ctx.to_insert ? ctx.to_insert.length : 0,\n  deleted:  ctx.to_delete ? ctx.to_delete.length : 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'GET A NEW CC_REPORT BY CC id' }\n};"
       },
-      "id": "cc-report-response-014",
+      "id": "32cbf4ce-c560-44e5-8dba-a5f28faf2675",
       "name": "Build Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2440, 300]
+      "position": [
+        -736,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "43acc538-888a-4606-bec8-bacfef7e1aa2",
+      "name": "Build Invalid Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        704
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
@@ -224,40 +327,54 @@
       "main": [
         [
           {
-            "node": "Decode HTML Entities",
+            "node": "Is Valid?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Decode HTML Entities": {
+    "Is Valid?": {
       "main": [
         [
           {
-            "node": "Transform Data",
+            "node": "Decode + Transform",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Invalid Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Transform Data": {
+    "Decode + Transform": {
       "main": [
         [
           {
-            "node": "Get Existing Records",
+            "node": "Get Existing IDs",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Existing Records": {
+    "Get Existing IDs": {
       "main": [
         [
           {
             "node": "Calculate Diff",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Invalid Response",
             "type": "main",
             "index": 0
           }
@@ -278,7 +395,7 @@
             "index": 0
           },
           {
-            "node": "Build Response",
+            "node": "Prepare Status Update",
             "type": "main",
             "index": 0
           }
@@ -289,14 +406,14 @@
       "main": [
         [
           {
-            "node": "Split Records",
+            "node": "Split for Insert",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split Records": {
+    "Split for Insert": {
       "main": [
         [
           {
@@ -307,29 +424,18 @@
         ]
       ]
     },
-    "Insert Record": {
-      "main": [
-        [
-          {
-            "node": "Update Status",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Has Deletes?": {
       "main": [
         [
           {
-            "node": "Split Delete IDs",
+            "node": "Split for Delete",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split Delete IDs": {
+    "Split for Delete": {
       "main": [
         [
           {
@@ -339,28 +445,72 @@
           }
         ]
       ]
+    },
+    "Prepare Status Update": {
+      "main": [
+        [
+          {
+            "node": "Update CC Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update CC Status": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Record": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Record": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Build Invalid Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "staticData": null,
-  "tags": [
-    {
-      "name": "VHSYS",
-      "id": "vhsys-tag"
-    },
-    {
-      "name": "CC_REPORT",
-      "id": "cc-report-tag"
-    },
-    {
-      "name": "Phase-3",
-      "id": "phase3-tag"
-    }
-  ],
-  "triggerCount": 0,
-  "updatedAt": "2026-03-18T04:45:00.000Z",
-  "versionId": "cc-report-v1-001"
+  "versionId": "4213d6cf-9243-4416-a6fa-0bece6c03496",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "DoAXp1U7yQ5UOjgZ",
+  "tags": []
 }

@@ -3,29 +3,39 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "cc-next-start-001",
+      "id": "3e1c3c53-32cf-4919-8b3c-1afd788dc17a",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [
+        -1024,
+        384
+      ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Get random pending CC (entries_runned=0 OR outputs_runned=0)\nSELECT \n  cc_id,\n  entries_runned,\n  outputs_runned\nFROM update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
-        "options": {}
+        "query": "SELECT\n  cc_id,\n  entries_runned,\n  outputs_runned\nFROM auxiliary.update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
       },
-      "id": "cc-next-query-002",
+      "id": "e74c57d0-ebd7-4788-a869-ee37ef5a59fb",
       "name": "Get Random Pending CC",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [460, 300],
+      "typeVersion": 2.3,
+      "position": [
+        -800,
+        384
+      ],
       "credentials": {
         "postgres": {
-          "id": "vhsys-postgres-prod",
-          "name": "vhsys-postgres-prod"
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -50,33 +60,56 @@
         },
         "options": {}
       },
-      "id": "cc-next-check-003",
+      "id": "e067e15d-f9aa-46ad-8f32-a5deefe49f5a",
       "name": "Has Pending?",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [680, 300]
+      "typeVersion": 2.3,
+      "position": [
+        -576,
+        288
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Build URL based on entry/output status\nconst row = $input.first().json;\nconst ccId = row.cc_id;\nconst entryRunned = row.entries_runned;\nconst outputRunned = row.outputs_runned;\n\n// Get current date in dd/mm/yyyy format (Brazil timezone)\nconst now = new Date();\nconst day = String(now.getDate()).padStart(2, '0');\nconst month = String(now.getMonth() + 1).padStart(2, '0');\nconst year = now.getFullYear();\nconst currentDate = `${day}/${month}/${year}`;\n\n// Determine type and URL\nlet type, urlType;\nif (entryRunned === 0) {\n  type = 'entrada';\n  urlType = 'Entrada';\n} else if (outputRunned === 0) {\n  type = 'saida';\n  urlType = 'Saida';\n} else {\n  // Fallback (should not happen due to WHERE clause)\n  type = 'entrada';\n  urlType = 'Entrada';\n}\n\n// Build VHSYS URL\nconst url = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${currentDate}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\n// Structured logging (without sensitive URL params)\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_next_url_generated',\n  cc_id: ccId,\n  type: type,\n  entry_runned: entryRunned,\n  output_runned: outputRunned\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    url: url,\n    cc_id: ccId,\n    type: type\n  }\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// Monta URL do VHSYS com data BRT correta.\n// CRÍTICO: type = 'entrada'/'saida' (lowercase) para o banco\n//          Tipo = 'Entrada'/'Saida' (capitalizado) para a URL do VHSYS\n// ─────────────────────────────────────────────\nconst row          = $input.first().json;\nconst ccId         = row.cc_id;\nconst entryRunned  = parseInt(row.entries_runned);\nconst outputRunned = parseInt(row.outputs_runned);\n\n// Data atual em BRT (America/Sao_Paulo)\nconst now = new Date();\nconst brtOffset = -3 * 60; // UTC-3 em minutos\nconst brtDate   = new Date(now.getTime() + (now.getTimezoneOffset() + brtOffset) * 60000);\nconst day   = String(brtDate.getDate()).padStart(2, '0');\nconst month = String(brtDate.getMonth() + 1).padStart(2, '0');\nconst year  = brtDate.getFullYear();\nconst currentDate = `${day}/${month}/${year}`;\n\n// Determina tipo — prioridade: entrada antes de saida\nlet type, urlTipo;\nif (entryRunned === 0) {\n  type    = 'entrada';\n  urlTipo = 'Entrada';\n} else {\n  type    = 'saida';\n  urlTipo = 'Saida';\n}\n\nconst url = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${currentDate}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlTipo}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp      : new Date().toISOString(),\n  route          : 'cc_report_manage/next_url',\n  event          : 'cc_next_url_generated',\n  cc_id          : ccId,\n  type           : type,\n  date_brt       : currentDate,\n  entries_runned : entryRunned,\n  outputs_runned : outputRunned,\n  level          : 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: { url, cc_id: ccId, type }\n};"
       },
-      "id": "cc-next-build-004",
+      "id": "23de2957-6f9f-4f70-ad0c-190ded2998f8",
       "name": "Build Next URL",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 220]
+      "position": [
+        -352,
+        192
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// No pending CCs found\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'cc_next_url_no_pending',\n  level: 'warn'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    url: null,\n    cc_id: null,\n    type: null,\n    message: 'No pending CCs found (all entries and outputs completed)'\n  }\n};"
+        "jsCode": "// Nenhum CC pendente — tudo processado\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'cc_next_url_no_pending',\n  level     : 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { url: null, cc_id: null, type: null, message: 'No pending CCs found' }\n};"
       },
-      "id": "cc-next-empty-005",
+      "id": "d24295c8-f706-46e6-8451-f041e1a71725",
       "name": "No Pending Found",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [900, 380]
+      "position": [
+        -352,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'db_error',\n  message   : errData.message || 'Unknown DB error',\n  level     : 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not fetch next CC URL' }\n};"
+      },
+      "id": "50558703-0956-457a-aae8-f660cae42247",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        480
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
@@ -94,6 +127,13 @@
         [
           {
             "node": "Has Pending?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
             "type": "main",
             "index": 0
           }
@@ -119,26 +159,21 @@
       ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "saveDataErrorExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "staticData": null,
-  "tags": [
-    {
-      "name": "VHSYS",
-      "id": "vhsys-tag"
-    },
-    {
-      "name": "CC_REPORT",
-      "id": "cc-report-tag"
-    },
-    {
-      "name": "Phase-3",
-      "id": "phase3-tag"
-    }
-  ],
-  "triggerCount": 0,
-  "updatedAt": "2026-03-18T04:45:00.000Z",
-  "versionId": "cc-next-url-v1-001"
+  "versionId": "95a2fd35-ef68-46a1-9445-3dc1b6f540ad",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "YPMQGm7hD5eBn1da",
+  "tags": []
 }

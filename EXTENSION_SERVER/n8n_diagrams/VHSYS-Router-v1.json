@@ -8,27 +8,27 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "0dd7995b-c87a-4810-9a9f-1c7fea562b9b",
+      "id": "64499cf7-c491-4605-94b1-47132e822b7d",
       "name": "Webhook Router",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -2288,
-        5360
+        -4016,
+        5856
       ],
       "webhookId": "vhsys-router-webhook"
     },
     {
       "parameters": {
-        "jsCode": "// Extract route parameter and prepare payload\nconst route = $input.item.json.query?.route || 'unknown';\nconst method = $input.item.json.method || 'GET';\nconst body = $input.item.json.body || {};\nconst query = $input.item.json.query || {};\n\n// Structured logging (without sensitive data)\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'router_request',\n  route: route,\n  method: method,\n  has_body: Object.keys(body).length > 0\n}));\n\nreturn {\n  route: route,\n  method: method,\n  body: body,\n  query: query,\n  original_request: $input.item.json\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route\n// Extrai rota lógica e monta envelope canônico\n// para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst route = (req.query?.route || req.body?.route || 'unknown').toString().trim();\nconst method = (req.method || 'GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Log estruturado — sem campos sensíveis\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  level:     'info'\n}));\n\nreturn { route, method, body, query, original_request: req };"
       },
-      "id": "a5101488-d5a0-4b9f-acf9-eeec9f3b10dd",
+      "id": "255ba81a-7a90-4535-83b1-9c402b776c24",
       "name": "Extract Route",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2064,
-        5360
+        -3792,
+        5856
       ]
     },
     {
@@ -401,260 +401,369 @@
           "fallbackOutput": "extra"
         }
       },
-      "id": "9fa7456e-66c8-40ab-b60b-9e00f6ed1713",
+      "id": "a9c07b3c-2677-4905-bbbe-b51d314729a5",
       "name": "Route Switch",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
       "position": [
-        -1840,
-        5136
+        -3568,
+        5632
       ]
     },
     {
       "parameters": {
-        "workflowId": "={{ 'VHSYS-health-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
+        "jsCode": "// Placeholder Fase 6\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'regular_bills', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'regular_bills', message: 'Phase 6' } };"
       },
-      "id": "96ba61fe-84dd-4409-b887-a7bd8d75ec27",
-      "name": "Execute: Health",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        4240
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "={{ 'VHSYS-update_services-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "88c13dc4-bd3f-4a2d-9273-97bc3a2441fa",
-      "name": "Execute: Update Services",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        4432
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "={{ 'VHSYS-get_update_extension_service_data-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "b6a565e9-c4b0-47a0-a7bd-ccd02618f54d",
-      "name": "Execute: Get Status",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        4624
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "={{ 'VHSYS-cc_status-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "32efec10-dae7-4eb1-9875-1b41b86018c4",
-      "name": "Execute: CC Status",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        4816
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "={{ 'VHSYS-cc_next_url-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "638ec29e-e3e5-4203-a1ec-dc5702df658a",
-      "name": "Execute: CC Next URL",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        5008
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": "={{ 'VHSYS-cc_report-v1' }}",
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "baf3ad6c-d72a-484b-8386-24e64b6ffd30",
-      "name": "Execute: CC Report",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [
-        -1296,
-        5200
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Placeholder for Phase 6 - Regular Bills workflow\n// TODO: Implement VHSYS-regular_bills-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'regular_bills'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'regular_bills',\n    message: 'This route will be implemented in Phase 6'\n  }\n};"
-      },
-      "id": "78936827-3ce9-44ec-9006-c4d7020c2854",
+      "id": "b6fe7a9c-2e43-478f-8613-71a267b057c4",
       "name": "Placeholder: Regular Bills",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        5392
+        -3072,
+        5376
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder for Phase 5 - Sales NF Report workflow\n// TODO: Implement VHSYS-sales_nf_report-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'sales_nf_report'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'sales_nf_report',\n    message: 'This route will be implemented in Phase 5'\n  }\n};"
+        "jsCode": "// Placeholder Fase 5\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'sales_nf_report', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'sales_nf_report', message: 'Phase 5' } };"
       },
-      "id": "319d4b89-0610-4441-aad1-d498151b1419",
+      "id": "bd4f5d3f-3502-44f2-a006-c7ec39fb77f0",
       "name": "Placeholder: Sales NF",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        5584
+        -3072,
+        5568
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder for Phase 5 - Service NF Report workflow\n// TODO: Implement VHSYS-service_nf_report-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'service_nf_report'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'service_nf_report',\n    message: 'This route will be implemented in Phase 5'\n  }\n};"
+        "jsCode": "// Placeholder Fase 5\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'service_nf_report', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'service_nf_report', message: 'Phase 5' } };"
       },
-      "id": "f4792f13-3a3f-42cd-ab6b-ed55fb6e2b73",
+      "id": "c84029ad-91b5-4bb2-bdf0-cd00646dbc2c",
       "name": "Placeholder: Service NF",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        5776
+        -3072,
+        5952
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder for Phase 5 - NF Service Labels workflow\n// TODO: Implement VHSYS-nf_service_labels-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'nf_service_labels'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'nf_service_labels',\n    message: 'This route will be implemented in Phase 5'\n  }\n};"
+        "jsCode": "// Placeholder Fase 5\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'nf_service_labels', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'nf_service_labels', message: 'Phase 5' } };"
       },
-      "id": "b6f72363-c161-469b-ab26-87ac0cc2149d",
+      "id": "fdb1880a-19c6-4281-aa26-4f83104d9ed4",
       "name": "Placeholder: NF Labels",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        5968
+        -3072,
+        6144
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder for Phase 5 - NF Service Labels IDs workflow\n// TODO: Implement VHSYS-nf_service_labels_ids-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'nf_service_labels_ids'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'nf_service_labels_ids',\n    message: 'This route will be implemented in Phase 5'\n  }\n};"
+        "jsCode": "// Placeholder Fase 5\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'nf_service_labels_ids', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'nf_service_labels_ids', message: 'Phase 5' } };"
       },
-      "id": "c2af2c7d-c22d-4c15-be8c-934819e2c61f",
+      "id": "5c25b901-1b83-4ccf-bfde-72d6f3569903",
       "name": "Placeholder: NF Labels IDs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        6160
+        -3072,
+        6336
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder for Phase 5 - NF Service Info workflow\n// TODO: Implement VHSYS-nf_service_info-v1 workflow\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_implemented',\n  route: 'nf_service_info'\n}));\n\nreturn {\n  statusCode: 501,\n  body: {\n    error: 'Not implemented',\n    route: 'nf_service_info',\n    message: 'This route will be implemented in Phase 5'\n  }\n};"
+        "jsCode": "// Placeholder Fase 5\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'nf_service_info', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'nf_service_info', message: 'Phase 5' } };"
       },
-      "id": "17f42b08-85e0-4c6f-8186-3d220b713467",
+      "id": "1d5dcb9e-27d1-41dd-ba65-91084891cb49",
       "name": "Placeholder: NF Info",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        6352
+        -3072,
+        6528
       ]
     },
     {
       "parameters": {
-        "workflowId": "={{ 'VHSYS-employers_general_data-v1' }}",
-        "options": {}
+        "workflowId": {
+          "__rl": true,
+          "value": "ul7KFJNXYYJCida6",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ul7KFJNXYYJCida6",
+          "cachedResultName": "VHSYS-employers_general_data-v1"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
       },
-      "id": "ec19fd72-09a7-414d-aded-ee40a3b40f8a",
+      "id": "8912548f-b1e3-4a81-85e7-b15dacd33399",
       "name": "Execute: Employers General",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -1296,
-        6736
+        -3072,
+        6912
       ]
     },
     {
       "parameters": {
-        "workflowId": "={{ 'VHSYS-employers_plus-v1' }}",
-        "options": {}
+        "workflowId": {
+          "__rl": true,
+          "value": "Is8AcAK4ePg3oCM2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
+          "cachedResultName": "VHSYS-employers_plus-v1"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
       },
-      "id": "d8abbe0f-ea9b-408f-98aa-7f97fbac6545",
+      "id": "9c96f9a5-48f7-46bc-9228-cef69edcfc3b",
       "name": "Execute: Employers Plus",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -1296,
-        6960
+        -3072,
+        7104
       ]
     },
     {
       "parameters": {
-        "workflowId": "={{ 'VHSYS-employers_plus_info-v1' }}",
-        "options": {}
+        "workflowId": {
+          "__rl": true,
+          "value": "8j8GgE8PfT45Teb9",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8j8GgE8PfT45Teb9",
+          "cachedResultName": "VHSYS-employers_plus_info-v1"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
       },
-      "id": "0e3d2f44-bb68-4309-892f-0fc6d4789ad2",
+      "id": "30acc43e-dc67-4dcf-b17b-9423504c3389",
       "name": "Execute: Employers Plus Info",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -1296,
-        7184
+        -3072,
+        7296
       ]
     },
     {
       "parameters": {
-        "jsCode": "// 404 Not Found handler\nconst route = $input.item.json.route || 'unknown';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_not_found',\n  route: route,\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route: route,\n    message: `The route '${route}' is not registered in VHSYS router`,\n    available_routes: [\n      'health',\n      'update_services',\n      'get_update_extension_service_data',\n      'cc_report_manage/status',\n      'cc_report_manage/next_url',\n      'cc_report',\n      'regular_bills',\n      'sales_nf_report',\n      'service_nf_report',\n      'nf_service_labels',\n      'nf_service_labels_ids',\n      'nf_service_info',\n      'employers_general_data',\n      'employers_plus',\n      'employers_plus_info'\n    ]\n  }\n};"
+        "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
-      "id": "0c7fea77-f385-4f29-aedc-1795df89f07e",
+      "id": "71077a7a-f3c2-4acd-8642-d71fe3fed219",
       "name": "404 Not Found",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1296,
-        6544
+        -3072,
+        6720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
+      },
+      "id": "a7581cbc-5916-4d8e-8964-48b642b043de",
+      "name": "Normalize Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2736,
+        5856
       ]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ $json.body || $json }}",
+        "responseBody": "={{ $json.body }}",
         "options": {
           "responseCode": "={{ $json.statusCode || 200 }}"
         }
       },
-      "id": "8a0867c1-e86a-4416-9a9c-e1412d8332a5",
+      "id": "8002cc0e-6be8-4178-bdd2-3ea8fb65a0a9",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -800,
-        5392
+        -2512,
+        5856
       ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UkWE6rMcSqAwTgKB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UkWE6rMcSqAwTgKB",
+          "cachedResultName": "VHSYS-cc_status-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        4800
+      ],
+      "id": "2d16671a-e87c-48ca-9ff9-245a6275efc5",
+      "name": "Execute: CC Status"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "vlGDMc64g0AUKBON",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vlGDMc64g0AUKBON",
+          "cachedResultName": "VHSYS-update_services-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        4608
+      ],
+      "id": "4486c08b-4770-401c-8cca-a54de5313d0f",
+      "name": "Execute: Update Services"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sjWsEoIsUa8qrPcp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/sjWsEoIsUa8qrPcp",
+          "cachedResultName": "VHSYS-health-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        4416
+      ],
+      "id": "1bf9924a-baad-4d9e-a429-eeff8455906d",
+      "name": "Execute: Health"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YPMQGm7hD5eBn1da",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YPMQGm7hD5eBn1da",
+          "cachedResultName": "VHSYS-cc_next_url-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        4992
+      ],
+      "id": "5e8575d5-8d50-4bd7-9dcd-89406f58a89f",
+      "name": "Execute: CC Next URL"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "DoAXp1U7yQ5UOjgZ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/DoAXp1U7yQ5UOjgZ",
+          "cachedResultName": "VHSYS-cc_report-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        5184
+      ],
+      "id": "0034121f-338d-40cc-a389-26f074209c40",
+      "name": "Execute: CC Report"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ul6IjUpAqixCTDc3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ul6IjUpAqixCTDc3",
+          "cachedResultName": "VHSYS-get_update_extension_service_data-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3072,
+        5760
+      ],
+      "id": "7cc52e67-cd8c-4a21-bc8d-1f88d805ac71",
+      "name": "Call 'VHSYS-get_update_extension_service_data-v1'"
     }
   ],
   "pinData": {},
@@ -699,7 +808,12 @@
         ],
         [
           {
-            "node": "Execute: Get Status",
+            "node": "Execute: Get Status1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Call 'VHSYS-get_update_extension_service_data-v1'",
             "type": "main",
             "index": 0
           }
@@ -797,7 +911,117 @@
         ]
       ]
     },
-    "Execute: Health": {
+    "Placeholder: Regular Bills": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placeholder: Sales NF": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placeholder: Service NF": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placeholder: NF Labels": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placeholder: NF Labels IDs": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Placeholder: NF Info": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "404 Not Found": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Employers Plus Info": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Employers Plus": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Employers General": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Response": {
       "main": [
         [
           {
@@ -812,18 +1036,18 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Get Status": {
+    "Execute: Health": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -834,7 +1058,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -845,7 +1069,7 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -856,117 +1080,18 @@
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Placeholder: Regular Bills": {
+    "Call 'VHSYS-get_update_extension_service_data-v1'": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Placeholder: Sales NF": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Placeholder: Service NF": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Placeholder: NF Labels": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Placeholder: NF Labels IDs": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Placeholder: NF Info": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "404 Not Found": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Employers Plus Info": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Employers Plus": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Employers General": {
-      "main": [
-        [
-          {
-            "node": "Respond to Webhook",
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -974,13 +1099,13 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "94b6deb3-f890-4e2c-bd5b-c380ce8c24fb",
+  "versionId": "f2d6517a-12c5-4289-912b-0ba1764e4071",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
