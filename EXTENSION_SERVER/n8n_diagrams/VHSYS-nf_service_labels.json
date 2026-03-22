@@ -2,85 +2,191 @@
   "name": "VHSYS-nf_service_labels",
   "nodes": [
     {
-      "parameters": {},
-      "id": "trigger-nf-labels-001",
-      "name": "When called by another workflow",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1,
-      "position": [-400, 200]
-    },
-    {
       "parameters": {
-        "jsCode": "// Extrair dados da tabela HTML\nconst input = $input.first().json;\nlet htmlContent;\n\ntry {\n  const rawHtml = input.xml_ref || '';\n  const cdataMatch = rawHtml.match(/<!\\[CDATA\\[(.*?)\\]\\]>/s);\n  \n  if (!cdataMatch) {\n    throw new Error('Dados CDATA não encontrados');\n  }\n  \n  htmlContent = cdataMatch[1].trim();\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_labels',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados HTML inválidos', details: error.message }\n  };\n}\n\n// Parse do HTML\nconst tableRowPattern = /<tr[^>]*codigo=\"([^\"]+)\"[^>]*>(.*?)<\\/tr>/gs;\nconst extracted = [];\nlet match;\n\nwhile ((match = tableRowPattern.exec(htmlContent)) !== null) {\n  const codigo = match[1];\n  const rowContent = match[2];\n  \n  // Extrair outros atributos da tag <tr>\n  const trTag = match[0].match(/<tr[^>]*>/)[0];\n  \n  const getAttr = (name) => {\n    const attrMatch = trTag.match(new RegExp(`${name}=\"([^\"]*)\"`));\n    return attrMatch ? attrMatch[1] : '';\n  };\n  \n  extracted.push({\n    codigo: codigo,\n    contas: getAttr('contas'),\n    boletos: getAttr('boletos'),\n    nota: getAttr('nota'),\n    cliente: getAttr('cliente'),\n    status: getAttr('status'),\n    vendedor: getAttr('vendedor'),\n    chave: getAttr('chave'),\n    numeronfs: getAttr('numeronfs'),\n    notarecibo: getAttr('notarecibo'),\n    vinculooscomnfs: getAttr('vinculooscomnfs'),\n    runned: ''\n  });\n}\n\nif (extracted.length === 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_labels',\n    event: 'no_data_extracted',\n    level: 'warning'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Nenhum dado extraído da tabela' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'data_extract_success',\n  count: extracted.length,\n  level: 'info'\n}));\n\nreturn { extracted };"
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
       },
-      "id": "extract-table-data-001",
-      "name": "Extract Table Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 200]
+      "position": [
+        144,
+        272
+      ],
+      "id": "02374222-8bba-4b0b-97c3-dab7aacac232",
+      "name": "Return Response"
     },
     {
       "parameters": {
-        "query": "INSERT INTO \"NF_ServiceMetadata\" (\n  \"codigo\", \"contas\", \"boletos\", \"nota\", \"cliente\", \"status\",\n  \"vendedor\", \"chave\", \"numeronfs\", \"notarecibo\", \"vinculooscomnfs\", \n  \"runned\", \"created_at\", \"updated_at\"\n) VALUES {{ range($json.extracted) }}\n(\n  '{{ $item.codigo }}',\n  '{{ $item.contas }}',\n  '{{ $item.boletos }}',\n  '{{ $item.nota }}',\n  '{{ $item.cliente }}',\n  '{{ $item.status }}',\n  '{{ $item.vendedor }}',\n  '{{ $item.chave }}',\n  '{{ $item.numeronfs }}',\n  '{{ $item.notarecibo }}',\n  '{{ $item.vinculooscomnfs }}',\n  '{{ $item.runned }}',\n  NOW(),\n  NOW()\n){{ if $index < ($json.extracted.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"codigo\")\nDO UPDATE SET\n  \"contas\" = EXCLUDED.\"contas\",\n  \"boletos\" = EXCLUDED.\"boletos\",\n  \"nota\" = EXCLUDED.\"nota\",\n  \"cliente\" = EXCLUDED.\"cliente\",\n  \"status\" = EXCLUDED.\"status\",\n  \"vendedor\" = EXCLUDED.\"vendedor\",\n  \"chave\" = EXCLUDED.\"chave\",\n  \"numeronfs\" = EXCLUDED.\"numeronfs\",\n  \"notarecibo\" = EXCLUDED.\"notarecibo\",\n  \"vinculooscomnfs\" = EXCLUDED.\"vinculooscomnfs\",\n  \"runned\" = EXCLUDED.\"runned\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"NF_ServiceMetadata\".\"contas\" IS DISTINCT FROM EXCLUDED.\"contas\" OR\n  \"NF_ServiceMetadata\".\"boletos\" IS DISTINCT FROM EXCLUDED.\"boletos\" OR\n  \"NF_ServiceMetadata\".\"nota\" IS DISTINCT FROM EXCLUDED.\"nota\" OR\n  \"NF_ServiceMetadata\".\"cliente\" IS DISTINCT FROM EXCLUDED.\"cliente\" OR\n  \"NF_ServiceMetadata\".\"status\" IS DISTINCT FROM EXCLUDED.\"status\" OR\n  \"NF_ServiceMetadata\".\"vendedor\" IS DISTINCT FROM EXCLUDED.\"vendedor\" OR\n  \"NF_ServiceMetadata\".\"chave\" IS DISTINCT FROM EXCLUDED.\"chave\" OR\n  \"NF_ServiceMetadata\".\"numeronfs\" IS DISTINCT FROM EXCLUDED.\"numeronfs\" OR\n  \"NF_ServiceMetadata\".\"notarecibo\" IS DISTINCT FROM EXCLUDED.\"notarecibo\" OR\n  \"NF_ServiceMetadata\".\"vinculooscomnfs\" IS DISTINCT FROM EXCLUDED.\"vinculooscomnfs\"\n);",
-        "additionalFields": {}
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service labels' }\n};"
       },
-      "id": "upsert-service-metadata-001",
-      "name": "Upsert Service Metadata",
+      "id": "553ae71c-1dcc-49ed-b104-d8e0fa2d256e",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "b40aa45d-3618-40d0-9f38-032847b8c487",
+      "name": "Build Validation Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Conta registros afetados e constrói resposta\nconst affectedRecords = $input.all()\n  .filter(item => item.json && item.json.codigo_servico)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'service_labels_upserted',\n  labels_updated: affectedRecords,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Service labels updated successfully',\n    labels_updated: affectedRecords\n  }\n};"
+      },
+      "id": "21e5a3c0-574c-46cc-bc08-dcb41e0cdd0a",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.nf_service_labels (\n  codigo_servico, descricao, aliquota_iss, ativo, observacoes,\n  created_at, updated_at\n) VALUES (\n  $1, $2, $3::numeric, $4::boolean, $5,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (codigo_servico)\nDO UPDATE SET \n  descricao = EXCLUDED.descricao,\n  aliquota_iss = EXCLUDED.aliquota_iss,\n  ativo = EXCLUDED.ativo,\n  observacoes = EXCLUDED.observacoes,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  nf_service_labels.descricao IS DISTINCT FROM EXCLUDED.descricao\n  OR nf_service_labels.aliquota_iss IS DISTINCT FROM EXCLUDED.aliquota_iss\n  OR nf_service_labels.ativo IS DISTINCT FROM EXCLUDED.ativo\n  OR nf_service_labels.observacoes IS DISTINCT FROM EXCLUDED.observacoes\nRETURNING codigo_servico, descricao, aliquota_iss, ativo;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
+      },
+      "id": "d3638448-15e4-4821-a466-594373d7f28d",
+      "name": "Upsert Service Labels",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [80, 200],
-      "alwaysOutputData": false,
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        176
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: { \n    ok: true, \n    message: 'Data extracted, cleaned, and converted to DataFrame successfully' \n  }\n};"
+        "jsCode": "// Transform e normaliza dados dos labels de serviço\n// Expande cada label para um item separado\nconst ctx = $input.first().json;\nconst labels = ctx.labels;\n\n// Decode HTML entities function (reutilizada)\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/')\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\nconst decodedLabels = decodeHtml(labels);\n\nconst transformedLabels = decodedLabels.map((label, index) => {\n  const codigo = String(label.codigo || label.Codigo || label.CodigoServico || '').trim();\n  \n  if (!codigo) {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'nf_service_labels',\n      event: 'label_skipped_no_codigo',\n      label_index: index,\n      label_data: label,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    codigo_servico: codigo,\n    descricao: String(label.descricao || label.Descricao || label.Nome || '').trim(),\n    aliquota_iss: parseFloat(String(label.aliquota_iss || label.AliquotaISS || label.Aliquota || '0').replace(',', '.')) || 0,\n    ativo: Boolean(label.ativo !== undefined ? label.ativo : label.Ativo !== undefined ? label.Ativo : true),\n    observacoes: String(label.observacoes || label.Observacoes || label.Obs || '').trim()\n  };\n}).filter(label => label !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'labels_transformed',\n  valid_labels: transformedLabels.length,\n  total_input: decodedLabels.length,\n  level: 'info'\n}));\n\nreturn transformedLabels;"
       },
-      "id": "build-success-labels-001",
-      "name": "Build Success Response",
+      "id": "fe02af2f-7b74-4c88-9980-e018d89cfb73",
+      "name": "Transform Service Labels",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [320, 200]
+      "position": [
+        -576,
+        176
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process service labels' }\n};"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "build-db-error-labels-001",
-      "name": "Build DB Error Response",
+      "id": "f14e0ce8-5851-479e-b473-a784b54d1aec",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -816,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_labels\n// Rota   : POST /nf_service_labels\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : { data: { labels: [{ codigo, descricao, ... }] } }\n// Output : { message: 'Service labels updated successfully', labels_updated: number } HTTP 201\n// Banco  : UPSERT nf_service_labels por codigo\n// Chave  : codigo_servico\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\nif (!body.data.labels || !Array.isArray(body.data.labels)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing or invalid labels array' }\n  };\n}\n\nconst labels = body.data.labels;\n\nif (labels.length === 0) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Labels array cannot be empty' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'input_validated',\n  labels_count: labels.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, labels };"
+      },
+      "id": "30fab90f-f31f-4a51-a3b9-80ca5b4d235e",
+      "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [80, 380]
+      "position": [
+        -1056,
+        272
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e01a2e61-97bd-4cdd-838f-53e914875f50",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1296,
+        272
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "When called by another workflow": {
+    "Build DB Error Response": {
       "main": [
         [
           {
-            "node": "Extract Table Data",
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Table Data": {
+    "Build Validation Error Response": {
       "main": [
         [
           {
-            "node": "Upsert Service Metadata",
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Upsert Service Metadata": {
+    "Build Response": {
       "main": [
         [
           {
-            "node": "Build Success Response",
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Service Labels": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
             "type": "main",
             "index": 0
           }
@@ -93,14 +199,70 @@
           }
         ]
       ]
+    },
+    "Transform Service Labels": {
+      "main": [
+        [
+          {
+            "node": "Upsert Service Labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Transform Service Labels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
-  ],
-  "pinData": {},
-  "settings": {
-    "executionOrder": "v1"
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:59:00.000Z"
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "fff389fc-f0af-432c-84c1-364a05509f1b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "AKxeodqxnWTSbis3",
+  "tags": []
 }

@@ -1,62 +1,100 @@
 {
-  "name": "VHSYS-nf_service_labels_ids",
+  "name": "VHSYS-nf_service_labels_ids-v2",
   "nodes": [
     {
       "parameters": {},
-      "id": "trigger-nf-labels-ids-001",
+      "id": "a17d6a0d-e537-42af-9253-da98d3744535",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [-400, 200]
+      "position": [
+        -480,
+        80
+      ]
     },
     {
       "parameters": {
-        "query": "SELECT \"codigo\", \"numeronfs\" FROM \"nf_servicemetadata\" ORDER BY \"codigo\";"
+        "operation": "executeQuery",
+        "query": "SELECT \n  codigo_servico,\n  descricao,\n  aliquota_iss,\n  ativo\nFROM auxiliary.nf_service_labels\nWHERE ativo = true\nORDER BY codigo_servico;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
       },
-      "id": "get-service-labels-ids-001",
-      "name": "Get Service Labels IDs",
+      "id": "4574b00a-71fb-4f5f-bd42-817bc92972f0",
+      "name": "SELECT Active Service Labels",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [-160, 200]
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Retornar dados como array direto (compatibilidade Flask)\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'data_retrieved',\n  count: result.length,\n  level: 'info'\n}));\n\n// CRÍTICO: Retornar array direto, não objeto encapsulado\n// Para compatibilidade com a extensão\nreturn {\n  statusCode: 200,\n  body: result\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_labels_ids\n// Rota   : GET /nf_service_labels_ids\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : Nenhum (GET)\n// Output : [{ codigo_servico, descricao, aliquota_iss, ativo }] HTTP 200\n// Banco  : SELECT nf_service_labels WHERE ativo = true\n// ─────────────────────────────────────────────\n// CRÍTICO: Retorna ARRAY DIRETO — NÃO encapsulado\n// A extensão Chrome espera: [...] não { data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\nconst labels = allRecords.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'labels_read',\n  total_labels: labels.length,\n  level: 'info'\n}));\n\n// statusCode 200 para GET (não 201)\nreturn {\n  statusCode: 200,\n  body: labels\n};"
       },
-      "id": "format-direct-array-001",
-      "name": "Format Direct Array",
+      "id": "d5560266-cb09-4813-a80a-084fbf8600cf",
+      "name": "Format as Direct Array",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [80, 200]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not retrieve service labels' }\n};"
+        "jsCode": "// Erro de leitura do banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_read_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: 'Could not read service labels' }\n};"
       },
-      "id": "build-db-error-ids-001",
+      "id": "0d32afb7-20d5-4b07-aefb-2988594553e1",
       "name": "Build DB Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 380]
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        80
+      ],
+      "id": "e4a70b75-14c0-4a7f-bd98-45db0a36517c",
+      "name": "Return Response"
     }
   ],
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
         [
           {
-            "node": "Get Service Labels IDs",
+            "node": "SELECT Active Service Labels",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Service Labels IDs": {
+    "SELECT Active Service Labels": {
       "main": [
         [
           {
-            "node": "Format Direct Array",
+            "node": "Format as Direct Array",
             "type": "main",
             "index": 0
           }
@@ -69,14 +107,40 @@
           }
         ]
       ]
+    },
+    "Format as Direct Array": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DB Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:54:00.000Z"
+  "versionId": "bcee129d-dd4c-49cb-848b-35e576506061",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "vEyfgH4ys8g1pu2E",
+  "tags": []
 }

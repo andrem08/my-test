@@ -2,81 +2,177 @@
   "name": "VHSYS-update_services",
   "nodes": [
     {
-      "parameters": {},
-      "id": "trigger-update-services-001",
-      "name": "When called by another workflow",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1,
-      "position": [-400, 200]
-    },
-    {
       "parameters": {
-        "jsCode": "// Validar dados de entrada\nconst input = $input.first().json;\nlet updateData;\n\ntry {\n  updateData = input.body;\n  if (!updateData || typeof updateData !== 'object') {\n    throw new Error('Dados inválidos: esperado objeto com dados de atualização');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'update_services',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Normalizar dados de atualização\nconst normalized = {\n  ACTION: updateData.ACTION || updateData.action || 'UNKNOWN',\n  RUN_STATUS: parseInt(updateData.RUN_STATUS || updateData.run_status || 0),\n  PROGRESS_VALUE: parseInt(updateData.PROGRESS_VALUE || updateData.progress_value || 0),\n  RUN_AFTER: parseInt(updateData.RUN_AFTER || updateData.run_after || 720)\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'data_validated',\n  action: normalized.ACTION,\n  status: normalized.RUN_STATUS,\n  level: 'info'\n}));\n\nreturn { normalized };"
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
       },
-      "id": "validate-update-data-001",
-      "name": "Validate Update Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 200]
+      "position": [
+        224,
+        128
+      ],
+      "id": "72ec82aa-6c96-46d1-9970-51f4433e290c",
+      "name": "Return Response"
     },
     {
       "parameters": {
-        "query": "INSERT INTO \"update_extension_services\" (\n  \"ACTION\", \"RUN_STATUS\", \"PROGRESS_VALUE\", \"RUN_AFTER\", \"LAST_RUN\", \"LAST_UPDATE\"\n) VALUES (\n  '{{ $json.normalized.ACTION }}',\n  {{ $json.normalized.RUN_STATUS }},\n  {{ $json.normalized.PROGRESS_VALUE }},\n  {{ $json.normalized.RUN_AFTER }},\n  NOW(),\n  NOW()\n)\nON CONFLICT (\"ACTION\")\nDO UPDATE SET\n  \"RUN_STATUS\" = EXCLUDED.\"RUN_STATUS\",\n  \"PROGRESS_VALUE\" = EXCLUDED.\"PROGRESS_VALUE\",\n  \"RUN_AFTER\" = EXCLUDED.\"RUN_AFTER\",\n  \"LAST_UPDATE\" = NOW()\nWHERE (\n  \"update_extension_services\".\"RUN_STATUS\" IS DISTINCT FROM EXCLUDED.\"RUN_STATUS\" OR\n  \"update_extension_services\".\"PROGRESS_VALUE\" IS DISTINCT FROM EXCLUDED.\"PROGRESS_VALUE\" OR\n  \"update_extension_services\".\"RUN_AFTER\" IS DISTINCT FROM EXCLUDED.\"RUN_AFTER\"\n);",
-        "additionalFields": {}
+        "jsCode": "// ── Erro de validação (input inválido) ──\nconst input = $input.first().json;\n\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
       },
-      "id": "upsert-service-status-001",
-      "name": "Upsert Service Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        320
+      ],
+      "id": "5dc74dc5-e992-4d7e-85ba-31729d64282d",
+      "name": "Build Validation Error Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro do Postgres (ACTION não existe ou falha de conexão) ──\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        128
+      ],
+      "id": "ca0b5930-e441-4cef-876f-0cc9f26853b9",
+      "name": "Build DB Error Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Sucesso: ACTION foi atualizado no banco ──\nconst dbRow = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'status_updated',\n  action: dbRow.ACTION,\n  run_status: dbRow.RUN_STATUS,\n  last_update: dbRow.LAST_UPDATE,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'Update extension service status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -64
+      ],
+      "id": "05e5e4a6-e9d7-44cf-a01f-ece171e98f75",
+      "name": "Build Success Response"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE auxiliary.update_extension_services\nSET\n  \"RUN_STATUS\"  = $1::integer,\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"ACTION\" = $2\nRETURNING \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [80, 200],
-      "alwaysOutputData": false,
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        32
+      ],
+      "id": "709d0d04-82eb-47a8-923f-4e912d30b6c8",
+      "name": "UPDATE Extension Status",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'update_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'Service status updated successfully' }\n};"
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "8b1b030f-52a0-4f75-8d5e-c5d42ceb0900"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "build-success-update-001",
-      "name": "Build Success Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [320, 200]
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        128
+      ],
+      "id": "7654c7ef-1b07-4744-a3a5-1125651f9d91",
+      "name": "Is Valid?"
     },
     {
       "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service status' }\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: update_services\n// Rota   : PUT /update_services\n// Fase 2 : Núcleo de status e controle\n// ─────────────────────────────────────────────\n// Input  : { ACTION: string, RUNNING_STATUS: int }\n// Output : { message: 'Update extension service status' } HTTP 201\n// Banco  : UPDATE update_extension_services SET RUN_STATUS, LAST_UPDATE\n// Chave  : ACTION (PK)\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || {};\nconst ACTION = (body.ACTION || '').toString().trim();\nconst RUNNING_STATUS = parseInt(body.RUNNING_STATUS, 10);\n\nconst errors = [];\n\nif (!ACTION) {\n  errors.push('Campo ACTION é obrigatório');\n}\nif (isNaN(RUNNING_STATUS)) {\n  errors.push('Campo RUNNING_STATUS deve ser número inteiro');\n} else if (![0, 1, 2, -1].includes(RUNNING_STATUS)) {\n  errors.push('RUNNING_STATUS inválido. Valores aceitos: -1 (erro), 0 (parado), 1 (em execução), 2 (finalizado)');\n}\n\nif (errors.length > 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'update_services',\n    event: 'validation_failed',\n    errors,\n    level: 'warn'\n  }));\n  return {\n    _valid: false,\n    _errors: errors,\n    statusCode: 400,\n    body: { ok: false, error: 'Validation failed', details: errors }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'input_validated',\n  action: ACTION,\n  run_status: RUNNING_STATUS,\n  level: 'info'\n}));\n\nreturn {\n  _valid: true,\n  ACTION,\n  RUNNING_STATUS\n};"
       },
-      "id": "build-db-error-update-001",
-      "name": "Build DB Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [80, 380]
+      "position": [
+        -672,
+        128
+      ],
+      "id": "2b504f15-3b5c-46fd-bb3a-67349ddf0cef",
+      "name": "Validate Input"
+    },
+    {
+      "parameters": {},
+      "id": "68928a09-76df-4ed2-9ca8-d2b87a41c968",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -896,
+        128
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "When called by another workflow": {
+    "Build Validation Error Response": {
       "main": [
         [
           {
-            "node": "Validate Update Data",
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validate Update Data": {
+    "Build DB Error Response": {
       "main": [
         [
           {
-            "node": "Upsert Service Status",
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Upsert Service Status": {
+    "Build Success Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE Extension Status": {
       "main": [
         [
           {
@@ -93,14 +189,59 @@
           }
         ]
       ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "UPDATE Extension Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:54:00.000Z"
+  "versionId": "18bbf709-88d7-4068-837a-1b81950a1427",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "vlGDMc64g0AUKBON",
+  "tags": []
 }

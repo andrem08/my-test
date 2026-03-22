@@ -1,31 +1,507 @@
 {
-  "name": "VHSYS-employers_plus",
+  "name": "VHSYS-employers_plus-v2",
   "nodes": [
     {
       "parameters": {},
-      "id": "trigger-employers-plus-001",
+      "id": "a6f3fee4-6cf0-479c-82eb-92e5595e124e",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [-400, 200]
+      "position": [
+        -2160,
+        160
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Extrair códigos de funcionários do HTML\nconst input = $input.first().json;\nlet htmlContent;\n\ntry {\n  const rawHtml = input.xml_ref || '';\n  const cdataMatch = rawHtml.match(/<!\\[CDATA\\[(.*?)\\]\\]>/s);\n  \n  if (!cdataMatch) {\n    throw new Error('Dados CDATA não encontrados');\n  }\n  \n  htmlContent = cdataMatch[1].trim();\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados HTML inválidos', details: error.message }\n  };\n}\n\n// Parse do HTML para extrair códigos\nconst rowPattern = /<tr[^>]*class=\"table-row-body\"[^>]*codigo=\"([^\"]+)\"[^>]*>/g;\nconst extracted = [];\nlet match;\n\nwhile ((match = rowPattern.exec(htmlContent)) !== null) {\n  const codigo = match[1];\n  if (codigo) {\n    extracted.push({ codigo });\n  }\n}\n\nif (extracted.length === 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus',\n    event: 'no_data_extracted',\n    level: 'warning'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Nenhum código de funcionário encontrado' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'codes_extracted',\n  count: extracted.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    message: 'Employee codes extracted successfully.',\n    ids: extracted\n  }\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: employers_plus\n// Rota   : POST /employers_plus\n// Fase 4 : Fluxo EMPLOYERS completo\n// ─────────────────────────────────────────────\n// Input  : { data: { dependents: [{ EmployeeId, Nome, Parentesco, ... }] } }\n// Output : { message: string, dependents_updated: number } HTTP 201\n// Banco  : DELETE dependentes antigos + INSERT novos por id_funcionario\n// Chave  : id_funcionario (linkagem)\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\nif (!body.data.dependents || !Array.isArray(body.data.dependents)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing or invalid dependents array' }\n  };\n}\n\nconst dependents = body.data.dependents;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'input_validated',\n  dependents_count: dependents.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, dependents };"
       },
-      "id": "extract-employee-codes-001",
-      "name": "Extract Employee Codes",
+      "id": "3fbc1f68-057d-4300-90c2-efed0b937918",
+      "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 200]
+      "position": [
+        -1936,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4179a24c-f75d-47aa-890c-7e4f33e58b1d",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1712,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agrupa dependentes por id_funcionario para processamento eficiente\nconst ctx = $input.first().json;\nconst dependents = ctx.dependents;\n\n// Helper para formatar CPF\nfunction formatCpf(cpf) {\n  if (!cpf) return '';\n  const cleaned = String(cpf).replace(/\\D/g, '');\n  if (cleaned.length === 11) {\n    return cleaned.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');\n  }\n  return cpf;\n}\n\n// Helper para converter data\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  const date = new Date(dateStr);\n  return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];\n}\n\n// Agrupa dependentes por funcionário\nconst groupedByEmployee = {};\ndependents.forEach(dep => {\n  const empId = String(dep.EmployeeId || '').trim();\n  \n  if (!empId) {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'employers_plus',\n      event: 'dependent_skipped_no_employee_id',\n      dependent_data: dep,\n      level: 'warn'\n    }));\n    return;\n  }\n\n  if (!groupedByEmployee[empId]) {\n    groupedByEmployee[empId] = [];\n  }\n\n  groupedByEmployee[empId].push({\n    nome: String(dep.Nome || '').trim(),\n    parentesco: String(dep.Parentesco || '').trim(),\n    data_nascimento: parseDate(dep.DataNascimento),\n    cpf: formatCpf(dep.Cpf)\n  });\n});\n\n// Converte para array de funcionários com seus dependentes\nconst employeesWithDependents = Object.keys(groupedByEmployee).map(empId => ({\n  id_funcionario: empId,\n  dependents: groupedByEmployee[empId]\n}));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'dependents_grouped',\n  employees_with_dependents: employeesWithDependents.length,\n  total_dependents: dependents.length,\n  level: 'info'\n}));\n\nreturn employeesWithDependents;"
+      },
+      "id": "eed227d5-7b70-4a51-9787-20b4dd09f425",
+      "name": "Group Dependents by Employee",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        -48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Verifica se funcionário existe\nSELECT id_funcionario, nome \nFROM auxiliary.funcionarios \nWHERE id_funcionario = $1;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
+      },
+      "id": "65a6f0ec-bc12-4b23-9361-4ef388ba6302",
+      "name": "Check Employee Exists",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -1264,
+        -48
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id_funcionario }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dfa6fd54-5c99-4e8e-9025-3b69e4332017",
+      "name": "Employee Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1040,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recupera dados do funcionário e dependentes do contexto anterior\nconst employeeData = $input.first().json;\nconst empWithDeps = $('Group Dependents by Employee').all()\n  .find(item => item.json.id_funcionario === employeeData.id_funcionario);\n\nif (!empWithDeps) {\n  return {\n    id_funcionario: employeeData.id_funcionario,\n    dependents: [],\n    _skip: true\n  };\n}\n\nreturn {\n  id_funcionario: employeeData.id_funcionario,\n  nome_funcionario: employeeData.nome,\n  dependents: empWithDeps.json.dependents,\n  _skip: false\n};"
+      },
+      "id": "76e77a4c-66cb-401a-ac02-7c732e9872b3",
+      "name": "Prepare Dependent Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -816,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Remove dependentes antigos\nDELETE FROM auxiliary.dependentes \nWHERE id_funcionario = $1\nRETURNING nome, parentesco;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "id": "3553b2c5-d769-4c27-b0ea-da643b12d290",
+      "name": "Delete Old Dependents",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -592,
+        -192
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.dependents.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4a36d61b-68ec-4136-aa4f-74cc02560a1c",
+      "name": "Has Dependents?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -368,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expande dependentes para inserção individual\nconst ctx = $input.first().json;\nconst empId = ctx.id_funcionario;\nconst dependents = ctx.dependents || [];\n\nreturn dependents.map(dep => ({\n  id_funcionario: empId,\n  nome: dep.nome,\n  parentesco: dep.parentesco,\n  data_nascimento: dep.data_nascimento,\n  cpf: dep.cpf\n}));"
+      },
+      "id": "22e8da80-df7c-4198-b8f9-911da3f9212f",
+      "name": "Split Dependents for Insert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.dependentes (\n  id_funcionario, nome, parentesco, data_nascimento, \n  cpf, created_at, updated_at\n) VALUES (\n  $1, $2, $3, $4::date, $5,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nRETURNING id_funcionario, nome, parentesco;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
+      },
+      "id": "2d563e9a-c171-4d5d-a335-f27862a1a3a1",
+      "name": "Insert New Dependents",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        -256
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Conta registros inseridos e constrói resposta\nconst insertedRecords = $input.all()\n  .filter(item => item.json && item.json.nome)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'dependents_processed',\n  dependents_updated: insertedRecords,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Dependents data updated successfully',\n    dependents_updated: insertedRecords\n  }\n};"
+      },
+      "id": "e2961ce1-46fa-4cb2-879d-ad4e868779e7",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Funcionário não existe - erro\nconst ctx = $('Group Dependents by Employee').all()\n  .find(item => item.json.id_funcionario === $input.first().json.id_funcionario);\n\nconst empId = ctx ? ctx.json.id_funcionario : 'unknown';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'employee_not_found',\n  id_funcionario: empId,\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 400,\n  body: { \n    ok: false, \n    error: 'Employee not found', \n    message: `Employee with ID ${empId} does not exist` \n  }\n};"
+      },
+      "id": "e2eb3097-152a-4b1d-a2b4-79a0954005b0",
+      "name": "Build Employee Not Found Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "c39ed3b4-1337-4496-82d4-1e9bd78fba64",
+      "name": "Build Validation Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update dependents data' }\n};"
+      },
+      "id": "6aedd9cf-e128-4e79-a9c0-cb8e32568e1f",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        160
+      ],
+      "id": "f5cfd5b1-4ed5-48b0-997c-5850b9bb5d7e",
+      "name": "Return Response"
     }
   ],
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
         [
           {
-            "node": "Extract Employee Codes",
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Group Dependents by Employee",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Group Dependents by Employee": {
+      "main": [
+        [
+          {
+            "node": "Check Employee Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Employee Exists": {
+      "main": [
+        [
+          {
+            "node": "Employee Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Employee Exists?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dependent Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Employee Not Found Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Dependent Data": {
+      "main": [
+        [
+          {
+            "node": "Delete Old Dependents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Old Dependents": {
+      "main": [
+        [
+          {
+            "node": "Has Dependents?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Dependents?": {
+      "main": [
+        [
+          {
+            "node": "Split Dependents for Insert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Dependents for Insert": {
+      "main": [
+        [
+          {
+            "node": "Insert New Dependents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert New Dependents": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Employee Not Found Error": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Validation Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DB Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
@@ -33,12 +509,17 @@
       ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:59:00.000Z"
+  "versionId": "b5f2147e-dc9e-4cf9-9074-2b2d470b441e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "Is8AcAK4ePg3oCM2",
+  "tags": []
 }

@@ -3,70 +3,332 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "trigger-service-nf-001",
+      "id": "1f9c284e-19fb-4288-8172-9c520913c03e",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [-400, 200]
+      "position": [
+        -1680,
+        368
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Decodificar e transformar dados\nconst input = $input.first().json;\nlet data;\n\ntry {\n  data = input.data?.source?.itens;\n  if (!data || !Array.isArray(data)) {\n    throw new Error('Dados inválidos: esperado array em data.source.itens');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'service_nf_report',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Transformar e validar cada item\nconst transformed = data.map(item => {\n  // Função para formatar datas do timestamp\n  const formatDate = (timestamp) => {\n    if (!timestamp) return null;\n    try {\n      const date = new Date(parseInt(timestamp) * 1000);\n      return date.toISOString().split('T')[0] + ' ' + date.toTimeString().split(' ')[0];\n    } catch {\n      return null;\n    }\n  };\n\n  // Função para limpar valores monetários\n  const parseDecimal = (value) => {\n    if (!value) return '0.00';\n    let str = value.toString();\n    if (str.includes(',') && str.includes('.')) {\n      str = str.replace(/\\./g, '').replace(',', '.');\n    } else if (str.includes(',')) {\n      str = str.replace(',', '.');\n    }\n    return parseFloat(str).toFixed(2);\n  };\n\n  return {\n    ID: item.ID || '',\n    RPS: item.RPS || '',\n    Nota: item.Nota || '',\n    Cliente: item.Cliente || '',\n    CNPJ: item.CNPJ || '',\n    Endereco: item.Endereco || '',\n    Numero: item.Numero || '',\n    Complemento: item.Complemento || '',\n    Bairro: item.Bairro || '',\n    Cidade: item.Cidade || '',\n    Estado: item.Estado || '',\n    CEP: item.CEP || '',\n    Email: item.Email || '',\n    Telefone: item.Telefone || '',\n    Vendedor: item.Vendedor || '',\n    ValorServicos: parseDecimal(item.ValorServicos),\n    ValorTotal: parseDecimal(item.ValorTotal),\n    TotalParcelas: item.TotalParcelas || '',\n    ValorDeducoes: parseDecimal(item.ValorDeducoes),\n    Aliquota: item.Aliquota || '',\n    ValorISS: parseDecimal(item.ValorISS),\n    ISSRetido: item.ISSRetido || '',\n    ValorCOFINS: parseDecimal(item.ValorCOFINS),\n    ValorPIS: parseDecimal(item.ValorPIS),\n    ValorCSLL: parseDecimal(item.ValorCSLL),\n    ValorIR: parseDecimal(item.ValorIR),\n    ValorINSS: parseDecimal(item.ValorINSS),\n    ValorTributos: parseDecimal(item.ValorTributos),\n    DataPedido: formatDate(item.DataPedido),\n    LocalPrestacao: item.LocalPrestacao || '',\n    Contas: item.Contas || '',\n    Chave: item.Chave || '',\n    Protocolo: item.Protocolo || '',\n    Descricao: item.Descricao || '',\n    DataEmissao: formatDate(item.DataEmissao),\n    Situacao: item.Situacao || '',\n    DataCad: formatDate(item.DataCad),\n    DataMod: formatDate(item.DataMod),\n    ObservacoesInternas: item.ObservacoesInternas || '',\n    cc_ref: '-1'\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'data_transform_success',\n  count: transformed.length,\n  level: 'info'\n}));\n\nreturn { transformed };"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: service_nf_report\n// Rota   : POST /service_nf_report\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : { data: { source: { itens: [...] } } }\n// Output : { message: 'Service NF report processed successfully', services_updated: number } HTTP 201\n// Banco  : UPSERT service_nf + enriquecimento com centro de custo\n// Chave  : numero_nf + serie_nf + data_emissao + cnpj_prestador\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\nif (!body.data.source || !body.data.source.itens) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required structure: data.source.itens' }\n  };\n}\n\nif (!Array.isArray(body.data.source.itens)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'itens must be an array' }\n  };\n}\n\nconst itens = body.data.source.itens;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'input_validated',\n  itens_count: itens.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, itens };"
       },
-      "id": "decode-transform-service-nf-001",
+      "id": "943c0a91-74eb-4c06-8e7e-6d706b6d600a",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d8275021-426c-4675-9383-7520f14b1e5b",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1200,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decode HTML entities + Transform Service NF data\nconst ctx = $input.first().json;\nconst itens = ctx.itens;\n\n// Decode HTML entities recursivamente\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/')\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\n// Helper para converter data\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  const cleaned = String(dateStr).replace(/[^0-9]/g, '');\n  if (cleaned.length === 8) {\n    const year1 = cleaned.substring(0, 4);\n    const year2 = cleaned.substring(4, 8);\n    if (year1.startsWith('20') || year1.startsWith('19')) {\n      return `${year1}-${cleaned.substring(4, 6)}-${cleaned.substring(6, 8)}`;\n    } else {\n      return `${year2}-${cleaned.substring(2, 4)}-${cleaned.substring(0, 2)}`;\n    }\n  }\n  return dateStr;\n}\n\n// Helper para converter valor\nfunction parseValue(value) {\n  if (!value) return 0;\n  const cleaned = String(value).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\n// Helper para gerar chave única\nfunction generateKey(item) {\n  const numero = String(item.NumeroNFS || item.Numero || '').trim();\n  const serie = String(item.SerieNFS || item.Serie || '').trim();\n  const dataEmissao = parseDate(item.DataEmissao || item.Data || '');\n  const cnpjPrestador = String(item.CnpjPrestador || item.CNPJ || '').replace(/\\D/g, '');\n  \n  return `${numero}-${serie}-${dataEmissao}-${cnpjPrestador}`;\n}\n\nconst decodedItens = decodeHtml(itens);\n\nconst transformedNFs = decodedItens.map((item, index) => {\n  const key = generateKey(item);\n  \n  if (!key || key === '---') {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'service_nf_report',\n      event: 'nf_skipped_invalid_key',\n      item_index: index,\n      item_data: item,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    chave_nf: key,\n    numero_nf: String(item.NumeroNFS || item.Numero || '').trim(),\n    serie_nf: String(item.SerieNFS || item.Serie || '').trim(),\n    data_emissao: parseDate(item.DataEmissao || item.Data || ''),\n    cnpj_prestador: String(item.CnpjPrestador || item.CNPJ || '').replace(/\\D/g, ''),\n    razao_social_prestador: String(item.RazaoSocialPrestador || item.Prestador || '').trim(),\n    cnpj_tomador: String(item.CnpjTomador || item.CNPJTomador || '').replace(/\\D/g, ''),\n    razao_social_tomador: String(item.RazaoSocialTomador || item.Tomador || '').trim(),\n    valor_servico: parseValue(item.ValorServico || item.Valor || 0),\n    valor_deducoes: parseValue(item.ValorDeducoes || 0),\n    base_calculo: parseValue(item.BaseCalculo || 0),\n    aliquota_iss: parseValue(item.AliquotaISS || 0),\n    valor_iss: parseValue(item.ValorISS || 0),\n    valor_pis: parseValue(item.ValorPIS || 0),\n    valor_cofins: parseValue(item.ValorCOFINS || 0),\n    valor_inss: parseValue(item.ValorINSS || 0),\n    valor_ir: parseValue(item.ValorIR || 0),\n    valor_csll: parseValue(item.ValorCSLL || 0),\n    discriminacao_servico: String(item.DiscriminacaoServico || item.Servico || '').trim(),\n    codigo_servico: String(item.CodigoServico || '').trim(),\n    situacao: String(item.Situacao || item.Status || 'Normal').trim(),\n    // Campo para enriquecimento com centro de custo (será preenchido depois)\n    id_centro_custo: null\n  };\n}).filter(nf => nf !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'nfs_transformed',\n  valid_nfs: transformedNFs.length,\n  total_input: decodedItens.length,\n  level: 'info'\n}));\n\nreturn transformedNFs;"
+      },
+      "id": "7ab82f77-7d38-4a0d-a29e-845196f20100",
       "name": "Decode + Transform Service NFs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 200]
+      "position": [
+        -960,
+        272
+      ]
     },
     {
       "parameters": {
-        "query": "SELECT \n  sm.codigo,\n  sm.numeronfs,\n  sm.chave,\n  sn.cc_ref,\n  sn.obs_interno_pedido\nFROM \"NF_ServiceMetadata\" sm\nLEFT JOIN \"NF_Service\" sn ON sm.codigo = sn.id_servico\nWHERE sm.numeronfs IN ({{ $json.transformed.map(item => \"'\" + item.RPS + \"'\").join(\",\") }});",
-        "additionalFields": {}
+        "operation": "executeQuery",
+        "query": "-- Enriquecimento com centro de custo baseado no CNPJ do tomador\nSELECT \n  $1 as chave_nf,\n  cc.id_centro_custos\nFROM auxiliary.centro_custos cc\nWHERE cc.cnpj = $2\n  OR cc.nome ILIKE '%' || $3 || '%'\nLIMIT 1;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
       },
-      "id": "get-enrichment-data-001",
-      "name": "Get Enrichment Data",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [80, 200]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Enriquecer dados com centro de custos\nconst transformedData = $input.first().json.transformed;\nconst enrichmentData = $input.last().json;\n\n// Criar mapa de enriquecimento\nconst enrichmentMap = {};\nenrichmentData.forEach(row => {\n  enrichmentMap[row.numeronfs] = {\n    cc_ref: row.cc_ref || '-1',\n    obs_interno_pedido: row.obs_interno_pedido || ''\n  };\n});\n\n// Enriquecer dados transformados\nconst enrichedData = transformedData.map(item => {\n  const enrichment = enrichmentMap[item.RPS];\n  \n  if (enrichment) {\n    item.cc_ref = enrichment.cc_ref;\n    if (!item.ObservacoesInternas) {\n      item.ObservacoesInternas = enrichment.obs_interno_pedido;\n    }\n  } else {\n    // Fallback: extrair CC das observações\n    if (item.ObservacoesInternas) {\n      const ccMatch = item.ObservacoesInternas.match(/CC[:\\s]*([A-Z0-9]+)/i);\n      if (ccMatch) {\n        item.cc_ref = ccMatch[1];\n      }\n    }\n  }\n  \n  return item;\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'enrichment_success',\n  enriched_count: enrichedData.filter(item => item.cc_ref !== '-1').length,\n  total_count: enrichedData.length,\n  level: 'info'\n}));\n\nreturn { enriched: enrichedData };"
-      },
-      "id": "enrich-with-cc-001",
+      "id": "d009ece7-e1c2-41d0-b813-acc539f45ec0",
       "name": "Enrich with Centro Custo",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [320, 200]
-    },
-    {
-      "parameters": {
-        "query": "INSERT INTO \"ServiceNFReport\" (\n  \"ID\", \"RPS\", \"Nota\", \"Cliente\", \"CNPJ\", \"Endereco\", \"Numero\", \"Complemento\",\n  \"Bairro\", \"Cidade\", \"Estado\", \"CEP\", \"Email\", \"Telefone\", \"Vendedor\",\n  \"ValorServicos\", \"ValorTotal\", \"TotalParcelas\", \"ValorDeducoes\", \"Aliquota\",\n  \"ValorISS\", \"ISSRetido\", \"ValorCOFINS\", \"ValorPIS\", \"ValorCSLL\", \"ValorIR\", \n  \"ValorINSS\", \"ValorTributos\", \"DataPedido\", \"LocalPrestacao\", \"Contas\",\n  \"Chave\", \"Protocolo\", \"Descricao\", \"DataEmissao\", \"Situacao\", \"DataCad\",\n  \"DataMod\", \"cc_ref\", \"ObservacoesInternas\", \"created_at\", \"updated_at\"\n) VALUES {{ range($json.enriched) }}\n(\n  '{{ $item.ID }}',\n  '{{ $item.RPS }}',\n  '{{ $item.Nota }}',\n  '{{ $item.Cliente }}',\n  '{{ $item.CNPJ }}',\n  '{{ $item.Endereco }}',\n  '{{ $item.Numero }}',\n  '{{ $item.Complemento }}',\n  '{{ $item.Bairro }}',\n  '{{ $item.Cidade }}',\n  '{{ $item.Estado }}',\n  '{{ $item.CEP }}',\n  '{{ $item.Email }}',\n  '{{ $item.Telefone }}',\n  '{{ $item.Vendedor }}',\n  '{{ $item.ValorServicos }}',\n  '{{ $item.ValorTotal }}',\n  '{{ $item.TotalParcelas }}',\n  '{{ $item.ValorDeducoes }}',\n  '{{ $item.Aliquota }}',\n  '{{ $item.ValorISS }}',\n  '{{ $item.ISSRetido }}',\n  '{{ $item.ValorCOFINS }}',\n  '{{ $item.ValorPIS }}',\n  '{{ $item.ValorCSLL }}',\n  '{{ $item.ValorIR }}',\n  '{{ $item.ValorINSS }}',\n  '{{ $item.ValorTributos }}',\n  '{{ $item.DataPedido }}',\n  '{{ $item.LocalPrestacao }}',\n  '{{ $item.Contas }}',\n  '{{ $item.Chave }}',\n  '{{ $item.Protocolo }}',\n  '{{ $item.Descricao }}',\n  '{{ $item.DataEmissao }}',\n  '{{ $item.Situacao }}',\n  '{{ $item.DataCad }}',\n  '{{ $item.DataMod }}',\n  '{{ $item.cc_ref }}',\n  '{{ $item.ObservacoesInternas }}',\n  NOW(),\n  NOW()\n){{ if $index < ($json.enriched.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"RPS\")\nDO UPDATE SET\n  \"Nota\" = EXCLUDED.\"Nota\",\n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"ValorServicos\" = EXCLUDED.\"ValorServicos\",\n  \"ValorTotal\" = EXCLUDED.\"ValorTotal\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"cc_ref\" = EXCLUDED.\"cc_ref\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"ServiceNFReport\".\"Cliente\" IS DISTINCT FROM EXCLUDED.\"Cliente\" OR\n  \"ServiceNFReport\".\"CNPJ\" IS DISTINCT FROM EXCLUDED.\"CNPJ\" OR\n  \"ServiceNFReport\".\"ValorServicos\" IS DISTINCT FROM EXCLUDED.\"ValorServicos\" OR\n  \"ServiceNFReport\".\"ValorTotal\" IS DISTINCT FROM EXCLUDED.\"ValorTotal\" OR\n  \"ServiceNFReport\".\"Situacao\" IS DISTINCT FROM EXCLUDED.\"Situacao\" OR\n  \"ServiceNFReport\".\"cc_ref\" IS DISTINCT FROM EXCLUDED.\"cc_ref\"\n);",
-        "additionalFields": {}
-      },
-      "id": "upsert-service-nf-001",
-      "name": "Upsert Service NF",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.4,
-      "position": [560, 200],
-      "alwaysOutputData": false,
+      "typeVersion": 2.3,
+      "position": [
+        -720,
+        160
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'Service NF report processed successfully' }\n};"
+        "jsCode": "// Combina dados da NF com enriquecimento de centro de custo\nconst enrichmentResults = $input.all();\nconst originalNFs = $('Decode + Transform Service NFs').all();\n\n// Cria mapa de enriquecimento\nconst enrichmentMap = {};\nenrichmentResults.forEach(result => {\n  if (result.json && result.json.chave_nf) {\n    enrichmentMap[result.json.chave_nf] = result.json.id_centro_custos;\n  }\n});\n\n// Aplica enriquecimento\nconst enrichedNFs = originalNFs.map(nfItem => {\n  const nf = nfItem.json;\n  const centroId = enrichmentMap[nf.chave_nf];\n  \n  return {\n    ...nf,\n    id_centro_custo: centroId || null\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'nfs_enriched',\n  enriched_count: enrichedNFs.filter(nf => nf.id_centro_custo).length,\n  total_nfs: enrichedNFs.length,\n  level: 'info'\n}));\n\nreturn enrichedNFs;"
       },
-      "id": "build-success-service-nf-001",
-      "name": "Build Success Response",
+      "id": "fe84d280-f424-4fd1-a421-c1f89ee506cc",
+      "name": "Combine Enrichment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [800, 200]
+      "position": [
+        -480,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.service_nf (\n  chave_nf, numero_nf, serie_nf, data_emissao,\n  cnpj_prestador, razao_social_prestador, \n  cnpj_tomador, razao_social_tomador,\n  valor_servico, valor_deducoes, base_calculo,\n  aliquota_iss, valor_iss, valor_pis, valor_cofins,\n  valor_inss, valor_ir, valor_csll,\n  discriminacao_servico, codigo_servico, situacao,\n  id_centro_custo, created_at, updated_at\n) VALUES (\n  $1, $2, $3, $4::date, $5, $6, $7, $8,\n  $9::numeric, $10::numeric, $11::numeric,\n  $12::numeric, $13::numeric, $14::numeric, $15::numeric,\n  $16::numeric, $17::numeric, $18::numeric,\n  $19, $20, $21, $22::integer,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (chave_nf)\nDO UPDATE SET \n  razao_social_prestador = EXCLUDED.razao_social_prestador,\n  razao_social_tomador = EXCLUDED.razao_social_tomador,\n  valor_servico = EXCLUDED.valor_servico,\n  valor_deducoes = EXCLUDED.valor_deducoes,\n  base_calculo = EXCLUDED.base_calculo,\n  aliquota_iss = EXCLUDED.aliquota_iss,\n  valor_iss = EXCLUDED.valor_iss,\n  valor_pis = EXCLUDED.valor_pis,\n  valor_cofins = EXCLUDED.valor_cofins,\n  valor_inss = EXCLUDED.valor_inss,\n  valor_ir = EXCLUDED.valor_ir,\n  valor_csll = EXCLUDED.valor_csll,\n  discriminacao_servico = EXCLUDED.discriminacao_servico,\n  codigo_servico = EXCLUDED.codigo_servico,\n  situacao = EXCLUDED.situacao,\n  id_centro_custo = EXCLUDED.id_centro_custo,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  service_nf.razao_social_prestador IS DISTINCT FROM EXCLUDED.razao_social_prestador\n  OR service_nf.razao_social_tomador IS DISTINCT FROM EXCLUDED.razao_social_tomador\n  OR service_nf.valor_servico IS DISTINCT FROM EXCLUDED.valor_servico\n  OR service_nf.valor_deducoes IS DISTINCT FROM EXCLUDED.valor_deducoes\n  OR service_nf.base_calculo IS DISTINCT FROM EXCLUDED.base_calculo\n  OR service_nf.aliquota_iss IS DISTINCT FROM EXCLUDED.aliquota_iss\n  OR service_nf.valor_iss IS DISTINCT FROM EXCLUDED.valor_iss\n  OR service_nf.valor_pis IS DISTINCT FROM EXCLUDED.valor_pis\n  OR service_nf.valor_cofins IS DISTINCT FROM EXCLUDED.valor_cofins\n  OR service_nf.valor_inss IS DISTINCT FROM EXCLUDED.valor_inss\n  OR service_nf.valor_ir IS DISTINCT FROM EXCLUDED.valor_ir\n  OR service_nf.valor_csll IS DISTINCT FROM EXCLUDED.valor_csll\n  OR service_nf.discriminacao_servico IS DISTINCT FROM EXCLUDED.discriminacao_servico\n  OR service_nf.codigo_servico IS DISTINCT FROM EXCLUDED.codigo_servico\n  OR service_nf.situacao IS DISTINCT FROM EXCLUDED.situacao\n  OR service_nf.id_centro_custo IS DISTINCT FROM EXCLUDED.id_centro_custo\nRETURNING chave_nf, numero_nf, valor_servico, situacao, id_centro_custo;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "independently"
+        }
+      },
+      "id": "1b96e91e-8e08-4acb-8718-b02c11c50572",
+      "name": "Upsert Service NF",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -240,
+        80
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Conta registros afetados e constrói resposta\nconst affectedRecords = $input.all()\n  .filter(item => item.json && item.json.chave_nf)\n  .length;\n\nconst enrichedCount = $input.all()\n  .filter(item => item.json && item.json.id_centro_custo)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'service_nf_upserted',\n  services_updated: affectedRecords,\n  enriched_with_centro_custo: enrichedCount,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Service NF report processed successfully',\n    services_updated: affectedRecords,\n    enriched_with_centro_custo: enrichedCount\n  }\n};"
+      },
+      "id": "9a721066-91cc-4a97-a157-45daf6ba6ad9",
+      "name": "Build Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "5387de0b-a3ed-4845-848f-f014aa8556e9",
+      "name": "Build Validation Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        464
+      ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process service NF report' }\n};"
       },
-      "id": "build-db-error-service-nf-001",
+      "id": "507ea9ee-ee35-46ce-9c55-a9d1114ffd53",
       "name": "Build DB Error Response",
-      "type": "n8n-nodes-base.code",\n      "typeVersion": 2,\n      "position": [560, 380]\n    }\n  ],\n  "connections": {\n    "When called by another workflow": {\n      "main": [\n        [\n          {\n            "node": "Decode + Transform Service NFs",\n            "type": "main",\n            "index": 0\n          }\n        ]\n      ]\n    },\n    "Decode + Transform Service NFs": {\n      "main": [\n        [\n          {\n            "node": "Get Enrichment Data",\n            "type": "main",\n            "index": 0\n          }\n        ]\n      ]\n    },\n    "Get Enrichment Data": {\n      "main": [\n        [\n          {\n            "node": "Enrich with Centro Custo",\n            "type": "main",\n            "index": 0\n          }\n        ]\n      ]\n    },\n    "Enrich with Centro Custo": {\n      "main": [\n        [\n          {\n            "node": "Upsert Service NF",\n            "type": "main",\n            "index": 0\n          }\n        ]\n      ]\n    },\n    "Upsert Service NF": {\n      "main": [\n        [\n          {\n            "node": "Build Success Response",\n            "type": "main",\n            "index": 0\n          }\n        ],\n        [\n          {\n            "node": "Build DB Error Response",\n            "type": "main",\n            "index": 0\n          }\n        ]\n      ]\n    }\n  },\n  "pinData": {},\n  "settings": {\n    "executionOrder": "v1"\n  },\n  "staticData": null,\n  "tags": [],\n  "triggerCount": 0,\n  "updatedAt": "2024-03-22T22:59:00.000Z"\n}
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        272
+      ],
+      "id": "c5ab24e8-fde6-4cc0-9c11-05acf4f94759",
+      "name": "Return Response"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Decode + Transform Service NFs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Validation Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode + Transform Service NFs": {
+      "main": [
+        [
+          {
+            "node": "Enrich with Centro Custo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich with Centro Custo": {
+      "main": [
+        [
+          {
+            "node": "Combine Enrichment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Enrichment": {
+      "main": [
+        [
+          {
+            "node": "Upsert Service NF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Service NF": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Validation Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DB Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2cae8143-b3c0-492d-8519-84b1b2d9ba21",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "21NZxIQ62yae77mQ",
+  "tags": []
+}

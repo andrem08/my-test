@@ -1,31 +1,203 @@
 {
-  "name": "VHSYS-cc_next_url",
+  "name": "VHSYS-cc_next_url-v1",
   "nodes": [
     {
       "parameters": {},
-      "id": "trigger-cc-next-url-001",
+      "id": "65d12043-aa60-4b24-9d9d-faef5c0f75ed",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
-      "position": [-400, 200]
+      "position": [
+        -1376,
+        416
+      ]
     },
     {
       "parameters": {
-        "jsCode": "// Lógica para próxima URL do CC Report\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report_manage/next_url',\n  event: 'next_url_request',\n  level: 'info'\n}));\n\n// URLs simuladas para teste - você pode adaptar conforme sua lógica\nconst urls = [\n  'https://sistema.vhsys.com.br/cc_report?page=1',\n  'https://sistema.vhsys.com.br/cc_report?page=2',\n  'https://sistema.vhsys.com.br/cc_report?page=3'\n];\n\n// Lógica simples de rotação - você pode implementar algo mais sofisticado\nconst currentTime = Date.now();\nconst urlIndex = Math.floor(currentTime / 10000) % urls.length;\nconst nextUrl = urls[urlIndex];\n\nreturn {\n  statusCode: 200,\n  body: {\n    next_url: nextUrl,\n    timestamp: new Date().toISOString(),\n    page: urlIndex + 1\n  }\n};"
+        "operation": "executeQuery",
+        "query": "SELECT\n  cc_id,\n  entries_runned,\n  outputs_runned\nFROM auxiliary.update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
       },
-      "id": "generate-next-url-001",
-      "name": "Generate Next URL",
+      "id": "e41d764e-36f6-4b77-9a0f-6a7b5df43c1a",
+      "name": "Get Random Pending CC",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -1152,
+        416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.cc_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7407fce2-096e-49d1-b73d-b37fe4c01a0f",
+      "name": "Has Pending?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -928,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// Monta URL do VHSYS com data BRT correta.\n// CRÍTICO: type = 'entrada'/'saida' (lowercase) para o banco\n//          Tipo = 'Entrada'/'Saida' (capitalizado) para a URL do VHSYS\n// ─────────────────────────────────────────────\nconst row          = $input.first().json;\nconst ccId         = row.cc_id;\nconst entryRunned  = parseInt(row.entries_runned);\nconst outputRunned = parseInt(row.outputs_runned);\n\n// Data atual em BRT (America/Sao_Paulo)\nconst now = new Date();\nconst brtOffset = -3 * 60; // UTC-3 em minutos\nconst brtDate   = new Date(now.getTime() + (now.getTimezoneOffset() + brtOffset) * 60000);\nconst day   = String(brtDate.getDate()).padStart(2, '0');\nconst month = String(brtDate.getMonth() + 1).padStart(2, '0');\nconst year  = brtDate.getFullYear();\nconst currentDate = `${day}/${month}/${year}`;\n\n// Determina tipo — prioridade: entrada antes de saida\nlet type, urlTipo;\nif (entryRunned === 0) {\n  type    = 'entrada';\n  urlTipo = 'Entrada';\n} else {\n  type    = 'saida';\n  urlTipo = 'Saida';\n}\n\nconst url = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${currentDate}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlTipo}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp      : new Date().toISOString(),\n  route          : 'cc_report_manage/next_url',\n  event          : 'cc_next_url_generated',\n  cc_id          : ccId,\n  type           : type,\n  date_brt       : currentDate,\n  entries_runned : entryRunned,\n  outputs_runned : outputRunned,\n  level          : 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: { url, cc_id: ccId, type }\n};"
+      },
+      "id": "5f152e5a-fae8-4c01-aa78-ff046e892e74",
+      "name": "Build Next URL",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-160, 200]
+      "position": [
+        -704,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nenhum CC pendente — tudo processado\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'cc_next_url_no_pending',\n  level     : 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { url: null, cc_id: null, type: null, message: 'No pending CCs found' }\n};"
+      },
+      "id": "f7e9426a-1f3b-4063-b077-a9e2a3f407c9",
+      "name": "No Pending Found",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'db_error',\n  message   : errData.message || 'Unknown DB error',\n  level     : 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not fetch next CC URL' }\n};"
+      },
+      "id": "9d29ef42-a439-4bd5-ae56-1a669de31499",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        416
+      ],
+      "id": "9d55cfb0-06d5-4d00-a440-a460ce763695",
+      "name": "Return Response"
     }
   ],
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
         [
           {
-            "node": "Generate Next URL",
+            "node": "Get Random Pending CC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Random Pending CC": {
+      "main": [
+        [
+          {
+            "node": "Has Pending?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Pending?": {
+      "main": [
+        [
+          {
+            "node": "Build Next URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Pending Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Next URL": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Pending Found": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build DB Error Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
             "type": "main",
             "index": 0
           }
@@ -33,12 +205,21 @@
       ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "saveDataErrorExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:59:00.000Z"
+  "versionId": "60950064-5802-454c-bb6b-ce51a6bdea3b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "YPMQGm7hD5eBn1da",
+  "tags": []
 }

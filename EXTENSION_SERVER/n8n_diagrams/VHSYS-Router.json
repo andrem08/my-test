@@ -3,25 +3,440 @@
   "nodes": [
     {
       "parameters": {
-        "path": "vhsys-router",
+        "workflowId": {
+          "__rl": true,
+          "value": "EP5jvsjGYWMEROje",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/EP5jvsjGYWMEROje",
+          "cachedResultName": "VHSYS-nf_service_info-v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
         "options": {}
       },
-      "id": "webhook-router-001",
-      "name": "Webhook Router",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1.1,
-      "position": [-800, 200],
-      "webhookId": "vhsys-main-router"
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        6352
+      ],
+      "id": "ffbaa69f-ea40-4558-8781-4748cd6675c9",
+      "name": "Execute: NF Service"
     },
     {
       "parameters": {
-        "jsCode": "// Extract route from query parameter\nconst route = $input.first().json.query?.route || 'unknown';\nconst method = $input.first().json.method || 'GET';\nconst body = $input.first().json.body || {};\nconst query = $input.first().json.query || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event: 'route_request',\n  route,\n  method,\n  level: 'info'\n}));\n\nreturn { route, method, body, query, fullPayload: $input.first().json };"
+        "workflowId": {
+          "__rl": true,
+          "value": "vEyfgH4ys8g1pu2E",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vEyfgH4ys8g1pu2E",
+          "cachedResultName": "VHSYS-nf_service_labels_ids-v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "id": "extract-route-001",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        6144
+      ],
+      "id": "4a8f24d8-3b90-4ec5-b7c8-c8f5e668e159",
+      "name": "Execute: NF label Id's"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "AKxeodqxnWTSbis3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/AKxeodqxnWTSbis3",
+          "cachedResultName": "VHSYS-nf_service_labels-v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        5936
+      ],
+      "id": "91340484-1403-4091-899c-e21b1967b327",
+      "name": "Execute: NF label"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ti5vujrnafguyYzG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ti5vujrnafguyYzG",
+          "cachedResultName": "VHSYS-sales_nf_report-v2"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        5760
+      ],
+      "id": "f18e6eb1-0fb1-40b3-b739-95e21a7e57e4",
+      "name": "Execute: NF Sales"
+    },
+    {
+      "parameters": {
+        "multipleMethods": true,
+        "httpMethod": [
+          "PUT",
+          "GET",
+          "POST"
+        ],
+        "path": "vhsys-router",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "64499cf7-c491-4605-94b1-47132e822b7d",
+      "name": "Webhook Router",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4416,
+        5728
+      ],
+      "webhookId": "vhsys-router-webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route\n// Extrai rota lógica e monta envelope canônico\n// para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst route = (req.query?.route || req.body?.route || 'unknown').toString().trim();\nconst method = (req.method || 'GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Log estruturado — sem campos sensíveis\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  level:     'info'\n}));\n\nreturn { route, method, body, query, original_request: req };"
+      },
+      "id": "255ba81a-7a90-4535-83b1-9c402b776c24",
       "name": "Extract Route",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-560, 200]
+      "position": [
+        -4192,
+        5744
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Placeholder Fase 6\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'regular_bills', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'regular_bills', message: 'Phase 6' } };"
+      },
+      "id": "b6fe7a9c-2e43-478f-8613-71a267b057c4",
+      "name": "Placeholder: Regular Bills",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3360,
+        5568
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ul7KFJNXYYJCida6",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ul7KFJNXYYJCida6",
+          "cachedResultName": "VHSYS-employers_general_data-v2"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "8912548f-b1e3-4a81-85e7-b15dacd33399",
+      "name": "Execute: Employers General",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -3360,
+        6720
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Is8AcAK4ePg3oCM2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
+          "cachedResultName": "VHSYS-employers_plus-v1"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "9c96f9a5-48f7-46bc-9228-cef69edcfc3b",
+      "name": "Execute: Employers Plus",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -3360,
+        6912
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "8j8GgE8PfT45Teb9",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/8j8GgE8PfT45Teb9",
+          "cachedResultName": "VHSYS-employers_plus_info-v1"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "30acc43e-dc67-4dcf-b17b-9423504c3389",
+      "name": "Execute: Employers Plus Info",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -3360,
+        7104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
+      },
+      "id": "71077a7a-f3c2-4acd-8642-d71fe3fed219",
+      "name": "404 Not Found",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3360,
+        6528
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
+      },
+      "id": "a7581cbc-5916-4d8e-8964-48b642b043de",
+      "name": "Normalize Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2864,
+        5760
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.body }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode || 200 }}"
+        }
+      },
+      "id": "8002cc0e-6be8-4178-bdd2-3ea8fb65a0a9",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -2640,
+        5760
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "UkWE6rMcSqAwTgKB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/UkWE6rMcSqAwTgKB",
+          "cachedResultName": "VHSYS-cc_status-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        4992
+      ],
+      "id": "2d16671a-e87c-48ca-9ff9-245a6275efc5",
+      "name": "Execute: CC Status"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "vlGDMc64g0AUKBON",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vlGDMc64g0AUKBON",
+          "cachedResultName": "VHSYS-update_services-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        4608
+      ],
+      "id": "4486c08b-4770-401c-8cca-a54de5313d0f",
+      "name": "Execute: Update Services"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "sjWsEoIsUa8qrPcp",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/sjWsEoIsUa8qrPcp",
+          "cachedResultName": "VHSYS-health-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        4416
+      ],
+      "id": "1bf9924a-baad-4d9e-a429-eeff8455906d",
+      "name": "Execute: Health"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YPMQGm7hD5eBn1da",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YPMQGm7hD5eBn1da",
+          "cachedResultName": "VHSYS-cc_next_url-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        5184
+      ],
+      "id": "5e8575d5-8d50-4bd7-9dcd-89406f58a89f",
+      "name": "Execute: CC Next URL"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "DoAXp1U7yQ5UOjgZ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/DoAXp1U7yQ5UOjgZ",
+          "cachedResultName": "VHSYS-cc_report-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        5376
+      ],
+      "id": "0034121f-338d-40cc-a389-26f074209c40",
+      "name": "Execute: CC Report"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ul6IjUpAqixCTDc3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ul6IjUpAqixCTDc3",
+          "cachedResultName": "VHSYS-get_update_extension_service_data-v1"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -3360,
+        4800
+      ],
+      "id": "7cc52e67-cd8c-4a21-bc8d-1f88d805ac71",
+      "name": "Call 'VHSYS-get_update_extension_service_data-v1'"
     },
     {
       "parameters": {
@@ -32,7 +447,8 @@
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
@@ -41,605 +457,414 @@
                     "operator": {
                       "type": "string",
                       "operation": "equals"
-                    }
+                    },
+                    "id": "a6fcc763-f8c4-4e23-bf63-1ddbb4e5b544"
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "health"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
+                    "id": "9667381f-7951-4ad0-b127-de93291420a8",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "update_services",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "update_services"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
+                    "id": "4bce8d92-72a4-407a-af6b-086bd88998bd",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "get_update_extension_service_data",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "get_status"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
+                    "id": "74e20558-1a1b-4550-9eec-bbb4e8e1a858",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "cc_report_manage/status",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "cc_status"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
+                    "id": "b1258e89-f648-4ddf-8a04-24554c867e88",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "cc_report_manage/next_url",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "cc_next_url"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
+                    "id": "72bca3e5-8322-4220-9049-5491b2f3ccf2",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "cc_report",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "cc_report"
             },
             {
               "conditions": {
                 "options": {
                   "caseSensitive": true,
                   "leftValue": "",
-                  "typeValidation": "strict"
+                  "typeValidation": "strict",
+                  "version": 3
                 },
                 "conditions": [
                   {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "employers_general_data",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "employers_plus",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "employers_plus_info",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "sales_nf_report",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "service_nf_report",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "nf_service_labels",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "nf_service_labels_ids",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json.route }}",
-                    "rightValue": "nf_service_info",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ]
-              },
-              "renameOutput": false
-            },
-            {
-              "conditions": {
-                "options": {
-                  "caseSensitive": true,
-                  "leftValue": "",
-                  "typeValidation": "strict"
-                },
-                "conditions": [
-                  {
+                    "id": "6a5803f1-b81c-4ec8-bf52-26e55c79be45",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "regular_bills",
                     "operator": {
                       "type": "string",
-                      "operation": "equals"
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
                     }
                   }
-                ]
+                ],
+                "combinator": "and"
               },
-              "renameOutput": false
+              "renameOutput": true,
+              "outputKey": "regular_bills"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a9828eb8-246f-4156-9c30-ffe2ac2f7365",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "sales_nf_report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sales_nf_report"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6b99f32b-e7cd-45a4-ad24-f69cc38480cc",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "nf_service_labels",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nf_labels"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a9ce97ec-fbef-460f-bb08-b7a1738c9962",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "nf_service_labels_ids",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nf_labels_ids"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8120abf5-cba5-425b-8556-4974d38302f7",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "nf_service_info",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "nf_info"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "7b442430-e51c-4f23-a6ec-b1dc9bdbf790",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "employers_general_data",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "employers_general_data"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a064bfd5-7959-4475-b6ef-77c969daf96d",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "employers_plus",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "employers_plus"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c923b735-3846-4419-b29a-7f5717f22234",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "employers_plus_info",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "employers_plus_info"
             }
           ]
         },
-        "options": {}
-      },
-      "id": "switch-router-001",
-      "name": "Route Switch",
-      "type": "n8n-nodes-base.switch",
-      "typeVersion": 3,
-      "position": [-320, 200]
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-health",
-          "mode": "list"
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, -200],
-      "id": "execute-health-001",
-      "name": "Execute: Health"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-update_services",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "body": "={{ $json.body }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, -100],
-      "id": "execute-update-services-001",
-      "name": "Execute: Update Services"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-get_update_extension_service_data",
-          "mode": "list"
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 0],
-      "id": "execute-get-update-001",
-      "name": "Execute: Get Update Data"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-cc_status",
-          "mode": "list"
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 100],
-      "id": "execute-cc-status-001",
-      "name": "Execute: CC Status"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-cc_next_url",
-          "mode": "list"
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 200],
-      "id": "execute-cc-next-url-001",
-      "name": "Execute: CC Next URL"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-cc_report",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "body": "={{ $json.body }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 300],
-      "id": "execute-cc-report-001",
-      "name": "Execute: CC Report"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-employers_general_data",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "body": "={{ $json.body }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 400],
-      "id": "execute-employers-general-001",
-      "name": "Execute: Employers General"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-employers_plus",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "xml_ref": "={{ $json.body.xml_ref }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 500],
-      "id": "execute-employers-plus-001",
-      "name": "Execute: Employers Plus"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-employers_plus_info",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "xml_ref": "={{ $json.body.xml_ref }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 600],
-      "id": "execute-employers-plus-info-001",
-      "name": "Execute: Employers Plus Info"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-sales_nf_report",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "data": "={{ $json.body }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 700],
-      "id": "execute-sales-nf-001",
-      "name": "Execute: Sales NF"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-service_nf_report",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "data": "={{ $json.body }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 800],
-      "id": "execute-service-nf-001",
-      "name": "Execute: Service NF"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-nf_service_labels",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "xml_ref": "={{ $json.body.xml_ref }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 900],
-      "id": "execute-nf-labels-001",
-      "name": "Execute: NF Labels"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-nf_service_labels_ids",
-          "mode": "list"
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 1000],
-      "id": "execute-nf-labels-ids-001",
-      "name": "Execute: NF Labels IDs"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "VHSYS-nf_service_info",
-          "mode": "list"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "xml_ref": "={{ $json.body.xml_ref }}"
-          }
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [0, 1100],
-      "id": "execute-nf-info-001",
-      "name": "Execute: NF Info"
-    },
-    {
-      "parameters": {
-        "workflowId": "VHSYS-regular_bills"
-      },
-      "id": "call-regular-bills-001", 
-      "name": "Call Regular Bills",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1,
-      "position": [0, 1200],
-      "alwaysOutputData": false,
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "// 404 Not Found\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health', 'update_services', 'get_update_extension_service_data',\n      'cc_report_manage/status', 'cc_report_manage/next_url', 'cc_report',\n      'employers_general_data', 'employers_plus', 'employers_plus_info',\n      'sales_nf_report', 'service_nf_report',\n      'nf_service_labels', 'nf_service_labels_ids', 'nf_service_info',\n      'regular_bills'\n    ]\n  }\n};"
-      },
-      "id": "not-found-001",
-      "name": "404 Not Found",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [0, 1300]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Normalize response format\nconst input = $input.first().json;\nconst statusCode = input.statusCode || 200;\nconst body = input.body || input;\n\nreturn { statusCode, body };"
-      },
-      "id": "normalize-response-001",
-      "name": "Normalize Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [400, 600]
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $json.body }}",
         "options": {
-          "responseCode": "={{ $json.statusCode }}"
+          "fallbackOutput": "extra"
         }
       },
-      "id": "respond-webhook-001",
-      "name": "Respond to Webhook",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [640, 600]
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -3968,
+        5536
+      ],
+      "id": "621e703a-6de6-4c4f-965a-9063f39dbfd4",
+      "name": "Switch"
     }
   ],
+  "pinData": {},
   "connections": {
     "Webhook Router": {
       "main": [
         [
           {
             "node": "Extract Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: NF Service": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: NF label Id's": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: NF label": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: NF Sales": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -650,186 +875,14 @@
       "main": [
         [
           {
-            "node": "Route Switch",
+            "node": "Switch",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Route Switch": {
-      "main": [
-        [
-          {
-            "node": "Execute: Health",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Update Services",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Get Update Data",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: CC Status",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: CC Next URL",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: CC Report",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Employers General",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Employers Plus",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Employers Plus Info",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Sales NF",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: Service NF",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: NF Labels",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: NF Labels IDs",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Execute: NF Info",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Call Regular Bills",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [],
-        [
-          {
-            "node": "404 Not Found",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Health": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Update Services": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Get Update Data": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Status": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Next URL": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Report": {
+    "Placeholder: Regular Bills": {
       "main": [
         [
           {
@@ -873,72 +926,6 @@
         ]
       ]
     },
-    "Execute: Sales NF": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Service NF": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: NF Labels": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: NF Labels IDs": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: NF Info": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call Regular Bills": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "404 Not Found": {
       "main": [
         [
@@ -960,15 +947,193 @@
           }
         ]
       ]
+    },
+    "Execute: CC Status": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Update Services": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: Health": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: CC Next URL": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute: CC Report": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VHSYS-get_update_extension_service_data-v1'": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Execute: Health",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Update Services",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'VHSYS-get_update_extension_service_data-v1'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: CC Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: CC Next URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: CC Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Placeholder: Regular Bills",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: NF Sales",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: NF label",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: NF label Id's",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: NF Service",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Employers General",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Employers Plus",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Employers Plus Info",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "404 Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
   },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2024-03-22T22:54:00.000Z",
-  "versionId": "router-main-001"
+  "versionId": "afd0c265-a190-4d9c-aea1-d5a4278b8b61",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "8z3TTNgiuypY3Nca",
+  "tags": []
 }
