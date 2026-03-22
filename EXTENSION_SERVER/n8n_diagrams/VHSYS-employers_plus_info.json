@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-employers_plus_info",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-employers-plus-info-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse XML e extrair dados detalhados do funcionário\nconst input = $input.first().json;\nlet xmlData;\n\ntry {\n  const xmlString = input.xml_ref || '';\n  if (!xmlString) {\n    throw new Error('XML data not provided');\n  }\n\n  // Parse XML simples (assumindo formato <xjx><cmd>...)\n  const cmdPattern = /<cmd[^>]*t=\"([^\"]+)\"[^>]*>([^<]*)<\\/cmd>/g;\n  const parsedData = {};\n  let match;\n\n  while ((match = cmdPattern.exec(xmlString)) !== null) {\n    const key = match[1];\n    const value = match[2].trim();\n    \n    if (key && key !== 'no-set') {\n      parsedData[key] = value;\n    }\n  }\n\n  xmlData = parsedData;\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus_info',\n    event: 'xml_parse_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'XML parsing failed', details: error.message }\n  };\n}\n\n// Função para transformar dados com estrutura de dependentes e benefícios\nconst transformUserData = (inputData) => {\n  const dependentes = {};\n  const beneficios = {};\n  const globalData = {};\n\n  for (const [key, value] of Object.entries(inputData)) {\n    const numberMatch = key.match(/_?(\\d+)$/);\n    \n    if (!numberMatch) {\n      globalData[key] = value;\n      continue;\n    }\n\n    const number = numberMatch[1];\n    const baseKey = key.substring(0, key.lastIndexOf('_'));\n\n    if (baseKey.includes('dependente')) {\n      if (!dependentes[number]) dependentes[number] = {};\n      dependentes[number][baseKey] = value;\n    } else if (baseKey.includes('beneficio')) {\n      if (!beneficios[number]) beneficios[number] = {};\n      beneficios[number][baseKey] = value;\n    }\n  }\n\n  return {\n    ...globalData,\n    dependentes: Object.values(dependentes),\n    beneficios: Object.values(beneficios)\n  };\n};\n\nconst transformedData = transformUserData(xmlData);\n\n// Preparar dados para as tabelas\nconst employeeData = {\n  id_funcionario: transformedData.id_funcionario || '',\n  nome_funcionario: transformedData.nome_funcionario || '',\n  rg_funcionario: transformedData.rg_funcionario || '',\n  cpf_funcionario: transformedData.cpf_funcionario || '',\n  matricula_funcionario: transformedData.matricula_funcionario || '',\n  sexo_funcionario: transformedData.sexo_funcionario || '',\n  local_nascimento_funcionario: transformedData.local_nascimento_funcionario || '',\n  orgao_emissor_rg: transformedData.orgao_emissor_rg || '',\n  serie_ctps_funcionario: transformedData.serie_ctps_funcionario || '',\n  cep_funcionario: transformedData.cep_funcionario || '',\n  endereco_funcionario: transformedData.endereco_funcionario || '',\n  numero_funcionario: transformedData.numero_funcionario || '',\n  bairro_funcionario: transformedData.bairro_funcionario || '',\n  cidade_funcionario: transformedData.cidade_funcionario || '',\n  uf_funcionario: transformedData.uf_funcionario || '',\n  complemento_funcionario: transformedData.complemento_funcionario || '',\n  celular_funcionario: transformedData.celular_funcionario || '',\n  fone_funcionario: transformedData.fone_funcionario || '',\n  email_funcionario: transformedData.email_funcionario || '',\n  nome_pai_funcionario: transformedData.nome_pai_funcionario || '',\n  nome_mae_funcionario: transformedData.nome_mae_funcionario || '',\n  observacoes_funcionario: transformedData.observacoes_funcionario || '',\n  pis_funcionario: transformedData.pis_funcionario || '',\n  ctps_funcionario: transformedData.ctps_funcionario || '',\n  uf_ctps_funcionario: transformedData.uf_ctps_funcionario || '',\n  banco_funcionario: transformedData.banco_funcionario || '',\n  agencia_funcionario: transformedData.agencia_funcionario || '',\n  conta_funcionario: transformedData.conta_funcionario || '',\n  cargo_funcionario: transformedData.cargo_funcionario || '',\n  nome_cargo_funcionario: transformedData.nome_cargo_funcionario || '',\n  cbo_funcionario: transformedData.cbo_funcionario || '',\n  departamento_funcionario: transformedData.departamento_funcionario || '',\n  trabalho_inicio: transformedData.trabalho_inicio || '',\n  trabalho_termino: transformedData.trabalho_termino || '',\n  intervalo_inicio: transformedData.intervalo_inicio || '',\n  intervalo_termino: transformedData.intervalo_termino || '',\n  salario_funcionario: transformedData.salario_funcionario || '',\n  status_funcionario: transformedData.status_funcionario || '',\n  data_admissao_funcionario: null, // Converter se necessário\n  data_nascimento_funcionario: null // Converter se necessário\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus_info',\n  event: 'data_processed',\n  employee_id: employeeData.id_funcionario,\n  dependents_count: transformedData.dependentes.length,\n  benefits_count: transformedData.beneficios.length,\n  level: 'info'\n}));\n\nreturn { \n  employeeData,\n  dependentes: transformedData.dependentes,\n  beneficios: transformedData.beneficios\n};"
+      },
+      "id": "parse-employee-xml-001",
+      "name": "Parse Employee XML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "-- Primeiro, inserir/atualizar dados do funcionário\nINSERT INTO \"employersData\" (\n  \"id_funcionario\", \"nome_funcionario\", \"rg_funcionario\", \"cpf_funcionario\",\n  \"matricula_funcionario\", \"sexo_funcionario\", \"local_nascimento_funcionario\",\n  \"orgao_emissor_rg\", \"serie_ctps_funcionario\", \"cep_funcionario\",\n  \"endereco_funcionario\", \"numero_funcionario\", \"bairro_funcionario\",\n  \"cidade_funcionario\", \"uf_funcionario\", \"complemento_funcionario\",\n  \"celular_funcionario\", \"fone_funcionario\", \"email_funcionario\",\n  \"nome_pai_funcionario\", \"nome_mae_funcionario\", \"observacoes_funcionario\",\n  \"pis_funcionario\", \"ctps_funcionario\", \"uf_ctps_funcionario\",\n  \"banco_funcionario\", \"agencia_funcionario\", \"conta_funcionario\",\n  \"cargo_funcionario\", \"nome_cargo_funcionario\", \"cbo_funcionario\",\n  \"departamento_funcionario\", \"trabalho_inicio\", \"trabalho_termino\",\n  \"intervalo_inicio\", \"intervalo_termino\", \"salario_funcionario\",\n  \"status_funcionario\", \"data_admissao_funcionario\", \"data_nascimento_funcionario\",\n  \"created_at\", \"updated_at\"\n) VALUES (\n  '{{ $json.employeeData.id_funcionario }}',\n  '{{ $json.employeeData.nome_funcionario }}',\n  '{{ $json.employeeData.rg_funcionario }}',\n  '{{ $json.employeeData.cpf_funcionario }}',\n  '{{ $json.employeeData.matricula_funcionario }}',\n  '{{ $json.employeeData.sexo_funcionario }}',\n  '{{ $json.employeeData.local_nascimento_funcionario }}',\n  '{{ $json.employeeData.orgao_emissor_rg }}',\n  '{{ $json.employeeData.serie_ctps_funcionario }}',\n  '{{ $json.employeeData.cep_funcionario }}',\n  '{{ $json.employeeData.endereco_funcionario }}',\n  '{{ $json.employeeData.numero_funcionario }}',\n  '{{ $json.employeeData.bairro_funcionario }}',\n  '{{ $json.employeeData.cidade_funcionario }}',\n  '{{ $json.employeeData.uf_funcionario }}',\n  '{{ $json.employeeData.complemento_funcionario }}',\n  '{{ $json.employeeData.celular_funcionario }}',\n  '{{ $json.employeeData.fone_funcionario }}',\n  '{{ $json.employeeData.email_funcionario }}',\n  '{{ $json.employeeData.nome_pai_funcionario }}',\n  '{{ $json.employeeData.nome_mae_funcionario }}',\n  '{{ $json.employeeData.observacoes_funcionario }}',\n  '{{ $json.employeeData.pis_funcionario }}',\n  '{{ $json.employeeData.ctps_funcionario }}',\n  '{{ $json.employeeData.uf_ctps_funcionario }}',\n  '{{ $json.employeeData.banco_funcionario }}',\n  '{{ $json.employeeData.agencia_funcionario }}',\n  '{{ $json.employeeData.conta_funcionario }}',\n  '{{ $json.employeeData.cargo_funcionario }}',\n  '{{ $json.employeeData.nome_cargo_funcionario }}',\n  '{{ $json.employeeData.cbo_funcionario }}',\n  '{{ $json.employeeData.departamento_funcionario }}',\n  '{{ $json.employeeData.trabalho_inicio }}',\n  '{{ $json.employeeData.trabalho_termino }}',\n  '{{ $json.employeeData.intervalo_inicio }}',\n  '{{ $json.employeeData.intervalo_termino }}',\n  '{{ $json.employeeData.salario_funcionario }}',\n  '{{ $json.employeeData.status_funcionario }}',\n  NULL,\n  NULL,\n  NOW(),\n  NOW()\n)\nON CONFLICT (\"id_funcionario\")\nDO UPDATE SET\n  \"nome_funcionario\" = EXCLUDED.\"nome_funcionario\",\n  \"rg_funcionario\" = EXCLUDED.\"rg_funcionario\",\n  \"cpf_funcionario\" = EXCLUDED.\"cpf_funcionario\",\n  \"matricula_funcionario\" = EXCLUDED.\"matricula_funcionario\",\n  \"cargo_funcionario\" = EXCLUDED.\"cargo_funcionario\",\n  \"status_funcionario\" = EXCLUDED.\"status_funcionario\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"employersData\".\"nome_funcionario\" IS DISTINCT FROM EXCLUDED.\"nome_funcionario\" OR\n  \"employersData\".\"cargo_funcionario\" IS DISTINCT FROM EXCLUDED.\"cargo_funcionario\" OR\n  \"employersData\".\"status_funcionario\" IS DISTINCT FROM EXCLUDED.\"status_funcionario\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-employee-data-001",
+      "name": "Upsert Employee Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus_info',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    ok: true,\n    message: 'Data processed and saved successfully.'\n  }\n};"
+      },
+      "id": "build-success-emp-info-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus_info',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process employee data' }\n};"
+      },
+      "id": "build-db-error-emp-info-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse Employee XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Employee XML": {
+      "main": [
+        [
+          {
+            "node": "Upsert Employee Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Employee Data": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

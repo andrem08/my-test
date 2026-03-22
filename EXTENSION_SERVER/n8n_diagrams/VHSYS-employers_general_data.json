@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-employers_general_data",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-employers-general-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decodificar e transformar dados de funcionários\nconst input = $input.first().json;\nlet data;\n\ntry {\n  data = input.body?.data?.source?.itens;\n  if (!data || !Array.isArray(data)) {\n    throw new Error('Dados inválidos: esperado array em body.data.source.itens');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_general_data',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Transformar dados de funcionários\nconst transformed = data.map(item => {\n  // Função para formatar CPF\n  const formatCPF = (cpf) => {\n    if (!cpf) return '';\n    return cpf.toString().replace(/\\D/g, '').replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');\n  };\n\n  // Função para parsear salário\n  const parseSalary = (value) => {\n    if (!value) return 0.0;\n    let str = value.toString().replace(/[^\\d,.-]/g, '');\n    if (str.includes(',')) {\n      str = str.replace(',', '.');\n    }\n    return parseFloat(str) || 0.0;\n  };\n\n  // Função para formatar data\n  const formatDate = (dateStr) => {\n    if (!dateStr) return null;\n    try {\n      // Assumindo formato dd/mm/yyyy\n      const parts = dateStr.split('/');\n      if (parts.length === 3) {\n        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;\n      }\n    } catch (e) {\n      return null;\n    }\n    return null;\n  };\n\n  return {\n    vhsys_id: parseInt(item.ID) || parseInt(item.vhsys_id) || 0,\n    matricula: parseInt(item.matricula) || parseInt(item.Matricula) || 0,\n    nome: item.nome || item.Nome || '',\n    cargo: item.cargo || item.Cargo || '',\n    cbo: item.cbo || item.CBO || '',\n    rg: item.rg || item.RG || '',\n    cpf: formatCPF(item.cpf || item.CPF),\n    data_nascimento: formatDate(item.data_nascimento || item.DataNascimento),\n    salario: parseSalary(item.salario || item.Salario),\n    data_adm: formatDate(item.data_adm || item.DataAdmissao),\n    data_dem: formatDate(item.data_dem || item.DataDemissao),\n    status: item.status || item.Status || 'ativo',\n    data_cad: formatDate(item.data_cad || item.DataCadastro),\n    data_mod: formatDate(item.data_mod || item.DataModificacao),\n    depto: item.depto || item.Departamento || ''\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'data_transform_success',\n  count: transformed.length,\n  level: 'info'\n}));\n\nreturn { transformed };"
+      },
+      "id": "decode-transform-employers-001",
+      "name": "Decode + Transform Employers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"employers\" (\n  \"vhsys_id\", \"matricula\", \"nome\", \"cargo\", \"cbo\", \"rg\", \"cpf\",\n  \"data_nascimento\", \"salario\", \"data_adm\", \"data_dem\", \"status\",\n  \"data_cad\", \"data_mod\", \"depto\", \"created_at\", \"updated_at\"\n) VALUES {{ range($json.transformed) }}\n(\n  {{ $item.vhsys_id }},\n  {{ $item.matricula }},\n  '{{ $item.nome }}',\n  '{{ $item.cargo }}',\n  '{{ $item.cbo }}',\n  '{{ $item.rg }}',\n  '{{ $item.cpf }}',\n  {{ if $item.data_nascimento }}'{{ $item.data_nascimento }}'{{ else }}NULL{{ /if }},\n  {{ $item.salario }},\n  {{ if $item.data_adm }}'{{ $item.data_adm }}'{{ else }}NULL{{ /if }},\n  {{ if $item.data_dem }}'{{ $item.data_dem }}'{{ else }}NULL{{ /if }},\n  '{{ $item.status }}',\n  {{ if $item.data_cad }}'{{ $item.data_cad }}'{{ else }}NULL{{ /if }},\n  {{ if $item.data_mod }}'{{ $item.data_mod }}'{{ else }}NULL{{ /if }},\n  '{{ $item.depto }}',\n  NOW(),\n  NOW()\n){{ if $index < ($json.transformed.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"vhsys_id\")\nDO UPDATE SET\n  \"matricula\" = EXCLUDED.\"matricula\",\n  \"nome\" = EXCLUDED.\"nome\",\n  \"cargo\" = EXCLUDED.\"cargo\",\n  \"cbo\" = EXCLUDED.\"cbo\",\n  \"rg\" = EXCLUDED.\"rg\",\n  \"cpf\" = EXCLUDED.\"cpf\",\n  \"data_nascimento\" = EXCLUDED.\"data_nascimento\",\n  \"salario\" = EXCLUDED.\"salario\",\n  \"data_adm\" = EXCLUDED.\"data_adm\",\n  \"data_dem\" = EXCLUDED.\"data_dem\",\n  \"status\" = EXCLUDED.\"status\",\n  \"data_cad\" = EXCLUDED.\"data_cad\",\n  \"data_mod\" = EXCLUDED.\"data_mod\",\n  \"depto\" = EXCLUDED.\"depto\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"employers\".\"nome\" IS DISTINCT FROM EXCLUDED.\"nome\" OR\n  \"employers\".\"cargo\" IS DISTINCT FROM EXCLUDED.\"cargo\" OR\n  \"employers\".\"salario\" IS DISTINCT FROM EXCLUDED.\"salario\" OR\n  \"employers\".\"status\" IS DISTINCT FROM EXCLUDED.\"status\" OR\n  \"employers\".\"data_dem\" IS DISTINCT FROM EXCLUDED.\"data_dem\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-employers-001",
+      "name": "Upsert Employers",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'Employers general data processed successfully' }\n};"
+      },
+      "id": "build-success-employers-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process employers data' }\n};"
+      },
+      "id": "build-db-error-employers-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Decode + Transform Employers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode + Transform Employers": {
+      "main": [
+        [
+          {
+            "node": "Upsert Employers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Employers": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

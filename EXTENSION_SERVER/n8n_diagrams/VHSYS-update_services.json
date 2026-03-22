@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-update_services",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-update-services-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validar dados de entrada\nconst input = $input.first().json;\nlet updateData;\n\ntry {\n  updateData = input.body;\n  if (!updateData || typeof updateData !== 'object') {\n    throw new Error('Dados inválidos: esperado objeto com dados de atualização');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'update_services',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Normalizar dados de atualização\nconst normalized = {\n  ACTION: updateData.ACTION || updateData.action || 'UNKNOWN',\n  RUN_STATUS: parseInt(updateData.RUN_STATUS || updateData.run_status || 0),\n  PROGRESS_VALUE: parseInt(updateData.PROGRESS_VALUE || updateData.progress_value || 0),\n  RUN_AFTER: parseInt(updateData.RUN_AFTER || updateData.run_after || 720)\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'data_validated',\n  action: normalized.ACTION,\n  status: normalized.RUN_STATUS,\n  level: 'info'\n}));\n\nreturn { normalized };"
+      },
+      "id": "validate-update-data-001",
+      "name": "Validate Update Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"update_extension_services\" (\n  \"ACTION\", \"RUN_STATUS\", \"PROGRESS_VALUE\", \"RUN_AFTER\", \"LAST_RUN\", \"LAST_UPDATE\"\n) VALUES (\n  '{{ $json.normalized.ACTION }}',\n  {{ $json.normalized.RUN_STATUS }},\n  {{ $json.normalized.PROGRESS_VALUE }},\n  {{ $json.normalized.RUN_AFTER }},\n  NOW(),\n  NOW()\n)\nON CONFLICT (\"ACTION\")\nDO UPDATE SET\n  \"RUN_STATUS\" = EXCLUDED.\"RUN_STATUS\",\n  \"PROGRESS_VALUE\" = EXCLUDED.\"PROGRESS_VALUE\",\n  \"RUN_AFTER\" = EXCLUDED.\"RUN_AFTER\",\n  \"LAST_UPDATE\" = NOW()\nWHERE (\n  \"update_extension_services\".\"RUN_STATUS\" IS DISTINCT FROM EXCLUDED.\"RUN_STATUS\" OR\n  \"update_extension_services\".\"PROGRESS_VALUE\" IS DISTINCT FROM EXCLUDED.\"PROGRESS_VALUE\" OR\n  \"update_extension_services\".\"RUN_AFTER\" IS DISTINCT FROM EXCLUDED.\"RUN_AFTER\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-service-status-001",
+      "name": "Upsert Service Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'update_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'Service status updated successfully' }\n};"
+      },
+      "id": "build-success-update-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'update_services',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service status' }\n};"
+      },
+      "id": "build-db-error-update-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Update Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Update Data": {
+      "main": [
+        [
+          {
+            "node": "Upsert Service Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Service Status": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

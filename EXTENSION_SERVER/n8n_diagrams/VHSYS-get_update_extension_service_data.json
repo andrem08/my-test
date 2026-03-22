@@ -1,0 +1,82 @@
+{
+  "name": "VHSYS-get_update_extension_service_data",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-get-update-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "query": "SELECT \"ACTION\", \"RUN_AFTER\", \"RUN_STATUS\", \"PROGRESS_VALUE\", \"LAST_RUN\", \"LAST_UPDATE\" FROM \"update_extension_services\" ORDER BY \"ACTION\";"
+      },
+      "id": "get-service-data-001",
+      "name": "Get Service Data",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Retornar dados como array direto (compatibilidade Flask)\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'data_retrieved',\n  count: result.length,\n  level: 'info'\n}));\n\n// CRÍTICO: Retornar array direto, não objeto encapsulado\n// Para compatibilidade com a extensão\nreturn {\n  statusCode: 200,\n  body: result\n};"
+      },
+      "id": "format-service-array-001",
+      "name": "Format Service Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not retrieve service data' }\n};"
+      },
+      "id": "build-db-error-get-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Get Service Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Service Data": {
+      "main": [
+        [
+          {
+            "node": "Format Service Array",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-cc_report",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-cc-report-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar dados do CC Report\nconst input = $input.first().json;\nlet data;\n\ntry {\n  data = input.body;\n  if (!data || typeof data !== 'object') {\n    throw new Error('Dados inválidos: esperado objeto com dados do CC Report');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Transformar dados do CC Report\nconst transformed = {\n  ID: data.ID || data.id || '',\n  ID_SEED: data.ID_SEED || data.seed || '',\n  ID_CC: data.ID_CC || data.cc_id || '',\n  CC: data.CC || data.cc || '',\n  CC_LABEL: data.CC_LABEL || data.cc_label || '',\n  VENCIMENTO: data.VENCIMENTO || data.vencimento || null,\n  FORNECEDOR: data.FORNECEDOR || data.fornecedor || '',\n  NOME_DESPESA: data.NOME_DESPESA || data.nome_despesa || '',\n  SITUACAO: data.SITUACAO || data.situacao || '',\n  DATA_PAGAMENTO: data.DATA_PAGAMENTO || data.data_pagamento || null,\n  CATEGORIA: data.CATEGORIA || data.categoria || '',\n  VALOR: parseFloat(data.VALOR || data.valor || 0),\n  TYPE: data.TYPE || data.type || 'DEFAULT'\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'data_processed',\n  cc: transformed.CC,\n  valor: transformed.VALOR,\n  level: 'info'\n}));\n\nreturn { transformed };"
+      },
+      "id": "process-cc-report-001",
+      "name": "Process CC Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"cc_report\" (\n  \"ID\", \"ID_SEED\", \"ID_CC\", \"CC\", \"CC_LABEL\", \"VENCIMENTO\", \"FORNECEDOR\",\n  \"NOME_DESPESA\", \"SITUACAO\", \"DATA_PAGAMENTO\", \"CATEGORIA\", \"VALOR\", \"TYPE\",\n  \"created_at\", \"updated_at\"\n) VALUES (\n  '{{ $json.transformed.ID }}',\n  '{{ $json.transformed.ID_SEED }}',\n  '{{ $json.transformed.ID_CC }}',\n  '{{ $json.transformed.CC }}',\n  '{{ $json.transformed.CC_LABEL }}',\n  {{ if $json.transformed.VENCIMENTO }}'{{ $json.transformed.VENCIMENTO }}'{{ else }}NULL{{ /if }},\n  '{{ $json.transformed.FORNECEDOR }}',\n  '{{ $json.transformed.NOME_DESPESA }}',\n  '{{ $json.transformed.SITUACAO }}',\n  {{ if $json.transformed.DATA_PAGAMENTO }}'{{ $json.transformed.DATA_PAGAMENTO }}'{{ else }}NULL{{ /if }},\n  '{{ $json.transformed.CATEGORIA }}',\n  {{ $json.transformed.VALOR }},\n  '{{ $json.transformed.TYPE }}',\n  NOW(),\n  NOW()\n)\nON CONFLICT (\"ID\")\nDO UPDATE SET\n  \"CC_LABEL\" = EXCLUDED.\"CC_LABEL\",\n  \"VENCIMENTO\" = EXCLUDED.\"VENCIMENTO\",\n  \"FORNECEDOR\" = EXCLUDED.\"FORNECEDOR\",\n  \"NOME_DESPESA\" = EXCLUDED.\"NOME_DESPESA\",\n  \"SITUACAO\" = EXCLUDED.\"SITUACAO\",\n  \"DATA_PAGAMENTO\" = EXCLUDED.\"DATA_PAGAMENTO\",\n  \"CATEGORIA\" = EXCLUDED.\"CATEGORIA\",\n  \"VALOR\" = EXCLUDED.\"VALOR\",\n  \"TYPE\" = EXCLUDED.\"TYPE\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"cc_report\".\"SITUACAO\" IS DISTINCT FROM EXCLUDED.\"SITUACAO\" OR\n  \"cc_report\".\"VALOR\" IS DISTINCT FROM EXCLUDED.\"VALOR\" OR\n  \"cc_report\".\"DATA_PAGAMENTO\" IS DISTINCT FROM EXCLUDED.\"DATA_PAGAMENTO\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-cc-report-001",
+      "name": "Upsert CC Report",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'CC report processed successfully' }\n};"
+      },
+      "id": "build-success-cc-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process CC report' }\n};"
+      },
+      "id": "build-db-error-cc-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Process CC Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process CC Report": {
+      "main": [
+        [
+          {
+            "node": "Upsert CC Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert CC Report": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

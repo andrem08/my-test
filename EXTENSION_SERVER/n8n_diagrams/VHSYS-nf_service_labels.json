@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-nf_service_labels",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-nf-labels-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair dados da tabela HTML\nconst input = $input.first().json;\nlet htmlContent;\n\ntry {\n  const rawHtml = input.xml_ref || '';\n  const cdataMatch = rawHtml.match(/<!\\[CDATA\\[(.*?)\\]\\]>/s);\n  \n  if (!cdataMatch) {\n    throw new Error('Dados CDATA não encontrados');\n  }\n  \n  htmlContent = cdataMatch[1].trim();\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_labels',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados HTML inválidos', details: error.message }\n  };\n}\n\n// Parse do HTML\nconst tableRowPattern = /<tr[^>]*codigo=\"([^\"]+)\"[^>]*>(.*?)<\\/tr>/gs;\nconst extracted = [];\nlet match;\n\nwhile ((match = tableRowPattern.exec(htmlContent)) !== null) {\n  const codigo = match[1];\n  const rowContent = match[2];\n  \n  // Extrair outros atributos da tag <tr>\n  const trTag = match[0].match(/<tr[^>]*>/)[0];\n  \n  const getAttr = (name) => {\n    const attrMatch = trTag.match(new RegExp(`${name}=\"([^\"]*)\"`));\n    return attrMatch ? attrMatch[1] : '';\n  };\n  \n  extracted.push({\n    codigo: codigo,\n    contas: getAttr('contas'),\n    boletos: getAttr('boletos'),\n    nota: getAttr('nota'),\n    cliente: getAttr('cliente'),\n    status: getAttr('status'),\n    vendedor: getAttr('vendedor'),\n    chave: getAttr('chave'),\n    numeronfs: getAttr('numeronfs'),\n    notarecibo: getAttr('notarecibo'),\n    vinculooscomnfs: getAttr('vinculooscomnfs'),\n    runned: ''\n  });\n}\n\nif (extracted.length === 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_labels',\n    event: 'no_data_extracted',\n    level: 'warning'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Nenhum dado extraído da tabela' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'data_extract_success',\n  count: extracted.length,\n  level: 'info'\n}));\n\nreturn { extracted };"
+      },
+      "id": "extract-table-data-001",
+      "name": "Extract Table Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"NF_ServiceMetadata\" (\n  \"codigo\", \"contas\", \"boletos\", \"nota\", \"cliente\", \"status\",\n  \"vendedor\", \"chave\", \"numeronfs\", \"notarecibo\", \"vinculooscomnfs\", \n  \"runned\", \"created_at\", \"updated_at\"\n) VALUES {{ range($json.extracted) }}\n(\n  '{{ $item.codigo }}',\n  '{{ $item.contas }}',\n  '{{ $item.boletos }}',\n  '{{ $item.nota }}',\n  '{{ $item.cliente }}',\n  '{{ $item.status }}',\n  '{{ $item.vendedor }}',\n  '{{ $item.chave }}',\n  '{{ $item.numeronfs }}',\n  '{{ $item.notarecibo }}',\n  '{{ $item.vinculooscomnfs }}',\n  '{{ $item.runned }}',\n  NOW(),\n  NOW()\n){{ if $index < ($json.extracted.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"codigo\")\nDO UPDATE SET\n  \"contas\" = EXCLUDED.\"contas\",\n  \"boletos\" = EXCLUDED.\"boletos\",\n  \"nota\" = EXCLUDED.\"nota\",\n  \"cliente\" = EXCLUDED.\"cliente\",\n  \"status\" = EXCLUDED.\"status\",\n  \"vendedor\" = EXCLUDED.\"vendedor\",\n  \"chave\" = EXCLUDED.\"chave\",\n  \"numeronfs\" = EXCLUDED.\"numeronfs\",\n  \"notarecibo\" = EXCLUDED.\"notarecibo\",\n  \"vinculooscomnfs\" = EXCLUDED.\"vinculooscomnfs\",\n  \"runned\" = EXCLUDED.\"runned\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"NF_ServiceMetadata\".\"contas\" IS DISTINCT FROM EXCLUDED.\"contas\" OR\n  \"NF_ServiceMetadata\".\"boletos\" IS DISTINCT FROM EXCLUDED.\"boletos\" OR\n  \"NF_ServiceMetadata\".\"nota\" IS DISTINCT FROM EXCLUDED.\"nota\" OR\n  \"NF_ServiceMetadata\".\"cliente\" IS DISTINCT FROM EXCLUDED.\"cliente\" OR\n  \"NF_ServiceMetadata\".\"status\" IS DISTINCT FROM EXCLUDED.\"status\" OR\n  \"NF_ServiceMetadata\".\"vendedor\" IS DISTINCT FROM EXCLUDED.\"vendedor\" OR\n  \"NF_ServiceMetadata\".\"chave\" IS DISTINCT FROM EXCLUDED.\"chave\" OR\n  \"NF_ServiceMetadata\".\"numeronfs\" IS DISTINCT FROM EXCLUDED.\"numeronfs\" OR\n  \"NF_ServiceMetadata\".\"notarecibo\" IS DISTINCT FROM EXCLUDED.\"notarecibo\" OR\n  \"NF_ServiceMetadata\".\"vinculooscomnfs\" IS DISTINCT FROM EXCLUDED.\"vinculooscomnfs\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-service-metadata-001",
+      "name": "Upsert Service Metadata",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: { \n    ok: true, \n    message: 'Data extracted, cleaned, and converted to DataFrame successfully' \n  }\n};"
+      },
+      "id": "build-success-labels-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process service labels' }\n};"
+      },
+      "id": "build-db-error-labels-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Extract Table Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Table Data": {
+      "main": [
+        [
+          {
+            "node": "Upsert Service Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Service Metadata": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

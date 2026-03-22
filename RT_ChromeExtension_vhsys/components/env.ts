@@ -1,4 +1,4 @@
-const DEV_MODE = true
+const DEV_MODE = true;
 export const SERVER_REF = DEV_MODE
   ? "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router"
   : "https://rt-extension-server-hmbedya2dfh0arg2.canadacentral-01.azurewebsites.net"

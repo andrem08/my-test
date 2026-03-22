@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-sales_nf_report",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-sales-nf-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Decodificar e transformar dados\nconst input = $input.first().json;\nlet data;\n\ntry {\n  data = input.data?.source?.itens;\n  if (!data || !Array.isArray(data)) {\n    throw new Error('Dados inválidos: esperado array em data.source.itens');\n  }\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'sales_nf_report',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados inválidos', details: error.message }\n  };\n}\n\n// Transformar e validar cada item\nconst transformed = data.map(item => {\n  // Função para formatar datas do timestamp\n  const formatDate = (timestamp) => {\n    if (!timestamp) return null;\n    try {\n      const date = new Date(parseInt(timestamp) * 1000);\n      return date.toISOString().split('T')[0] + ' ' + date.toTimeString().split(' ')[0];\n    } catch {\n      return null;\n    }\n  };\n\n  // Função para limpar valores monetários\n  const parseDecimal = (value) => {\n    if (!value) return '0.00';\n    let str = value.toString();\n    if (str.includes(',') && str.includes('.')) {\n      str = str.replace(/\\./g, '').replace(',', '.');\n    } else if (str.includes(',')) {\n      str = str.replace(',', '.');\n    }\n    return parseFloat(str).toFixed(2);\n  };\n\n  // Enriquecimento com centro de custos (simulado - baseado em ObservacoesInternas)\n  let ccRef = '-1';\n  if (item.ObservacoesInternas) {\n    // Simples extração de centro de custo das observações\n    const ccMatch = item.ObservacoesInternas.match(/CC[:\\s]*([A-Z0-9]+)/i);\n    if (ccMatch) {\n      ccRef = ccMatch[1];\n    }\n  }\n\n  return {\n    ID: item.ID || '',\n    Nota: item.Nota || '',\n    Cliente: item.Cliente || '',\n    CNPJ: item.CNPJ || '',\n    Endereco: item.Endereco || '',\n    Numero: item.Numero || '',\n    Complemento: item.Complemento || '',\n    Bairro: item.Bairro || '',\n    Cidade: item.Cidade || '',\n    Estado: item.Estado || '',\n    CEP: item.CEP || '',\n    Email: item.Email || '',\n    Telefone: item.Telefone || '',\n    Vendedor: item.Vendedor || '',\n    ValorProdutos: parseDecimal(item.ValorProdutos),\n    ValorDesconto: parseDecimal(item.ValorDesconto),\n    ValorFrete: parseDecimal(item.ValorFrete),\n    ValorTotal: parseDecimal(item.ValorTotal),\n    TotalUnidades: item.TotalUnidades || '0',\n    TotalParcelas: item.TotalParcelas || '0',\n    ValorICMS: parseDecimal(item.ValorICMS),\n    ValorIPI: parseDecimal(item.ValorIPI),\n    ValorST: parseDecimal(item.ValorST),\n    PesoBruto: parseDecimal(item.PesoBruto),\n    PesoLiquido: parseDecimal(item.PesoLiquido),\n    Transportadora: item.Transportadora || '',\n    QtdeProdutos: item.QtdeProdutos || '0',\n    CFOP: item.CFOP || '',\n    Natureza: item.Natureza || '',\n    Contas: item.Contas || '',\n    Estoque: item.Estoque || '',\n    Comissao: item.Comissao || '',\n    Chave: item.Chave || '',\n    Protocolo: item.Protocolo || '',\n    DataPedido: formatDate(item.DataPedido),\n    DataEmissao: formatDate(item.DataEmissao),\n    DataAutorizacao: formatDate(item.DataAutorizacao),\n    DataCad: formatDate(item.DataCad),\n    DataMod: formatDate(item.DataMod),\n    DataCancelamento: formatDate(item.DataCancelamento),\n    Situacao: item.Situacao || '',\n    Observacoes: item.Observacoes || '',\n    ObservacoesInternas: item.ObservacoesInternas || '',\n    CategoriaFinanceira: item.CategoriaFinanceira || '',\n    Volumes: item.Volumes || '',\n    EmitidoPor: item.EmitidoPor || '',\n    CanceladoPor: item.CanceladoPor || '',\n    cc_ref: ccRef\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'data_transform_success',\n  count: transformed.length,\n  level: 'info'\n}));\n\nreturn { transformed };"
+      },
+      "id": "decode-transform-sales-nf-001",
+      "name": "Decode + Transform NFs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"SalesNFReport\" (\n  \"ID\", \"Nota\", \"Cliente\", \"CNPJ\", \"Endereco\", \"Numero\", \"Complemento\",\n  \"Bairro\", \"Cidade\", \"Estado\", \"CEP\", \"Email\", \"Telefone\", \"Vendedor\",\n  \"ValorProdutos\", \"ValorDesconto\", \"ValorFrete\", \"ValorTotal\",\n  \"TotalUnidades\", \"TotalParcelas\", \"ValorICMS\", \"ValorIPI\", \"ValorST\", \n  \"PesoBruto\", \"PesoLiquido\", \"Transportadora\", \"QtdeProdutos\", \"CFOP\",\n  \"Natureza\", \"Contas\", \"Estoque\", \"Comissao\", \"Chave\", \"Protocolo\",\n  \"DataPedido\", \"DataEmissao\", \"DataAutorizacao\", \"DataCad\", \"DataMod\", \n  \"DataCancelamento\", \"Situacao\", \"Observacoes\", \"ObservacoesInternas\",\n  \"CategoriaFinanceira\", \"Volumes\", \"EmitidoPor\", \"CanceladoPor\", \n  \"cc_ref\", \"created_at\", \"updated_at\"\n) VALUES {{ range($json.transformed) }}\n(\n  '{{ $item.ID }}',\n  '{{ $item.Nota }}',\n  '{{ $item.Cliente }}',\n  '{{ $item.CNPJ }}',\n  '{{ $item.Endereco }}',\n  '{{ $item.Numero }}',\n  '{{ $item.Complemento }}',\n  '{{ $item.Bairro }}',\n  '{{ $item.Cidade }}',\n  '{{ $item.Estado }}',\n  '{{ $item.CEP }}',\n  '{{ $item.Email }}',\n  '{{ $item.Telefone }}',\n  '{{ $item.Vendedor }}',\n  '{{ $item.ValorProdutos }}',\n  '{{ $item.ValorDesconto }}',\n  '{{ $item.ValorFrete }}',\n  '{{ $item.ValorTotal }}',\n  '{{ $item.TotalUnidades }}',\n  '{{ $item.TotalParcelas }}',\n  '{{ $item.ValorICMS }}',\n  '{{ $item.ValorIPI }}',\n  '{{ $item.ValorST }}',\n  '{{ $item.PesoBruto }}',\n  '{{ $item.PesoLiquido }}',\n  '{{ $item.Transportadora }}',\n  '{{ $item.QtdeProdutos }}',\n  '{{ $item.CFOP }}',\n  '{{ $item.Natureza }}',\n  '{{ $item.Contas }}',\n  '{{ $item.Estoque }}',\n  '{{ $item.Comissao }}',\n  '{{ $item.Chave }}',\n  '{{ $item.Protocolo }}',\n  '{{ $item.DataPedido }}',\n  '{{ $item.DataEmissao }}',\n  '{{ $item.DataAutorizacao }}',\n  '{{ $item.DataCad }}',\n  '{{ $item.DataMod }}',\n  '{{ $item.DataCancelamento }}',\n  '{{ $item.Situacao }}',\n  '{{ $item.Observacoes }}',\n  '{{ $item.ObservacoesInternas }}',\n  '{{ $item.CategoriaFinanceira }}',\n  '{{ $item.Volumes }}',\n  '{{ $item.EmitidoPor }}',\n  '{{ $item.CanceladoPor }}',\n  '{{ $item.cc_ref }}',\n  NOW(),\n  NOW()\n){{ if $index < ($json.transformed.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"Nota\")\nDO UPDATE SET\n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"Endereco\" = EXCLUDED.\"Endereco\",\n  \"Numero\" = EXCLUDED.\"Numero\",\n  \"Complemento\" = EXCLUDED.\"Complemento\",\n  \"Bairro\" = EXCLUDED.\"Bairro\",\n  \"Cidade\" = EXCLUDED.\"Cidade\",\n  \"Estado\" = EXCLUDED.\"Estado\",\n  \"CEP\" = EXCLUDED.\"CEP\",\n  \"Email\" = EXCLUDED.\"Email\",\n  \"Telefone\" = EXCLUDED.\"Telefone\",\n  \"Vendedor\" = EXCLUDED.\"Vendedor\",\n  \"ValorProdutos\" = EXCLUDED.\"ValorProdutos\",\n  \"ValorDesconto\" = EXCLUDED.\"ValorDesconto\",\n  \"ValorFrete\" = EXCLUDED.\"ValorFrete\",\n  \"ValorTotal\" = EXCLUDED.\"ValorTotal\",\n  \"TotalUnidades\" = EXCLUDED.\"TotalUnidades\",\n  \"TotalParcelas\" = EXCLUDED.\"TotalParcelas\",\n  \"ValorICMS\" = EXCLUDED.\"ValorICMS\",\n  \"ValorIPI\" = EXCLUDED.\"ValorIPI\",\n  \"ValorST\" = EXCLUDED.\"ValorST\",\n  \"PesoBruto\" = EXCLUDED.\"PesoBruto\",\n  \"PesoLiquido\" = EXCLUDED.\"PesoLiquido\",\n  \"Transportadora\" = EXCLUDED.\"Transportadora\",\n  \"QtdeProdutos\" = EXCLUDED.\"QtdeProdutos\",\n  \"CFOP\" = EXCLUDED.\"CFOP\",\n  \"Natureza\" = EXCLUDED.\"Natureza\",\n  \"Contas\" = EXCLUDED.\"Contas\",\n  \"Estoque\" = EXCLUDED.\"Estoque\",\n  \"Comissao\" = EXCLUDED.\"Comissao\",\n  \"Chave\" = EXCLUDED.\"Chave\",\n  \"Protocolo\" = EXCLUDED.\"Protocolo\",\n  \"DataPedido\" = EXCLUDED.\"DataPedido\",\n  \"DataEmissao\" = EXCLUDED.\"DataEmissao\",\n  \"DataAutorizacao\" = EXCLUDED.\"DataAutorizacao\",\n  \"DataCad\" = EXCLUDED.\"DataCad\",\n  \"DataMod\" = EXCLUDED.\"DataMod\",\n  \"DataCancelamento\" = EXCLUDED.\"DataCancelamento\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"Observacoes\" = EXCLUDED.\"Observacoes\",\n  \"ObservacoesInternas\" = EXCLUDED.\"ObservacoesInternas\",\n  \"CategoriaFinanceira\" = EXCLUDED.\"CategoriaFinanceira\",\n  \"Volumes\" = EXCLUDED.\"Volumes\",\n  \"EmitidoPor\" = EXCLUDED.\"EmitidoPor\",\n  \"CanceladoPor\" = EXCLUDED.\"CanceladoPor\",\n  \"cc_ref\" = EXCLUDED.\"cc_ref\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"SalesNFReport\".\"Cliente\" IS DISTINCT FROM EXCLUDED.\"Cliente\" OR\n  \"SalesNFReport\".\"CNPJ\" IS DISTINCT FROM EXCLUDED.\"CNPJ\" OR\n  \"SalesNFReport\".\"ValorTotal\" IS DISTINCT FROM EXCLUDED.\"ValorTotal\" OR\n  \"SalesNFReport\".\"ValorProdutos\" IS DISTINCT FROM EXCLUDED.\"ValorProdutos\" OR\n  \"SalesNFReport\".\"Situacao\" IS DISTINCT FROM EXCLUDED.\"Situacao\" OR\n  \"SalesNFReport\".\"cc_ref\" IS DISTINCT FROM EXCLUDED.\"cc_ref\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-sales-nf-001",
+      "name": "Upsert Sales NF",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { ok: true, message: 'Sales NF report processed successfully' }\n};"
+      },
+      "id": "build-success-sales-nf-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process sales NF report' }\n};"
+      },
+      "id": "build-db-error-sales-nf-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Decode + Transform NFs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode + Transform NFs": {
+      "main": [
+        [
+          {
+            "node": "Upsert Sales NF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Sales NF": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

@@ -1,0 +1,44 @@
+{
+  "name": "VHSYS-health",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-health-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-200, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Health check response\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'health',\n  event: 'health_check',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    status: 'healthy',\n    timestamp: new Date().toISOString(),\n    service: 'VHSYS Extension Router',\n    version: '1.0.0'\n  }\n};"
+      },
+      "id": "health-response-001",
+      "name": "Health Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 200]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Health Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

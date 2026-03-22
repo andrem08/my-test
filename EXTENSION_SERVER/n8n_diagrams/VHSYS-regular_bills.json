@@ -1,0 +1,105 @@
+{
+  "name": "VHSYS-regular_bills",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-regular-bills-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse HTML table da conta fixa\nconst input = $input.first().json;\nlet extracted = [];\n\ntry {\n  const htmlContent = input.xml_ref || '';\n  if (!htmlContent.includes('table-contas-fixas')) {\n    throw new Error('Tabela de contas fixas não encontrada');\n  }\n\n  // Regex para extrair linhas da tabela\n  const rowPattern = /<tr[^>]*class=\"table-row-body\"[^>]*codigo=\"([^\"]+)\"[^>]*>(.*?)<\\/tr>/gs;\n  let match;\n\n  while ((match = rowPattern.exec(htmlContent)) !== null) {\n    const codigo = match[1];\n    const rowContent = match[2];\n    \n    // Extrair células da linha\n    const cellPattern = /<td[^>]*class=\"table-item-body\"[^>]*>(.*?)<\\/td>/gs;\n    const cells = [];\n    let cellMatch;\n    \n    while ((cellMatch = cellPattern.exec(rowContent)) !== null) {\n      const cellContent = cellMatch[1].replace(/<[^>]*>/g, '').trim();\n      cells.push(cellContent);\n    }\n    \n    if (cells.length >= 6) {\n      const dataVencimento = cells[0] || '';\n      const historico = cells[1] || '';\n      const valor = cells[2] || '0';\n      const situacao = cells[3] || '';\n      const tipoPagamento = cells[4] || '';\n      const conta = cells[5] || '';\n      \n      // Parse de valor\n      const valorNumerico = parseFloat(\n        valor.replace('R$', '').replace(/\\./g, '').replace(',', '.').trim()\n      ) || 0;\n      \n      extracted.push({\n        codigo: codigo,\n        data_vencimento: dataVencimento,\n        historico: historico,\n        valor: valorNumerico,\n        situacao: situacao,\n        tipo_pagamento: tipoPagamento,\n        conta: conta\n      });\n    }\n  }\n  \n  if (extracted.length === 0) {\n    throw new Error('Nenhuma conta fixa extraída da tabela');\n  }\n  \n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'regular_bills',\n    event: 'parse_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Parse error', details: error.message }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'regular_bills',\n  event: 'data_extract_success',\n  count: extracted.length,\n  level: 'info'\n}));\n\nreturn { extracted };"
+      },
+      "id": "parse-bills-html-001",
+      "name": "Parse Bills HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"DespesasRecorrentes\" (\n  \"id_custo\", \"id_empresa\", \"nome_conta\", \"id_categoria\", \"categoria_custo\",\n  \"id_banco\", \"id_fornecedor\", \"nome_fornecedor\", \"vencimento_custo\", \"valor_custo\",\n  \"observacoes_custo\", \"id_centro_custos\", \"status_custo\", \"forma_pagamento\",\n  \"periodicidade\", \"data_cad_custo\"\n) VALUES {{ range($json.extracted) }}\n(\n  '{{ $item.codigo }}',\n  '1',\n  '{{ $item.conta }}',\n  '1',\n  '{{ $item.historico }}',\n  '1', \n  '1',\n  '{{ $item.historico }}',\n  '{{ $item.data_vencimento }}',\n  '{{ $item.valor }}',\n  '{{ $item.historico }}',\n  '1',\n  '{{ $item.situacao }}',\n  '{{ $item.tipo_pagamento }}',\n  'MENSAL',\n  NOW()\n){{ if $index < ($json.extracted.length - 1) }},{{ /if }}\n{{ /range }}\nON CONFLICT (\"id_custo\")\nDO UPDATE SET\n  \"vencimento_custo\" = EXCLUDED.\"vencimento_custo\",\n  \"valor_custo\" = EXCLUDED.\"valor_custo\",\n  \"status_custo\" = EXCLUDED.\"status_custo\",\n  \"forma_pagamento\" = EXCLUDED.\"forma_pagamento\"\nWHERE (\n  \"DespesasRecorrentes\".\"vencimento_custo\" IS DISTINCT FROM EXCLUDED.\"vencimento_custo\" OR\n  \"DespesasRecorrentes\".\"valor_custo\" IS DISTINCT FROM EXCLUDED.\"valor_custo\" OR\n  \"DespesasRecorrentes\".\"status_custo\" IS DISTINCT FROM EXCLUDED.\"status_custo\" OR\n  \"DespesasRecorrentes\".\"forma_pagamento\" IS DISTINCT FROM EXCLUDED.\"forma_pagamento\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-bills-001",
+      "name": "Upsert Regular Bills",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'regular_bills',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { \n    ok: true, \n    message: 'Data extracted, cleaned, and converted to DataFrame successfully' \n  }\n};"
+      },
+      "id": "build-success-bills-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,\n      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'regular_bills',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process regular bills' }\n};"
+      },
+      "id": "build-db-error-bills-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse Bills HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Bills HTML": {
+      "main": [
+        [
+          {
+            "node": "Upsert Regular Bills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Regular Bills": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

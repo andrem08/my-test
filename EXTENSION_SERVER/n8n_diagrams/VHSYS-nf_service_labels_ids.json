@@ -1,0 +1,82 @@
+{
+  "name": "VHSYS-nf_service_labels_ids",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-nf-labels-ids-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "query": "SELECT \"codigo\", \"numeronfs\" FROM \"nf_servicemetadata\" ORDER BY \"codigo\";"
+      },
+      "id": "get-service-labels-ids-001",
+      "name": "Get Service Labels IDs",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Retornar dados como array direto (compatibilidade Flask)\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'data_retrieved',\n  count: result.length,\n  level: 'info'\n}));\n\n// CRÍTICO: Retornar array direto, não objeto encapsulado\n// Para compatibilidade com a extensão\nreturn {\n  statusCode: 200,\n  body: result\n};"
+      },
+      "id": "format-direct-array-001",
+      "name": "Format Direct Array",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not retrieve service labels' }\n};"
+      },
+      "id": "build-db-error-ids-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Get Service Labels IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Service Labels IDs": {
+      "main": [
+        [
+          {
+            "node": "Format Direct Array",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:54:00.000Z"
+}

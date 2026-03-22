@@ -1,0 +1,44 @@
+{
+  "name": "VHSYS-employers_plus",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-employers-plus-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrair códigos de funcionários do HTML\nconst input = $input.first().json;\nlet htmlContent;\n\ntry {\n  const rawHtml = input.xml_ref || '';\n  const cdataMatch = rawHtml.match(/<!\\[CDATA\\[(.*?)\\]\\]>/s);\n  \n  if (!cdataMatch) {\n    throw new Error('Dados CDATA não encontrados');\n  }\n  \n  htmlContent = cdataMatch[1].trim();\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus',\n    event: 'validation_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Dados HTML inválidos', details: error.message }\n  };\n}\n\n// Parse do HTML para extrair códigos\nconst rowPattern = /<tr[^>]*class=\"table-row-body\"[^>]*codigo=\"([^\"]+)\"[^>]*>/g;\nconst extracted = [];\nlet match;\n\nwhile ((match = rowPattern.exec(htmlContent)) !== null) {\n  const codigo = match[1];\n  if (codigo) {\n    extracted.push({ codigo });\n  }\n}\n\nif (extracted.length === 0) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus',\n    event: 'no_data_extracted',\n    level: 'warning'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'Nenhum código de funcionário encontrado' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'codes_extracted',\n  count: extracted.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    message: 'Employee codes extracted successfully.',\n    ids: extracted\n  }\n};"
+      },
+      "id": "extract-employee-codes-001",
+      "name": "Extract Employee Codes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Extract Employee Codes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

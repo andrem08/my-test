@@ -1,0 +1,106 @@
+{
+  "name": "VHSYS-nf_service_info",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-nf-service-info-001",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [-400, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse XML e extrair dados\nconst input = $input.first().json;\nlet xmlData;\n\ntry {\n  const xmlString = input.xml_ref || '';\n  if (!xmlString) {\n    throw new Error('XML data not provided');\n  }\n\n  // Parse XML simples (assumindo formato <xjx><cmd>...)\n  const cmdPattern = /<cmd[^>]*t=\"([^\"]+)\"[^>]*>([^<]*)<\\/cmd>/g;\n  const parsedData = {};\n  let match;\n\n  while ((match = cmdPattern.exec(xmlString)) !== null) {\n    const key = match[1];\n    const value = match[2].trim();\n    \n    if (key && key !== 'no-set') {\n      parsedData[key] = value;\n    }\n  }\n\n  // Remover campos específicos conforme código Python\n  delete parsedData['estoque_pedido'];\n  delete parsedData['bloquear_edicao_cliente'];\n  \n  xmlData = parsedData;\n} catch (error) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'xml_parse_error',\n    message: error.message,\n    level: 'error'\n  }));\n  return {\n    statusCode: 400,\n    body: { ok: false, error: 'XML parsing failed', details: error.message }\n  };\n}\n\n// Enriquecimento básico com centro de custo\nlet ccRef = '-1';\nif (xmlData.obs_interno_pedido) {\n  const ccMatch = xmlData.obs_interno_pedido.match(/CC[:\\s]*([A-Z0-9]+)/i);\n  if (ccMatch) {\n    ccRef = ccMatch[1];\n  }\n}\n\n// Preparar dados para inserção\nconst serviceData = {\n  id_servico: xmlData.id_servico || '',\n  obs_interno_pedido: xmlData.obs_interno_pedido || '',\n  obs_pedido: xmlData.obs_pedido || '',\n  numero_processo: xmlData.numero_processo || '',\n  condicao_pagamento: xmlData.condicao_pagamento || '',\n  condicao_pagamento_id: xmlData.condicao_pagamento_id || '',\n  valor_iss: xmlData.valor_iss || '',\n  aliq_iss: xmlData.aliq_iss || '',\n  valor_ir: xmlData.valor_ir || '',\n  aliq_ir: xmlData.aliq_ir || '',\n  valor_contribuicao: xmlData.valor_contribuicao || '',\n  aliq_contribuicao: xmlData.aliq_contribuicao || '',\n  valor_pis: xmlData.valor_pis || '',\n  aliq_pis: xmlData.aliq_pis || '',\n  valor_cofins: xmlData.valor_cofins || '',\n  aliq_cofins: xmlData.aliq_cofins || '',\n  valor_material: xmlData.valor_material || '',\n  valor_tributos_mun: xmlData.valor_tributos_mun || '',\n  valor_aliq_tributos_mun: xmlData.valor_aliq_tributos_mun || '',\n  valor_tributos: xmlData.valor_tributos || '',\n  valor_aliq_tributos: xmlData.valor_aliq_tributos || '',\n  valor_imposto: xmlData.valor_imposto || '',\n  valor_aliquota: xmlData.valor_aliquota || '',\n  valor_base_calculo: xmlData.valor_base_calculo || '',\n  valor_condicionado: xmlData.valor_condicionado || '',\n  valor_incondicionado: xmlData.valor_incondicionado || '',\n  valor_deducoes: xmlData.valor_deducoes || '',\n  itemLista_servico: xmlData.itemLista_servico || '',\n  valor_total_nota: xmlData.valor_total_nota || '',\n  valor_total_servicos: xmlData.valor_total_servicos || '',\n  desc_servicos: xmlData.desc_servicos || '',\n  serie_nota: xmlData.serie_nota || '',\n  id_pedido: xmlData.id_pedido || '',\n  vendedor_pedido_id: xmlData.vendedor_pedido_id || '',\n  vendedor_pedido: xmlData.vendedor_pedido || '',\n  ultrapassar_limite_credito: xmlData.ultrapassar_limite_credito || '',\n  contas_pedido: xmlData.contas_pedido || '',\n  id_cliente: xmlData.id_cliente || '',\n  nome_cliente: xmlData.nome_cliente || '',\n  cc_ref: ccRef\n};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'data_parse_success',\n  id_servico: serviceData.id_servico,\n  cc_ref: ccRef,\n  level: 'info'\n}));\n\nreturn { serviceData };"
+      },
+      "id": "parse-xml-data-001",
+      "name": "Parse XML Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 200]
+    },
+    {
+      "parameters": {
+        "query": "INSERT INTO \"NF_Service\" (\n  \"id_servico\", \"obs_interno_pedido\", \"obs_pedido\", \"numero_processo\",\n  \"condicao_pagamento\", \"condicao_pagamento_id\", \"valor_iss\", \"aliq_iss\",\n  \"valor_ir\", \"aliq_ir\", \"valor_contribuicao\", \"aliq_contribuicao\",\n  \"valor_pis\", \"aliq_pis\", \"valor_cofins\", \"aliq_cofins\", \"valor_material\",\n  \"valor_tributos_mun\", \"valor_aliq_tributos_mun\", \"valor_tributos\",\n  \"valor_aliq_tributos\", \"valor_imposto\", \"valor_aliquota\", \"valor_base_calculo\",\n  \"valor_condicionado\", \"valor_incondicionado\", \"valor_deducoes\",\n  \"itemLista_servico\", \"valor_total_nota\", \"valor_total_servicos\",\n  \"desc_servicos\", \"serie_nota\", \"id_pedido\", \"vendedor_pedido_id\",\n  \"vendedor_pedido\", \"ultrapassar_limite_credito\", \"contas_pedido\",\n  \"id_cliente\", \"nome_cliente\", \"cc_ref\", \"created_at\", \"updated_at\"\n) VALUES (\n  '{{ $json.serviceData.id_servico }}',\n  '{{ $json.serviceData.obs_interno_pedido }}',\n  '{{ $json.serviceData.obs_pedido }}',\n  '{{ $json.serviceData.numero_processo }}',\n  '{{ $json.serviceData.condicao_pagamento }}',\n  '{{ $json.serviceData.condicao_pagamento_id }}',\n  '{{ $json.serviceData.valor_iss }}',\n  '{{ $json.serviceData.aliq_iss }}',\n  '{{ $json.serviceData.valor_ir }}',\n  '{{ $json.serviceData.aliq_ir }}',\n  '{{ $json.serviceData.valor_contribuicao }}',\n  '{{ $json.serviceData.aliq_contribuicao }}',\n  '{{ $json.serviceData.valor_pis }}',\n  '{{ $json.serviceData.aliq_pis }}',\n  '{{ $json.serviceData.valor_cofins }}',\n  '{{ $json.serviceData.aliq_cofins }}',\n  '{{ $json.serviceData.valor_material }}',\n  '{{ $json.serviceData.valor_tributos_mun }}',\n  '{{ $json.serviceData.valor_aliq_tributos_mun }}',\n  '{{ $json.serviceData.valor_tributos }}',\n  '{{ $json.serviceData.valor_aliq_tributos }}',\n  '{{ $json.serviceData.valor_imposto }}',\n  '{{ $json.serviceData.valor_aliquota }}',\n  '{{ $json.serviceData.valor_base_calculo }}',\n  '{{ $json.serviceData.valor_condicionado }}',\n  '{{ $json.serviceData.valor_incondicionado }}',\n  '{{ $json.serviceData.valor_deducoes }}',\n  '{{ $json.serviceData.itemLista_servico }}',\n  '{{ $json.serviceData.valor_total_nota }}',\n  '{{ $json.serviceData.valor_total_servicos }}',\n  '{{ $json.serviceData.desc_servicos }}',\n  '{{ $json.serviceData.serie_nota }}',\n  '{{ $json.serviceData.id_pedido }}',\n  '{{ $json.serviceData.vendedor_pedido_id }}',\n  '{{ $json.serviceData.vendedor_pedido }}',\n  '{{ $json.serviceData.ultrapassar_limite_credito }}',\n  '{{ $json.serviceData.contas_pedido }}',\n  '{{ $json.serviceData.id_cliente }}',\n  '{{ $json.serviceData.nome_cliente }}',\n  '{{ $json.serviceData.cc_ref }}',\n  NOW(),\n  NOW()\n)\nON CONFLICT (\"id_servico\")\nDO UPDATE SET\n  \"obs_interno_pedido\" = EXCLUDED.\"obs_interno_pedido\",\n  \"obs_pedido\" = EXCLUDED.\"obs_pedido\",\n  \"valor_total_nota\" = EXCLUDED.\"valor_total_nota\",\n  \"valor_total_servicos\" = EXCLUDED.\"valor_total_servicos\",\n  \"nome_cliente\" = EXCLUDED.\"nome_cliente\",\n  \"cc_ref\" = EXCLUDED.\"cc_ref\",\n  \"updated_at\" = NOW()\nWHERE (\n  \"NF_Service\".\"obs_interno_pedido\" IS DISTINCT FROM EXCLUDED.\"obs_interno_pedido\" OR\n  \"NF_Service\".\"valor_total_nota\" IS DISTINCT FROM EXCLUDED.\"valor_total_nota\" OR\n  \"NF_Service\".\"valor_total_servicos\" IS DISTINCT FROM EXCLUDED.\"valor_total_servicos\" OR\n  \"NF_Service\".\"nome_cliente\" IS DISTINCT FROM EXCLUDED.\"nome_cliente\" OR\n  \"NF_Service\".\"cc_ref\" IS DISTINCT FROM EXCLUDED.\"cc_ref\"\n);",
+        "additionalFields": {}
+      },
+      "id": "upsert-service-info-001",
+      "name": "Upsert Service Info",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [80, 200],
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Sucesso\nconst result = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'upsert_success',\n  affected_rows: result.affectedRows || 0,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: { \n    ok: true, \n    message: 'Data extracted, cleaned, and converted to DataFrame successfully' \n  }\n};"
+      },
+      "id": "build-success-info-001",
+      "name": "Build Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [320, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process service info' }\n};"
+      },
+      "id": "build-db-error-info-001",
+      "name": "Build DB Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 380]
+    }
+  ],
+  "connections": {
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Parse XML Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse XML Data": {
+      "main": [
+        [
+          {
+            "node": "Upsert Service Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Service Info": {
+      "main": [
+        [
+          {
+            "node": "Build Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build DB Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2024-03-22T22:59:00.000Z"
+}

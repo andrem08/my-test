@@ -105,14 +105,14 @@ CORREÇÕES IMPLEMENTADAS:
 
 ARQUIVOS NÃO CRIADOS (CONFORME SOLICITADO):
   ❌ VHSYS-regular_bills-v1.json (Phase 6 - pendente)
-  ❌ VHSYS-sales_nf_report-v1.json (Phase 5 - pendente)
+  ✅ VHSYS-sales_nf_report-v1.json (Phase 5 - IMPLEMENTADO)
   ❌ VHSYS-service_nf_report-v1.json (Phase 5 - pendente)
   ❌ VHSYS-nf_service_labels-v1.json (Phase 5 - pendente)
   ❌ VHSYS-nf_service_labels_ids-v1.json (Phase 5 - pendente)
   ❌ VHSYS-nf_service_info-v1.json (Phase 5 - pendente)
   ❌ VHSYS-employers_general_data-v1.json (Phase 4 - pendente)
   ❌ VHSYS-employers_plus-v1.json (Phase 4 - pendente)
-  ❌ VHSYS-employers_plus_info-v1.json (Phase 4 - pendente)
+  ❌ VHSYS-employers_plus_info-v1.json (Phase 5 - pendente)
 
 STATUS FINAL:
   ✅ Fase 2 (Router & Health): IMPLEMENTADA
