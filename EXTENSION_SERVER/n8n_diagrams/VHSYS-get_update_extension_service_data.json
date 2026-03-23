@@ -1,5 +1,5 @@
 {
-  "name": "VHSYS-get_update_extension_service_data-v1",
+  "name": "VHSYS-get_update_extension_service_data",
   "nodes": [
     {
       "parameters": {},

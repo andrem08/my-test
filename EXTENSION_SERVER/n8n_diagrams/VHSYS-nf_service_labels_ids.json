@@ -1,5 +1,5 @@
 {
-  "name": "VHSYS-nf_service_labels_ids-v2",
+  "name": "VHSYS-nf_service_labels_ids",
   "nodes": [
     {
       "parameters": {},
@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \n  codigo_servico,\n  descricao,\n  aliquota_iss,\n  ativo\nFROM auxiliary.nf_service_labels\nWHERE ativo = true\nORDER BY codigo_servico;",
+        "query": "SELECT \n  \"codigo\",\n  \"numeronfs\",\n  \"cliente\",\n  \"status\"\nFROM auxiliary.\"NF_ServiceMetadata\"\nWHERE \"status\" = 'ATIVO'\nORDER BY \"codigo\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"

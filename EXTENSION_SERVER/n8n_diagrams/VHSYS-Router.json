@@ -8,7 +8,7 @@
           "value": "EP5jvsjGYWMEROje",
           "mode": "list",
           "cachedResultUrl": "/workflow/EP5jvsjGYWMEROje",
-          "cachedResultName": "VHSYS-nf_service_info-v2"
+          "cachedResultName": "VHSYS-nf_service_info"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        6352
+        -6304,
+        7520
       ],
-      "id": "ffbaa69f-ea40-4558-8781-4748cd6675c9",
+      "id": "f0feb88e-b04e-4e8e-b56d-abee8757c1ae",
       "name": "Execute: NF Service"
     },
     {
@@ -36,7 +36,7 @@
           "value": "vEyfgH4ys8g1pu2E",
           "mode": "list",
           "cachedResultUrl": "/workflow/vEyfgH4ys8g1pu2E",
-          "cachedResultName": "VHSYS-nf_service_labels_ids-v2"
+          "cachedResultName": "VHSYS-nf_service_labels_ids"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -51,10 +51,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        6144
+        -6304,
+        7328
       ],
-      "id": "4a8f24d8-3b90-4ec5-b7c8-c8f5e668e159",
+      "id": "3bf0207c-9c50-45da-9917-a3899f739b8a",
       "name": "Execute: NF label Id's"
     },
     {
@@ -64,7 +64,7 @@
           "value": "AKxeodqxnWTSbis3",
           "mode": "list",
           "cachedResultUrl": "/workflow/AKxeodqxnWTSbis3",
-          "cachedResultName": "VHSYS-nf_service_labels-v2"
+          "cachedResultName": "VHSYS-nf_service_labels"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -79,10 +79,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        5936
+        -6304,
+        7136
       ],
-      "id": "91340484-1403-4091-899c-e21b1967b327",
+      "id": "87cecae0-2383-4518-a196-6f6295cbab48",
       "name": "Execute: NF label"
     },
     {
@@ -92,7 +92,7 @@
           "value": "ti5vujrnafguyYzG",
           "mode": "list",
           "cachedResultUrl": "/workflow/ti5vujrnafguyYzG",
-          "cachedResultName": "VHSYS-sales_nf_report-v2"
+          "cachedResultName": "VHSYS-sales_nf_report"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -107,11 +107,39 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        5760
+        -6304,
+        6752
       ],
-      "id": "f18e6eb1-0fb1-40b3-b739-95e21a7e57e4",
+      "id": "89e3f43c-b303-4fcc-961f-f77e6e47d2ce",
       "name": "Execute: NF Sales"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "21NZxIQ62yae77mQ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/21NZxIQ62yae77mQ",
+          "cachedResultName": "VHSYS-service_nf_report"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -6304,
+        6944
+      ],
+      "id": "0ca7083c-0289-437b-8f1a-34d53957d4f9",
+      "name": "Execute: Service NF"
     },
     {
       "parameters": {
@@ -125,41 +153,56 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "64499cf7-c491-4605-94b1-47132e822b7d",
+      "id": "b845038e-ff53-4e2f-b10a-6aeac381faec",
       "name": "Webhook Router",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -4416,
-        5728
+        -7184,
+        6752
       ],
       "webhookId": "vhsys-router-webhook"
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route\n// Extrai rota lógica e monta envelope canônico\n// para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst route = (req.query?.route || req.body?.route || 'unknown').toString().trim();\nconst method = (req.method || 'GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Log estruturado — sem campos sensíveis\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  level:     'info'\n}));\n\nreturn { route, method, body, query, original_request: req };"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = (req.method || 'GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || null,\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "255ba81a-7a90-4535-83b1-9c402b776c24",
-      "name": "Extract Route",
+      "id": "96041cae-df62-4c1a-b592-951d1f65db93",
+      "name": "Extract Route & Parameters",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4192,
-        5744
+        -6960,
+        6768
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Placeholder Fase 6\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'regular_bills', event: 'route_not_implemented', level: 'warn' }));\nreturn { statusCode: 501, body: { error: 'Not implemented', route: 'regular_bills', message: 'Phase 6' } };"
+        "workflowId": {
+          "__rl": true,
+          "value": "FzPagGsvwuKAIHwM",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FzPagGsvwuKAIHwM",
+          "cachedResultName": "VHSYS-regular_bills"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
       },
-      "id": "b6fe7a9c-2e43-478f-8613-71a267b057c4",
-      "name": "Placeholder: Regular Bills",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        -3360,
-        5568
-      ]
+        -6304,
+        6560
+      ],
+      "id": "c5fa5bd6-8e18-466a-915b-fb584f91dba9",
+      "name": "Execute: Regular Bills"
     },
     {
       "parameters": {
@@ -168,19 +211,19 @@
           "value": "ul7KFJNXYYJCida6",
           "mode": "list",
           "cachedResultUrl": "/workflow/ul7KFJNXYYJCida6",
-          "cachedResultName": "VHSYS-employers_general_data-v2"
+          "cachedResultName": "VHSYS-employers_general_data"
         },
         "options": {
           "waitForSubWorkflow": true
         }
       },
-      "id": "8912548f-b1e3-4a81-85e7-b15dacd33399",
+      "id": "7c389ee7-813c-47bc-a4cd-8039b8b7ae82",
       "name": "Execute: Employers General",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -3360,
-        6720
+        -6304,
+        7904
       ]
     },
     {
@@ -190,67 +233,67 @@
           "value": "Is8AcAK4ePg3oCM2",
           "mode": "list",
           "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
-          "cachedResultName": "VHSYS-employers_plus-v1"
+          "cachedResultName": "VHSYS-employers_plus_info"
         },
         "options": {
           "waitForSubWorkflow": true
         }
       },
-      "id": "9c96f9a5-48f7-46bc-9228-cef69edcfc3b",
+      "id": "56d60202-e84d-4940-a82b-3a90043557a5",
       "name": "Execute: Employers Plus",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -3360,
-        6912
+        -6304,
+        8096
       ]
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "8j8GgE8PfT45Teb9",
+          "value": "Is8AcAK4ePg3oCM2",
           "mode": "list",
-          "cachedResultUrl": "/workflow/8j8GgE8PfT45Teb9",
-          "cachedResultName": "VHSYS-employers_plus_info-v1"
+          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
+          "cachedResultName": "VHSYS-employers_plus_info"
         },
         "options": {
           "waitForSubWorkflow": true
         }
       },
-      "id": "30acc43e-dc67-4dcf-b17b-9423504c3389",
+      "id": "5c470c51-bf79-45e2-8a58-7f37e15e701b",
       "name": "Execute: Employers Plus Info",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -3360,
-        7104
+        -6304,
+        8288
       ]
     },
     {
       "parameters": {
         "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
-      "id": "71077a7a-f3c2-4acd-8642-d71fe3fed219",
+      "id": "d2ab7ca5-11b8-43e8-905d-a89b7359823d",
       "name": "404 Not Found",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3360,
-        6528
+        -6304,
+        7712
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
       },
-      "id": "a7581cbc-5916-4d8e-8964-48b642b043de",
+      "id": "808b3132-d449-4451-87eb-5d9e2dfd6f38",
       "name": "Normalize Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2864,
-        5760
+        -5872,
+        6752
       ]
     },
     {
@@ -261,13 +304,13 @@
           "responseCode": "={{ $json.statusCode || 200 }}"
         }
       },
-      "id": "8002cc0e-6be8-4178-bdd2-3ea8fb65a0a9",
+      "id": "72a435b9-00df-49a4-9759-5adc7698ac28",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -2640,
-        5760
+        -5648,
+        6752
       ]
     },
     {
@@ -277,7 +320,7 @@
           "value": "UkWE6rMcSqAwTgKB",
           "mode": "list",
           "cachedResultUrl": "/workflow/UkWE6rMcSqAwTgKB",
-          "cachedResultName": "VHSYS-cc_status-v1"
+          "cachedResultName": "VHSYS-cc_status"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -292,10 +335,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        4992
+        -6304,
+        5984
       ],
-      "id": "2d16671a-e87c-48ca-9ff9-245a6275efc5",
+      "id": "5f1564fa-322f-46f3-bfa4-78dc7685ca15",
       "name": "Execute: CC Status"
     },
     {
@@ -305,7 +348,7 @@
           "value": "vlGDMc64g0AUKBON",
           "mode": "list",
           "cachedResultUrl": "/workflow/vlGDMc64g0AUKBON",
-          "cachedResultName": "VHSYS-update_services-v1"
+          "cachedResultName": "VHSYS-update_services"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -320,10 +363,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        4608
+        -6304,
+        5600
       ],
-      "id": "4486c08b-4770-401c-8cca-a54de5313d0f",
+      "id": "d047f982-010b-4064-b0f6-ea05bfda0147",
       "name": "Execute: Update Services"
     },
     {
@@ -333,7 +376,7 @@
           "value": "sjWsEoIsUa8qrPcp",
           "mode": "list",
           "cachedResultUrl": "/workflow/sjWsEoIsUa8qrPcp",
-          "cachedResultName": "VHSYS-health-v1"
+          "cachedResultName": "VHSYS-health"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -348,10 +391,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        4416
+        -6304,
+        5408
       ],
-      "id": "1bf9924a-baad-4d9e-a429-eeff8455906d",
+      "id": "9dbae5c8-a965-4026-b2a2-841a7feb8092",
       "name": "Execute: Health"
     },
     {
@@ -361,7 +404,7 @@
           "value": "YPMQGm7hD5eBn1da",
           "mode": "list",
           "cachedResultUrl": "/workflow/YPMQGm7hD5eBn1da",
-          "cachedResultName": "VHSYS-cc_next_url-v1"
+          "cachedResultName": "VHSYS-cc_next_url"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -376,10 +419,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        5184
+        -6304,
+        6176
       ],
-      "id": "5e8575d5-8d50-4bd7-9dcd-89406f58a89f",
+      "id": "6f481633-4334-4410-9bde-7b4ce71b7de5",
       "name": "Execute: CC Next URL"
     },
     {
@@ -389,7 +432,7 @@
           "value": "DoAXp1U7yQ5UOjgZ",
           "mode": "list",
           "cachedResultUrl": "/workflow/DoAXp1U7yQ5UOjgZ",
-          "cachedResultName": "VHSYS-cc_report-v1"
+          "cachedResultName": "VHSYS-cc_report"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -404,10 +447,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        5376
+        -6304,
+        6368
       ],
-      "id": "0034121f-338d-40cc-a389-26f074209c40",
+      "id": "660257f8-4571-4820-9f83-72f1783fb828",
       "name": "Execute: CC Report"
     },
     {
@@ -417,7 +460,7 @@
           "value": "ul6IjUpAqixCTDc3",
           "mode": "list",
           "cachedResultUrl": "/workflow/ul6IjUpAqixCTDc3",
-          "cachedResultName": "VHSYS-get_update_extension_service_data-v1"
+          "cachedResultName": "VHSYS-get_update_extension_service_data"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -432,10 +475,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -3360,
-        4800
+        -6304,
+        5792
       ],
-      "id": "7cc52e67-cd8c-4a21-bc8d-1f88d805ac71",
+      "id": "87d4b381-b2a0-42aa-a4b6-41f9ea80d2d7",
       "name": "Call 'VHSYS-get_update_extension_service_data-v1'"
     },
     {
@@ -651,6 +694,31 @@
                 },
                 "conditions": [
                   {
+                    "id": "service-nf-001",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "service_nf_report",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "service_nf_report"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
                     "id": "6b99f32b-e7cd-45a4-ad24-f69cc38480cc",
                     "leftValue": "={{ $json.route }}",
                     "rightValue": "nf_service_labels",
@@ -800,11 +868,24 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -3968,
-        5536
+        -6736,
+        6544
       ],
-      "id": "621e703a-6de6-4c4f-965a-9063f39dbfd4",
+      "id": "638f39a4-afee-45c7-8a6b-1e6bb3ebc643",
       "name": "Switch"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Route not found"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -5872,
+        7712
+      ],
+      "id": "71c29ac8-0cf7-4ba6-85a7-8c11f0e5fbc7",
+      "name": "Stop and Error"
     }
   ],
   "pinData": {},
@@ -813,14 +894,21 @@
       "main": [
         [
           {
-            "node": "Extract Route",
+            "node": "Extract Route & Parameters",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Extract Route",
+            "node": "Extract Route & Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Route & Parameters",
             "type": "main",
             "index": 0
           }
@@ -871,7 +959,18 @@
         ]
       ]
     },
-    "Extract Route": {
+    "Execute: Service NF": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Route & Parameters": {
       "main": [
         [
           {
@@ -882,7 +981,7 @@
         ]
       ]
     },
-    "Placeholder: Regular Bills": {
+    "Execute: Regular Bills": {
       "main": [
         [
           {
@@ -930,7 +1029,7 @@
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Stop and Error",
             "type": "main",
             "index": 0
           }
@@ -1060,7 +1159,7 @@
         ],
         [
           {
-            "node": "Placeholder: Regular Bills",
+            "node": "Execute: Regular Bills",
             "type": "main",
             "index": 0
           }
@@ -1068,6 +1167,13 @@
         [
           {
             "node": "Execute: NF Sales",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: Service NF",
             "type": "main",
             "index": 0
           }
@@ -1130,7 +1236,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "afd0c265-a190-4d9c-aea1-d5a4278b8b61",
+  "versionId": "80bcfd24-f2a4-4675-a986-e94e711310f2",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

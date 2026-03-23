@@ -56,7 +56,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_extension_services\nSET\n  \"RUN_STATUS\"  = $1::integer,\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"ACTION\" = $2\nRETURNING \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\";",
+        "query": "UPDATE auxiliary.update_extension_services\nSET\n  \"RUN_STATUS\"  = {{ $json.RUNNING_STATUS }}::integer,\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"ACTION\" = '{{ $json.ACTION }}'\nRETURNING \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
