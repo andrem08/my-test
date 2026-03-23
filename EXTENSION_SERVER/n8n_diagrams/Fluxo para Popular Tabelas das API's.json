@@ -358,7 +358,7 @@
               "id": "endpoints",
               "name": "endpoints",
               "type": "array",
-              "value": "={{ [\n  // === VHSYS (13 endpoints em uso) ===\n  {system: 'vhsys', url: 'pedidos', table: 'vhs_pedidos', id_field: 'id_ped', primary_key: 'id_ped'},\n  {system: 'vhsys', url: 'produtos', table: 'vhs_produtos', id_field: 'id_produto', primary_key: 'id_produto'},\n  {system: 'vhsys', url: 'clientes', table: 'vhs_clientes', id_field: 'id_cliente', primary_key: 'id_cliente'},\n  {system: 'vhsys', url: 'categorias-financeiras', table: 'vhs_categorias_financeiras', id_field: 'id_categoria', primary_key: 'id_categoria'},\n  {system: 'vhsys', url: 'contas-bancarias', table: 'vhs_bancos', id_field: 'id_banco_cad', primary_key: 'id_banco_cad'},\n  {system: 'vhsys', url: 'contas-receber', table: 'vhs_contas_receber', id_field: 'id_conta_rec', primary_key: 'id_conta_rec'},\n  {system: 'vhsys', url: 'extratos', table: 'vhs_extratos', id_field: 'id_fluxo', primary_key: 'id_fluxo'},\n  {system: 'vhsys', url: 'centros-custo', table: 'vhs_centro_custos', id_field: 'id_centro_custos', primary_key: 'id_centro_custos'},\n  {system: 'vhsys', url: 'notas-fiscais', table: 'vhs_notas_fiscais', id_field: 'id_venda', primary_key: 'id_venda'},\n  {system: 'vhsys', url: 'ordens-compra', table: 'vhs_ordens_compra', id_field: 'id_ordem', primary_key: 'id_ordem'},\n  {system: 'vhsys', url: 'entradas-mercadoria', table: 'vhs_entradas_mercadoria', id_field: 'id_entrada', primary_key: 'id_entrada'},\n  {system: 'vhsys', url: 'ordens-servico', table: 'vhs_ordens_servico', id_field: 'id_ordem', primary_key: 'id_ordem'},\n\n  // === CLOCKIFY (4 endpoints em uso) ===\n  {system: 'clockify', url: 'users', table: 'clk_usuarios', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'projects', table: 'clk_projetos', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'tags', table: 'clk_tags', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'clients', table: 'clk_clientes', id_field: 'id', primary_key: 'id'},\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 6 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n  {system: 'vhsys', url: 'contas-pagar', table: 'vhs_contas_pagar', id_field: 'id_conta_pag', primary_key: 'id_conta_pag'}\n] }}"
+              "value": "={{ [\n  // === VHSYS (13 endpoints em uso) ===\n  {system: 'vhsys', url: 'pedidos', table: 'vhs_pedidos', id_field: 'id_ped', primary_key: 'id_ped'},\n  {system: 'vhsys', url: 'clientes', table: 'vhs_clientes', id_field: 'id_cliente', primary_key: 'id_cliente'},\n  {system: 'vhsys', url: 'categorias-financeiras', table: 'vhs_categorias_financeiras', id_field: 'id_categoria', primary_key: 'id_categoria'},\n  {system: 'vhsys', url: 'contas-bancarias', table: 'vhs_bancos', id_field: 'id_banco_cad', primary_key: 'id_banco_cad'},\n  {system: 'vhsys', url: 'produtos', table: 'vhs_produtos', id_field: 'id_produto', primary_key: 'id_produto'},\n  {system: 'vhsys', url: 'contas-pagar', table: 'vhs_contas_pagar', id_field: 'id_conta_pag', primary_key: 'id_conta_pag'},\n  {system: 'vhsys', url: 'contas-receber', table: 'vhs_contas_receber', id_field: 'id_conta_rec', primary_key: 'id_conta_rec'},\n  {system: 'vhsys', url: 'extratos', table: 'vhs_extratos', id_field: 'id_fluxo', primary_key: 'id_fluxo'},\n  {system: 'vhsys', url: 'centros-custo', table: 'vhs_centro_custos', id_field: 'id_centro_custos', primary_key: 'id_centro_custos'},\n  {system: 'vhsys', url: 'notas-fiscais', table: 'vhs_notas_fiscais', id_field: 'id_venda', primary_key: 'id_venda'},\n  {system: 'vhsys', url: 'ordens-compra', table: 'vhs_ordens_compra', id_field: 'id_ordem', primary_key: 'id_ordem'},\n  {system: 'vhsys', url: 'entradas-mercadoria', table: 'vhs_entradas_mercadoria', id_field: 'id_entrada', primary_key: 'id_entrada'},\n  {system: 'vhsys', url: 'ordens-servico', table: 'vhs_ordens_servico', id_field: 'id_ordem', primary_key: 'id_ordem'},\n\n  // === CLOCKIFY (4 endpoints em uso) ===\n  {system: 'clockify', url: 'users', table: 'clk_usuarios', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'projects', table: 'clk_projetos', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'tags', table: 'clk_tags', id_field: 'id', primary_key: 'id'},\n  {system: 'clockify', url: 'clients', table: 'clk_clientes', id_field: 'id', primary_key: 'id'},\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 1 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 2 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 3 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 4 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") },\n{system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').minus({ years: 5 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 6 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") }\n] }}"
             }
           ]
         },
@@ -558,7 +558,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "{{ (() => {\nconst data = $json;\n\nconst table = $(\"Split Out\").item.json.table;\nconst idField = $(\"Split Out\").item.json.id_field;\nconst schema = \"raw_data\";\n\nconst fields = Object.keys(data).filter(\n  (key) =>\n    !key.startsWith(\"_\") &&\n    !key.startsWith(\"$\") &&\n    key !== \"json\" &&\n    key !== \"pairedItem\",\n);\n\nif (fields.length === 0) {\n  return 'SELECT 1'\n}\n\nconst normalizedIdField = idField.toLowerCase();\nconst columns = fields.map((f) => '\"' + f.toLowerCase() + '\"').join(\", \");\nconst values = fields.map((f) => escapeSqlValue(data[f])).join(\", \");\nconst updateSet = fields\n  .filter((f) => f.toLowerCase() !== normalizedIdField)\n  .map((f) => '\"' + f.toLowerCase() + '\" = EXCLUDED.\"' + f.toLowerCase() + '\"')\n  .join(\", \");\n\nreturn (\n  \"INSERT INTO \" +\n  schema +\n  \".\" +\n  table +\n  \" (\" +\n  columns +\n  \") VALUES (\" +\n  values +\n  ') ON CONFLICT (\"' +\n  normalizedIdField +\n  '\") DO UPDATE SET ' +\n  updateSet +\n  \";\"\n);\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === \"\") {\n    return \"NULL\";\n  }\n  if (typeof value === \"string\" && value.startsWith(\"0000-00-00\")) {\n    return \"NULL\";\n  }\n  if (typeof value === \"number\") {\n    return value;\n  }\n  if (typeof value === \"boolean\") {\n    return value ? \"true\" : \"false\";\n  }\n  if (Array.isArray(value) || typeof value === \"object\") {\n    return \"'\" + JSON.stringify(value).replace(/'/g, \"''\") + \"'::jsonb\";\n  }\n  return \"'\" + String(value).replace(/'/g, \"''\") + \"'\";\n}\n})() }}",
+        "query": "{{ (() => {\nconst data = $json;\n\nconst table = $(\"Split Out\").item.json.table;\nconst idField = $(\"Split Out\").item.json.id_field;\nconst schema = \"raw_data\";\n\nconst fields = Object.keys(data).filter(\n  (key) =>\n    !key.startsWith(\"_\") &&\n    !key.startsWith(\"$\") &&\n    key !== \"json\" &&\n    key !== \"pairedItem\",\n);\n\nif (fields.length === 0) {\n  return 'SELECT 1'\n}\n\nconst normalizedIdField = idField.toLowerCase();\nconst columns = fields.map((f) => '\"' + f.toLowerCase() + '\"').join(\", \");\nconst values = fields.map((f) => escapeSqlValue(data[f])).join(\", \");\nconst updateSet = fields\n  .filter((f) => f.toLowerCase() !== normalizedIdField)\n  .map((f) => '\"' + f.toLowerCase() + '\" = EXCLUDED.\"' + f.toLowerCase() + '\"')\n  .join(\", \");\n\nreturn (\n  \"INSERT INTO \" +\n  schema +\n  \".\" +\n  table +\n  \" (\" +\n  columns +\n  \") VALUES (\" +\n  values +\n  ') ON CONFLICT (\"' +\n  normalizedIdField +\n  '\") DO UPDATE SET ' +\n  updateSet +\n  \";\"\n);\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === \"\") {\n    return \"NULL\";\n  }\n  if (typeof value === \"string\" && value.startsWith(\"0000-00-00\")) {\n    return \"NULL\";\n  }\n  if (typeof value === \"number\") {\n    return value;\n  }\n  if (typeof value === \"boolean\") {\n    return value ? \"true\" : \"false\";\n  }\n  if (Array.isArray(value) || typeof value === \"object\") {\n    return \"'\" + JSON.stringify(value).replace(/'/g, \"''\").replace(/\\$/g, \"\\\\$\") + \"'::jsonb\";\n  }\n  // Escape single quotes, dollar signs, and backslashes for SQL string literals\n  return \"'\" + String(value).replace(/\\\\/g, \"\\\\\\\\\").replace(/'/g, \"''\").replace(/\\$/g, \"\\\\$\") + \"'\";\n}\n})() }}",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
@@ -724,20 +724,6 @@
       ],
       "id": "9b81eaaf-64bb-4b98-a918-8e6b892d10fa",
       "name": "Forward Prev Page Num"
-    },
-    {
-      "parameters": {
-        "jsCode": "const table = $(\"Split Out\").item.json.table;\n\nreturn items.map(item => {\n    if (table === 'vhs_ordens_servico') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.obs_interno_pedido, item.json.referencia_ordem]);\n    }\n    else if (table === 'vhs_pedidos') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.referencia_pedido, item.json.obs_pedido]);\n    }\n    else if (table === 'vhs_notas_fiscais') {\n        item.json.ref_centros_custo = extractCostCenterByCC([item.json.referencia_pedido, item.json.obs_interno_pedido]);\n    }\n    else if (table === 'vhs_centro_custos') {\n        item.json.ref_centros_custo = extractCostCenter(item.json.desc_centro_custos);\n    }\n    else if (table === 'clk_projetos') {\n        item.json.ref_centros_custo = extractCostCenter(item.json.name);\n          item.json.duration_minutes = convertTimeToMinutes(item.json.duration);\n    }\n    return item;\n});\n\nfunction extractCostCenterByCC(list) {\n    let ref = null;\n\n    for (const key in list) {\n        if (list[key] && typeof list[key] === 'string') {\n                let match = list[key].match(/CC[-\\s]?(\\d{1,10})/i);\n                if (match && match[1]) {\n                      ref = match[1];\n                    break;\n                }\n                if (!ref) {\n                    match = list[key].match(/\\b(\\d{6})\\b/);\n                    if (match && match[1]) {\n                        ref = match[1];\n                        break;\n                    }\n                }\n        }\n    }\n    return ref ? String(ref) : null;\n}\n\nfunction extractCostCenter(text) {\n    if (text === 'Vendas' || text === 'Administração') {\n        return text;\n    }\n    let ref = null;\n    const match6 = text && text.match(/\\b(\\d{6})\\b/);\n    if (match6) ref = match6[1];\n    if (!ref) {\n        const matchPrefix = text && text.match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n        if (matchPrefix) ref = matchPrefix[0];\n    }\n    if (!ref) {\n        const matchCC = text && text.match(/CC[-\\s]*(\\d+)/i);\n        if (matchCC) ref = matchCC[1];\n    }\n    if (!ref) {\n        const index = text && text.indexOf('CC-');\n        if (index !== -1) ref = text.substr(index + 3, 6);\n    }\n    if (!ref) {\n        let desc = text ? text.replace('/', '') : '';\n        const index = desc.indexOf('CC-');\n        if (index !== -1) {\n            const endIndex = desc.indexOf('/', index);\n            if (endIndex === -1) {\n                ref = desc.substr(index + 3, 6);\n            } else {\n                ref = desc.substring(index + 3, endIndex);\n            }\n        }\n    }\n    return ref ? String(ref) : null;\n};\n\n\nfunction convertTimeToMinutes(timeString) {\n  // Example: \"PT47H30M\"\n  const match = timeString && timeString.match(/^PT(\\d+)H(?:(\\d+)M)?(?:(\\d+)S)?$/);\n  if (match) {\n    const hours = parseInt(match[1], 10);\n    const minutes = match[2] ? parseInt(match[2], 10) : 0;\n    const seconds = match[3] ? parseInt(match[3], 10) : 0;\n    return hours * 60 + minutes + seconds / 60;\n  }\n  return 0;\n};"
-      },
-      "id": "a743fe41-62c8-470e-b002-7b70fcd59529",
-      "name": "Padronização e inclusão de campos",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -55648,
-        19424
-      ],
-      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -942,7 +928,12 @@
       "main": [
         [
           {
-            "node": "Padronização e inclusão de campos",
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
             "type": "main",
             "index": 0
           }
@@ -953,7 +944,12 @@
       "main": [
         [
           {
-            "node": "Padronização e inclusão de campos",
+            "node": "UPSERT no Banco",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate",
             "type": "main",
             "index": 0
           }
@@ -1032,22 +1028,6 @@
         ]
       ]
     },
-    "Padronização e inclusão de campos": {
-      "main": [
-        [
-          {
-            "node": "UPSERT no Banco",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Aggregate",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Aggregate": {
       "main": [
         [
@@ -1083,7 +1063,7 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "96c90aac-043b-414e-a048-6b1db9165634",
+  "versionId": "f0d8b449-9e0e-46c4-9925-fdbb0041557e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

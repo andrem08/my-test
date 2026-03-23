@@ -72,7 +72,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \"ID\"\nFROM auxiliary.relatorio_cc\nWHERE \"ID_CC\" = $1\n  AND \"TYPE\"  = $2;",
+        "query": "SELECT \"ID\"\nFROM auxiliary.relatorio_cc\nWHERE \"ID_CC\" = {{ $json.cc_id }}\n  AND \"TYPE\"  = {{ $json.type }};",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -154,7 +154,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.relatorio_cc (\n  \"ID\", \"ID_SEED\", \"ID_CC\", \"CC\", \"CC_LABEL\",\n  \"VENCIMENTO\", \"FORNECEDOR\", \"NOME_DESPESA\",\n  \"SITUACAO\", \"DATA_PAGAMENTO\", \"CATEGORIA\",\n  \"VALOR\", \"TYPE\", created_at, updated_at\n) VALUES (\n  $1, $2, $3,\n  'NO-SET',\n  $4,\n  to_timestamp($5::bigint),\n  $6, $7, $8, $9, $10,\n  $11::numeric,\n  $12,\n  NOW() AT TIME ZONE 'America/Sao_Paulo',\n  NOW() AT TIME ZONE 'America/Sao_Paulo'\n)\nON CONFLICT (\"ID\") DO NOTHING;",
+        "query": "INSERT INTO auxiliary.relatorio_cc (\n  \"ID\", \"ID_SEED\", \"ID_CC\", \"CC\", \"CC_LABEL\",\n  \"VENCIMENTO\", \"FORNECEDOR\", \"NOME_DESPESA\",\n  \"SITUACAO\", \"DATA_PAGAMENTO\", \"CATEGORIA\",\n  \"VALOR\", \"TYPE\", created_at, updated_at\n) VALUES (\n  {{ $json.record.ID }}, {{ $json.record.ID_SEED }}, {{ $json.cc_id }},\n  'NO-SET',\n  {{ $json.cc_label }},\n  to_timestamp({{ $json.record.VENCIMENTO }}::bigint),\n  {{ $json.record.FORNECEDOR }}, {{ $json.record.NOME_DESPESA }}, {{ $json.record.SITUACAO }}, {{ $json.record.DATA_PAGAMENTO }}, {{ $json.record.CATEGORIA }},\n  {{ $json.record.VALOR }}::numeric,\n  {{ $json.type }},\n  NOW() AT TIME ZONE 'America/Sao_Paulo',\n  NOW() AT TIME ZONE 'America/Sao_Paulo'\n)\nON CONFLICT (\"ID\") DO NOTHING;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
@@ -223,7 +223,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "DELETE FROM auxiliary.relatorio_cc\nWHERE \"ID\" = $1;",
+        "query": "DELETE FROM auxiliary.relatorio_cc\nWHERE \"ID\" = {{ $json.id_to_delete }};",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
@@ -261,7 +261,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET\n  entries_runned = CASE WHEN $1 = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN $1 = 'saida'   THEN 1 ELSE outputs_runned END,\n  updated_at     = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = $2;",
+        "query": "UPDATE auxiliary.update_cc_report_status\nSET\n  entries_runned = CASE WHEN {{ $json.type }} = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN {{ $json.type }} = 'saida'   THEN 1 ELSE outputs_runned END,\n  updated_at     = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = {{ $json.cc_id }};",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
