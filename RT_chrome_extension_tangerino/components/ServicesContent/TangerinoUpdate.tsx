@@ -25,7 +25,7 @@ const updateOrRegisterEntry = async (token: string | null) => {
         return;
     }
     try {
-        //const response = await fetch(`${SERVER_REF}/tagerino/time_entry`, {
+        // const response = await fetch(`${SERVER_REF}/tagerino/time_entry`, {
         const response = await fetch(`${SERVER_REF}`, {
             method: "PUT",
             headers: {
