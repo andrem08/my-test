@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "a17d6a0d-e537-42af-9253-da98d3744535",
+      "id": "9948919c-bc88-4f54-9877-09efd98962ea",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -480,
-        80
+        -1360,
+        768
       ]
     },
     {
@@ -21,14 +21,15 @@
           "queryBatching": "single"
         }
       },
-      "id": "4574b00a-71fb-4f5f-bd42-817bc92972f0",
+      "id": "07561cf7-1fce-4c41-95a9-aba3fd8d0e8c",
       "name": "SELECT Active Service Labels",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -240,
-        80
+        -1120,
+        768
       ],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "tnATsHmPQ4uK6XL9",
@@ -41,26 +42,26 @@
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_labels_ids\n// Rota   : GET /nf_service_labels_ids\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : Nenhum (GET)\n// Output : [{ codigo_servico, descricao, aliquota_iss, ativo }] HTTP 200\n// Banco  : SELECT nf_service_labels WHERE ativo = true\n// ─────────────────────────────────────────────\n// CRÍTICO: Retorna ARRAY DIRETO — NÃO encapsulado\n// A extensão Chrome espera: [...] não { data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\nconst labels = allRecords.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'labels_read',\n  total_labels: labels.length,\n  level: 'info'\n}));\n\n// statusCode 200 para GET (não 201)\nreturn {\n  statusCode: 200,\n  body: labels\n};"
       },
-      "id": "d5560266-cb09-4813-a80a-084fbf8600cf",
+      "id": "2c9b0286-1d69-470f-bdd5-90eea83683ac",
       "name": "Format as Direct Array",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        0
+        -880,
+        688
       ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de leitura do banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_read_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: 'Could not read service labels' }\n};"
       },
-      "id": "0d32afb7-20d5-4b07-aefb-2988594553e1",
+      "id": "87fdd240-97d1-4c76-bae8-7609e4e813b7",
       "name": "Build DB Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        160
+        -880,
+        848
       ]
     },
     {
@@ -70,10 +71,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        80
+        -640,
+        768
       ],
-      "id": "e4a70b75-14c0-4a7f-bd98-45db0a36517c",
+      "id": "3bec6d3c-8419-493d-acd9-9be85526f86b",
       "name": "Return Response"
     }
   ],
@@ -137,7 +138,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "bcee129d-dd4c-49cb-848b-35e576506061",
+  "versionId": "3cd247b5-32cb-49fb-86ab-b83a0a5d3adf",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
-        128
+        256,
+        96
       ],
-      "id": "72ec82aa-6c96-46d1-9970-51f4433e290c",
+      "id": "b8f40495-2f5f-4896-9795-1b860e80775c",
       "name": "Return Response"
     },
     {
@@ -21,10 +21,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        320
+        32,
+        288
       ],
-      "id": "5dc74dc5-e992-4d7e-85ba-31729d64282d",
+      "id": "1b4ef97c-fc3f-49c9-9989-15a408a3607a",
       "name": "Build Validation Error Response"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        128
+        32,
+        96
       ],
-      "id": "ca0b5930-e441-4cef-876f-0cc9f26853b9",
+      "id": "7dc2e2d0-499c-47fc-b818-9328a6c7781b",
       "name": "Build DB Error Response"
     },
     {
@@ -47,10 +47,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        -64
+        32,
+        -96
       ],
-      "id": "05e5e4a6-e9d7-44cf-a01f-ece171e98f75",
+      "id": "d59ed424-baf2-4dbf-bde9-b835cb103f16",
       "name": "Build Success Response"
     },
     {
@@ -65,10 +65,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -224,
-        32
+        -192,
+        0
       ],
-      "id": "709d0d04-82eb-47a8-923f-4e912d30b6c8",
+      "id": "a4dc8942-2284-4d37-a287-f1f99d89e8dc",
       "name": "UPDATE Extension Status",
       "credentials": {
         "postgres": {
@@ -106,10 +106,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -448,
-        128
+        -416,
+        96
       ],
-      "id": "7654c7ef-1b07-4744-a3a5-1125651f9d91",
+      "id": "42d0c0e8-c64d-41c6-a2d3-2f71bbfc922f",
       "name": "Is Valid?"
     },
     {
@@ -119,25 +119,78 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -672,
-        128
+        -640,
+        96
       ],
-      "id": "2b504f15-3b5c-46fd-bb3a-67349ddf0cef",
+      "id": "a3c700c8-c7d6-4619-8ffe-d06264c7ed6e",
       "name": "Validate Input"
     },
     {
       "parameters": {},
-      "id": "68928a09-76df-4ed2-9ca8-d2b87a41c968",
+      "id": "6d00615e-9ec1-436f-b9ac-2a7f282b5b95",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -896,
-        128
+        -864,
+        96
       ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When called by another workflow": [
+      {
+        "json": {
+          "route": "update_services",
+          "method": "GET",
+          "body": {
+            "ACTION": "EMPLOYERS",
+            "RUNNING_STATUS": 2
+          },
+          "query": {},
+          "parameters": {
+            "rt_token": null
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+              "content-length": "41",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "content-type": "application/json",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2BWx7DtR2rj2SvnapUOLQldIiuJ6igGNsbj1oYZcVQ5emWY62VoBmLg9v5i3mrxmvz3oc7Xesx8xA%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19rR8Rlur4uda09tXz4raifGPVNvnjwzO5ryWBgQ0XUHq0gWvchaoITGmsSRpJUAtZU2dcZiojUOhUSB5e%2FHgCOACCB%2Fo8zvD3M3PdMbqsBpjRwRXVTwvheS2hXy6pSMUIk2y%2BzkEmW1ENdDnU9VqzR14RrFTwcz4w%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2B9cZlV1AklI0qH4rKZXIstwN945XF4oggfiz1XgeFqnJ7m3bsy8o3DBruXR1SAdZDZxz14cJRX60YwnCDpXajcrOQV2IicHKn8e3zhRGgs3ZTLdvVXlUVsHEl5tSiIXlP6c3uIxvjupC%2FfTyVwmajPpl9mChI4a3k%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FPAdVxpFtbRaW%2BAlzPMaMKLDbE6Zjd32YLFYj%2B351xhgEYcDPOhh6EjSYBM%2FH2DUtuqKkHdLSJnP9VMCmmJ0R11kzsoNwBWAYSqTQiYjF653kUNhTY2bnwtKLJZ1mK7p1JQ205KD8fAw%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774226638324%2C%22019d1825-fe9b-76d9-a6f5-f4eda0d8f5a4%22%2C1774226636442%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+              "origin": "https://n8n.srv1252717.hstgr.cloud",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "same-origin",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "fda5ae5afd08",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "update_services"
+            },
+            "body": {
+              "ACTION": "EMPLOYERS",
+              "RUNNING_STATUS": 2
+            },
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "Build Validation Error Response": {
       "main": [
@@ -237,7 +290,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "18bbf709-88d7-4068-837a-1b81950a1427",
+  "versionId": "e7d8ef58-f42b-48fc-bfb1-24f0d1cdbcae",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

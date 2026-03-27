@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "965be14a-2618-450d-aee9-1a5e91200a2d",
+      "id": "bbb66574-bd83-44de-9961-15fe7cfd7f42",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -832,
-        208
+        -1568,
+        624
       ]
     },
     {
@@ -24,10 +24,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -608,
-        208
+        -1344,
+        624
       ],
-      "id": "797856f0-4665-4130-91a3-1cc60f046f73",
+      "id": "8af603bd-418e-4e52-a29f-dcdaa70693e7",
       "name": "SELECT Extension Services",
       "credentials": {
         "postgres": {
@@ -44,10 +44,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -384,
-        112
+        -1120,
+        528
       ],
-      "id": "6698a8b1-7144-4ed6-9c49-0b86fbe54b11",
+      "id": "8fb93f56-1dda-44f9-a7b9-9c9034b5321e",
       "name": "Format as Direct Array"
     },
     {
@@ -57,10 +57,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -384,
-        304
+        -1120,
+        720
       ],
-      "id": "69bd5d51-6770-43d9-b9d0-1286bbee2e93",
+      "id": "7e9958ed-3540-44b4-a4d5-888aba139bab",
       "name": "Build DB Error Response"
     },
     {
@@ -70,10 +70,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -160,
-        208
+        -896,
+        624
       ],
-      "id": "b920c1e2-df3c-4107-b67c-b5110ee2a996",
+      "id": "74ec8525-5923-4576-af7d-3223fca303fa",
       "name": "Return Response"
     }
   ],
@@ -181,7 +181,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "2adce17f-4d17-425a-bfaf-baa4e9c0482c",
+  "versionId": "fb660126-a72d-4f0a-b12e-528a09ec48fa",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

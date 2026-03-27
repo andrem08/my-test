@@ -3,171 +3,68 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "b611f302-ed60-4aa7-8856-b4e65db96dbc",
+      "id": "a07a3bba-a99c-49b1-a926-99ca6454ad22",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -432,
-        176
+        -1232,
+        720
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Verifica se há novos id_centro_custos que ainda não estão em update_cc_report_status\n-- e os insere com entries/outputs = 0 (sincroniza tabela de controle)\nINSERT INTO auxiliary.update_cc_report_status (cc_id, entries_runned, outputs_runned, updated_at)\nSELECT\n  cc.id_centro_custos,\n  0,\n  0,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nFROM auxiliary.centro_custos cc\nWHERE cc.id_centro_custos NOT IN (\n  SELECT cc_id FROM auxiliary.update_cc_report_status\n);\n\n-- Retorna totais de progresso\nSELECT\n  COUNT(*)                                                    AS total_lines,\n  SUM(CASE WHEN entries_runned = 1 THEN 1 ELSE 0 END)        AS number_of_entries,\n  SUM(CASE WHEN outputs_runned = 1 THEN 1 ELSE 0 END)        AS number_of_outputs\nFROM auxiliary.update_cc_report_status;",
-        "options": {
-          "connectionTimeout": 30,
-          "queryBatching": "single"
-        }
+        "query": "-- Conta o status de processamento dos centros de custo\nSELECT \n  COUNT(*) as total_lines,\n  SUM(CASE WHEN entries_runned = 1 THEN 1 ELSE 0 END) as number_of_entries,\n  SUM(CASE WHEN outputs_runned = 1 THEN 1 ELSE 0 END) as number_of_outputs\nFROM auxiliary.update_cc_report_status;",
+        "options": {}
       },
-      "id": "8fe58288-ea57-49e6-b54a-00d950f4c082",
-      "name": "Sync and Query CC Status",
+      "id": "4e03dfc3-a004-488a-ad69-c37f6e737a5b",
+      "name": "Get CC Status",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -208,
-        176
+        -1008,
+        720
       ],
       "credentials": {
         "postgres": {
           "id": "tnATsHmPQ4uK6XL9",
           "name": "Dev Database"
         }
-      },
-      "onError": "continueErrorOutput"
+      }
     },
     {
       "parameters": {
-        "jsCode": "// Calcula running status\nconst data = $input.first().json;\n\nconst totalLines       = parseInt(data.total_lines)       || 0;\nconst numberOfEntries  = parseInt(data.number_of_entries) || 0;\nconst numberOfOutputs  = parseInt(data.number_of_outputs) || 0;\n\n// running = false somente quando entries == outputs == total_lines\nconst running = !(numberOfEntries === numberOfOutputs && numberOfEntries === totalLines);\n\nconsole.log(JSON.stringify({\n  timestamp      : new Date().toISOString(),\n  route          : 'cc_report_manage/status',\n  event          : 'cc_status_calculated',\n  total_lines    : totalLines,\n  number_of_entries : numberOfEntries,\n  number_of_outputs : numberOfOutputs,\n  running        : running,\n  level          : 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    running          : running,\n    total_lines      : totalLines,\n    number_of_entries: numberOfEntries,\n    number_of_outputs: numberOfOutputs\n  }\n};"
+        "jsCode": "// Build status response\nconst row = $input.first().json;\n\nconst totalLines = parseInt(row.total_lines || 0);\nconst numEntries = parseInt(row.number_of_entries || 0);\nconst numOutputs = parseInt(row.number_of_outputs || 0);\n\n// Se entries e outputs processados = total, então não está rodando\nconst running = !(numEntries === totalLines && numOutputs === totalLines);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_status',\n  event: 'status_checked',\n  running: running,\n  total_lines: totalLines,\n  entries: numEntries,\n  outputs: numOutputs,\n  level: 'info'\n}));\n\nreturn {\n  running: running,\n  total_lines: totalLines,\n  number_of_entries: numEntries,\n  number_of_outputs: numOutputs\n};"
       },
-      "id": "77a6bbeb-b284-4fd1-b92a-0d12ef839dfc",
-      "name": "Calculate Status",
+      "id": "119fa3b5-9273-4fef-b199-09f1f2af0290",
+      "name": "Build Status Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16,
-        80
+        -784,
+        720
       ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/status',\n  event     : 'db_error',\n  message   : errData.message || 'Unknown DB error',\n  level     : 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not read CC report status' }\n};"
-      },
-      "id": "e87429d7-1533-40ba-8d44-f70827dc15f1",
-      "name": "Build DB Error Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        16,
-        272
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        240,
-        176
-      ],
-      "id": "eff99628-0ad9-41ef-869a-9c473e5d5bfd",
-      "name": "Return Response"
     }
   ],
-  "pinData": {
-    "When called by another workflow": [
-      {
-        "json": {
-          "route": "cc_report_manage/status",
-          "method": "GET",
-          "body": {},
-          "query": {
-            "route": "cc_report_manage/status"
-          },
-          "original_request": {
-            "headers": {
-              "host": "n8n.srv1252717.hstgr.cloud",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
-              "accept": "*/*",
-              "accept-encoding": "gzip, deflate, br, zstd",
-              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
-              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FJxsaOWtU%2Fp38BN0J%2BnIJzy7jWsXMPJnvIBcAvUchbZyQMQ%2FzxkqPCbImIbdCf7LPS6nF8vhLbAQ%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19bxHsLZMLKcinEYmd2ehVue98ujlSmWzFZy83eQcoRujo14GFl%2BCJzJ7XAUYw4WfDtkgKDWL8H2vJABSMROyv%2BMscX7iNW9LuQuEURJn0nAJCH1EPhMK0Tv7aIQwvmWjLfrnkHxGglLLr4d0B2iq7%2BHJc7AYKBerU%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FPbB%2FEslwi6hnApCZcsJ8z9vqfsnnRCUo9rliB7op0lz3IcSdQX%2Bqb0zIkcdtUpCTQ2Z3gMVc0UrJJUjCBpA8G8uwQLevMf2r4i1B%2BamPY%2FL1S%2FV0SOUAKqlEPS9LxBtOcVUirMGuP0GYZTIvmK3WuVQM0QZUUugE%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2BQH92FSSMu6CBIdNavKw0SkqvLj14Svf7BmSPOElasuPo%2FAN9EC7ukv1RQQWnC3w13BNwW8nvklRChXDlSW8n%2FpmIXLlj0r1MnHmoLyZsFUqnlqp9GZgFW6nOqSABVcjChfOj9IEahuQ%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774034722077%2C%22019d0cb4-27df-78b4-a053-f589e69e36f7%22%2C1774034626527%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
-              "priority": "u=1, i",
-              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
-              "sec-ch-ua-mobile": "?0",
-              "sec-ch-ua-platform": "\"Windows\"",
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "none",
-              "sec-fetch-storage-access": "active",
-              "x-forwarded-for": "201.81.90.19",
-              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
-              "x-forwarded-port": "443",
-              "x-forwarded-proto": "https",
-              "x-forwarded-server": "fda5ae5afd08",
-              "x-real-ip": "201.81.90.19"
-            },
-            "params": {},
-            "query": {
-              "route": "cc_report_manage/status"
-            },
-            "body": {},
-            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
-            "executionMode": "production"
-          }
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
         [
           {
-            "node": "Sync and Query CC Status",
+            "node": "Get CC Status",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Sync and Query CC Status": {
+    "Get CC Status": {
       "main": [
         [
           {
-            "node": "Calculate Status",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Build DB Error Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calculate Status": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build DB Error Response": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
+            "node": "Build Status Response",
             "type": "main",
             "index": 0
           }
@@ -181,7 +78,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "89a616eb-dcd4-4797-af6b-f8a615aaf192",
+  "versionId": "1f4e6918-434d-4b37-b47a-bd2ab37a665c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

@@ -3,26 +3,26 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "722b3371-ac55-4c67-acf1-ba45cfcc9758",
+      "id": "e03eb003-6fe2-46f7-a4f5-e332d34d2692",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -1200,
-        208
+        -2992,
+        960
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: sales_nf_report\n// Rota   : POST /sales_nf_report\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : { data: { source: { itens: [...] } } }\n// Output : { message: 'Sales NF report processed successfully', invoices_updated: number } HTTP 201\n// Banco  : UPSERT sales_nf por chave natural (numero + serie + data_emissao)\n// Chave  : numero_nf + serie_nf + data_emissao + cnpj_cliente\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\nif (!body.data.source || !body.data.source.itens) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required structure: data.source.itens' }\n  };\n}\n\nif (!Array.isArray(body.data.source.itens)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'itens must be an array' }\n  };\n}\n\nconst itens = body.data.source.itens;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'input_validated',\n  itens_count: itens.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, itens };"
       },
-      "id": "bdd0f7cc-d9c0-46e9-8cd7-7149adec9d6d",
+      "id": "dc7156da-941a-48e7-883f-521ed0f74828",
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -960,
-        208
+        -2752,
+        960
       ]
     },
     {
@@ -47,44 +47,44 @@
         },
         "options": {}
       },
-      "id": "290d57a0-8369-4cde-b0cb-432d9099c402",
+      "id": "411f6265-f5b0-47ea-9063-4bae1651ff0b",
       "name": "Is Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -720,
-        208
+        -2512,
+        960
       ]
     },
     {
       "parameters": {
         "jsCode": "// Decode HTML entities + Transform NF data\nconst ctx = $input.first().json;\nconst itens = ctx.itens;\n\n// Decode HTML entities recursivamente\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/')\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\n// Helper para converter data\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  // Remove barras e hífens, tenta vários formatos\n  const cleaned = String(dateStr).replace(/[^0-9]/g, '');\n  if (cleaned.length === 8) {\n    // DDMMYYYY ou YYYYMMDD\n    const year1 = cleaned.substring(0, 4);\n    const year2 = cleaned.substring(4, 8);\n    if (year1.startsWith('20') || year1.startsWith('19')) {\n      // YYYYMMDD\n      return `${year1}-${cleaned.substring(4, 6)}-${cleaned.substring(6, 8)}`;\n    } else {\n      // DDMMYYYY  \n      return `${year2}-${cleaned.substring(2, 4)}-${cleaned.substring(0, 2)}`;\n    }\n  }\n  return dateStr;\n}\n\n// Helper para converter valor\nfunction parseValue(value) {\n  if (!value) return 0;\n  const cleaned = String(value).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\n// Helper para gerar chave única\nfunction generateKey(item) {\n  const numero = String(item.NumeroNF || item.Numero || '').trim();\n  const serie = String(item.SerieNF || item.Serie || '').trim();\n  const dataEmissao = parseDate(item.DataEmissao || item.Data || '');\n  const cnpjCliente = String(item.CnpjCliente || item.CNPJ || '').replace(/\\D/g, '');\n  \n  return `${numero}-${serie}-${dataEmissao}-${cnpjCliente}`;\n}\n\nconst decodedItens = decodeHtml(itens);\n\nconst transformedNFs = decodedItens.map((item, index) => {\n  const key = generateKey(item);\n  \n  if (!key || key === '---') {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'sales_nf_report',\n      event: 'nf_skipped_invalid_key',\n      item_index: index,\n      item_data: item,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    chave_nf: key,\n    numero_nf: String(item.NumeroNF || item.Numero || '').trim(),\n    serie_nf: String(item.SerieNF || item.Serie || '').trim(),\n    data_emissao: parseDate(item.DataEmissao || item.Data || ''),\n    cnpj_cliente: String(item.CnpjCliente || item.CNPJ || '').replace(/\\D/g, ''),\n    razao_social_cliente: String(item.RazaoSocial || item.Cliente || '').trim(),\n    valor_total: parseValue(item.ValorTotal || item.Valor || 0),\n    valor_produtos: parseValue(item.ValorProdutos || 0),\n    valor_servicos: parseValue(item.ValorServicos || 0),\n    icms: parseValue(item.ICMS || 0),\n    ipi: parseValue(item.IPI || 0),\n    pis: parseValue(item.PIS || 0),\n    cofins: parseValue(item.COFINS || 0),\n    situacao: String(item.Situacao || item.Status || 'Normal').trim(),\n    observacoes: String(item.Observacoes || item.Obs || '').trim()\n  };\n}).filter(nf => nf !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'nfs_transformed',\n  valid_nfs: transformedNFs.length,\n  total_input: decodedItens.length,\n  level: 'info'\n}));\n\nreturn transformedNFs;"
       },
-      "id": "b3966f8a-0b33-4dda-83c3-283db158ac6c",
+      "id": "b19aa308-517b-40ef-8165-746b142f2db3",
       "name": "Decode + Transform NFs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -480,
-        112
+        -2272,
+        864
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.\"SalesNFReport\" (\n  \"Chave\", \"Nota\", \"Cliente\", \"CNPJ\", \"ValorTotal\", \"ValorProdutos\", \"ValorServicos\",\n  \"ValorICMS\", \"ValorIPI\", \"ValorPIS\", \"ValorCOFINS\", \"Situacao\", \"Observacoes\",\n  \"DataEmissao\", \"created_at\", \"updated_at\"\n) VALUES (\n  '{{ $json.chave_nf }}', '{{ $json.numero_nf }}', '{{ $json.razao_social_cliente }}', \n  '{{ $json.cnpj_cliente }}', {{ $json.valor_total }}::numeric, {{ $json.valor_produtos }}::numeric, \n  {{ $json.valor_servicos }}::numeric, {{ $json.icms }}::numeric, {{ $json.ipi }}::numeric, \n  {{ $json.pis }}::numeric, {{ $json.cofins }}::numeric, '{{ $json.situacao }}', \n  '{{ $json.observacoes }}', \n  {{ $json.data_emissao ? \"'\" + $json.data_emissao + \"'\" : \"NULL\" }}::date,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"Chave\")\nDO UPDATE SET \n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"ValorTotal\" = EXCLUDED.\"ValorTotal\",\n  \"ValorProdutos\" = EXCLUDED.\"ValorProdutos\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"updated_at\" = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  \"SalesNFReport\".\"Cliente\" IS DISTINCT FROM EXCLUDED.\"Cliente\"\n  OR \"SalesNFReport\".\"CNPJ\" IS DISTINCT FROM EXCLUDED.\"CNPJ\"\n  OR \"SalesNFReport\".\"ValorTotal\" IS DISTINCT FROM EXCLUDED.\"ValorTotal\"\n  OR \"SalesNFReport\".\"Situacao\" IS DISTINCT FROM EXCLUDED.\"Situacao\"\nRETURNING \"Chave\", \"Nota\", \"ValorTotal\", \"Situacao\";",
+        "query": "INSERT INTO auxiliary.\"SalesNFReport\" (\n  \"ID\", \"Nota\", \"Cliente\", \"CNPJ\", \"Endereco\", \"Numero\", \n  \"Complemento\", \"Bairro\", \"Cidade\", \"Estado\", \"CEP\", \"Email\",\n  \"Telefone\", \"Vendedor\", \"ValorProdutos\", \"ValorDesconto\", \"ValorFrete\",\n  \"ValorTotal\", \"TotalUnidades\", \"TotalParcelas\", \"ValorICMS\", \"ValorIPI\",\n  \"ValorST\", \"PesoBruto\", \"PesoLiquido\", \"Transportadora\", \"QtdeProdutos\",\n  \"CFOP\", \"Natureza\", \"Contas\", \"Estoque\", \"Comissao\", \"Chave\",\n  \"Protocolo\", \"DataPedido\", \"DataEmissao\", \"DataAutorizacao\", \"DataCad\",\n  \"DataMod\", \"DataCancelamento\", \"Situacao\", \"Observacoes\", \n  \"ObservacoesInternas\", \"CategoriaFinanceira\", \"Volumes\", \"EmitidoPor\",\n  \"CanceladoPor\", \"cc_ref\", \"created_at\", \"updated_at\"\n) VALUES (\n  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::numeric,\n  $16::numeric, $17::numeric, $18::numeric, $19::integer, $20::integer,\n  $21::numeric, $22::numeric, $23::numeric, $24::numeric, $25::numeric,\n  $26, $27::integer, $28, $29, $30, $31, $32::numeric, $33, $34,\n  $35::date, $36::date, $37::date, $38::date, $39::date, $40::date,\n  $41, $42, $43, $44, $45::integer, $46, $47, $48,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"Chave\")\nDO UPDATE SET \n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"ValorTotal\" = EXCLUDED.\"ValorTotal\",\n  \"ValorProdutos\" = EXCLUDED.\"ValorProdutos\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"cc_ref\" = EXCLUDED.\"cc_ref\",\n  \"updated_at\" = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  \"SalesNFReport\".\"Cliente\" IS DISTINCT FROM EXCLUDED.\"Cliente\"\n  OR \"SalesNFReport\".\"CNPJ\" IS DISTINCT FROM EXCLUDED.\"CNPJ\"\n  OR \"SalesNFReport\".\"ValorTotal\" IS DISTINCT FROM EXCLUDED.\"ValorTotal\"\n  OR \"SalesNFReport\".\"ValorProdutos\" IS DISTINCT FROM EXCLUDED.\"ValorProdutos\"\n  OR \"SalesNFReport\".\"Situacao\" IS DISTINCT FROM EXCLUDED.\"Situacao\"\n  OR \"SalesNFReport\".\"cc_ref\" IS DISTINCT FROM EXCLUDED.\"cc_ref\"\nRETURNING \"Chave\", \"Nota\", \"ValorTotal\", \"Situacao\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
         }
       },
-      "id": "eae2d94d-ad58-42e1-89f2-8aacc91fef65",
+      "id": "fc7c2370-1bd2-48cd-bd60-9fcb2772f576",
       "name": "Upsert Sales NF",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -240,
-        112
+        -2032,
+        864
       ],
       "credentials": {
         "postgres": {
@@ -98,39 +98,39 @@
       "parameters": {
         "jsCode": "// Conta registros afetados e constrói resposta\nconst affectedRecords = $input.all()\n  .filter(item => item.json && item.json.chave_nf)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'sales_nf_upserted',\n  invoices_updated: affectedRecords,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Sales NF report processed successfully',\n    invoices_updated: affectedRecords\n  }\n};"
       },
-      "id": "7d5c71d1-f094-4fdf-86ec-e15f6ba86875",
+      "id": "d8938ec8-dac0-45a0-9d39-a3123a593765",
       "name": "Build Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        0
+        -1792,
+        752
       ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
       },
-      "id": "59ccbcbe-da9f-4340-b701-698bb51aac02",
+      "id": "34149cb7-cfea-4883-8cd2-f0999759ec0f",
       "name": "Build Validation Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -480,
-        304
+        -2272,
+        1056
       ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'sales_nf_report',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not process sales NF report' }\n};"
       },
-      "id": "c5cbc937-3457-4b8d-9da5-37e7a40e8d38",
+      "id": "305442f5-0947-4c18-8dd5-bbea6ba3aa99",
       "name": "Build DB Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        192
+        -1792,
+        944
       ]
     },
     {
@@ -140,10 +140,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        208
+        -1552,
+        960
       ],
-      "id": "fee1969b-ffa2-46ba-aeab-bd5edc94917e",
+      "id": "41b6eb3c-4c37-4375-b5f5-c0e2156c1498",
       "name": "Return Response"
     }
   ],
@@ -258,7 +258,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "8d33785d-d2e0-4bbb-a3bd-19ed1acf04a5",
+  "versionId": "cedfaac4-1b4a-44e9-b2db-b5f179788d03",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

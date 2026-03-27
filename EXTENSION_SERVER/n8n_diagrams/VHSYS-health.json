@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "7a18e4ee-7123-4741-be79-2493317ef63c",
+      "id": "fa4d257a-f8ca-416a-bb43-e58987731322",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -32,
-        -80
+        -432,
+        128
       ]
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        192,
-        -80
+        -208,
+        128
       ],
-      "id": "331f8ddd-8aaf-4fe3-b8f5-4fef12f0ba87",
+      "id": "f938bf1e-c292-4363-88ec-3a5fad4ed0a1",
       "name": "Build Health Response"
     }
   ],
@@ -46,7 +46,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "0ed393c5-8a40-4c8b-9c11-c0cc6777e0f8",
+  "versionId": "e60f1a81-c8e6-4092-a92b-73c8a32a7772",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

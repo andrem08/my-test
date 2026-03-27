@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -58176,
-        19952
+        -59024,
+        19904
       ],
-      "id": "ce0d0f65-1a5f-4c84-b83a-5d378efc8fae",
+      "id": "ff801bb0-4787-4784-875f-0281957d54cd",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -18,13 +18,13 @@
         "height": 200,
         "width": 300
       },
-      "id": "3930df0e-c42a-4dce-bc55-1412107f6035",
+      "id": "89412325-7000-440d-8373-f55492c00422",
       "name": "📋 Info: Loop",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -58016,
-        19712
+        -58864,
+        19664
       ]
     },
     {
@@ -33,13 +33,13 @@
         "height": 320,
         "width": 320
       },
-      "id": "f0b773fb-c6b8-4f02-8e8e-02feb9fb9af1",
+      "id": "cf0d4748-7e88-4da0-bf77-196331a03ba5",
       "name": "📋 Info: Início1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -58528,
-        19872
+        -59376,
+        19824
       ]
     },
     {
@@ -48,13 +48,13 @@
         "height": 252,
         "width": 260
       },
-      "id": "8320fc86-1b9f-4355-9e87-98df917a18a9",
+      "id": "9dd2c9af-887d-48ca-8a30-0a711fa1e837",
       "name": "📋 Salvar1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -55296,
-        19344
+        -56144,
+        19296
       ]
     },
     {
@@ -63,13 +63,13 @@
         "height": 228,
         "width": 280
       },
-      "id": "a843d7c5-f2ac-42b3-bbe7-260c10c52554",
+      "id": "a0659e9f-ae70-4112-8455-152f48f7fd08",
       "name": "📋 Info: Roteamento1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -57088,
-        20128
+        -57936,
+        20080
       ]
     },
     {
@@ -78,13 +78,13 @@
         "height": 264,
         "width": 300
       },
-      "id": "a52821b5-bd16-4356-b2df-24947aeae71c",
+      "id": "9fa33d3f-2dbf-4242-80e5-e51746ef0a94",
       "name": "📋 Info: Loop6",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -57472,
-        19616
+        -58320,
+        19568
       ]
     },
     {
@@ -93,13 +93,13 @@
         "height": 232,
         "width": 412
       },
-      "id": "9a562a32-bf34-487a-8fed-60258b4a91cd",
+      "id": "4ee1b025-f58e-4a90-ae2a-84942ee81a30",
       "name": "📋 Info: Loop7",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -57824,
-        20112
+        -58672,
+        20064
       ]
     },
     {
@@ -227,10 +227,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -56576,
-        19920
+        -57424,
+        19872
       ],
-      "id": "34a0479f-dd5f-4e84-a566-3bcd70191e42",
+      "id": "3234048a-8209-441b-8d8a-5c1b74dce941",
       "name": "Select System"
     },
     {
@@ -244,13 +244,13 @@
         "jsonBody": "={{ JSON.stringify({\n\t\"dateRangeStart\": $('Select System').item.json.dateRangeStart,\n\t\"dateRangeEnd\": $('Select System').item.json.dateRangeEnd,\n\t\"detailedFilter\": {\n\t\t\"page\": $json.clk_page,\n\t\t\"pageSize\": 1000\n\t},\n\t\"exportType\": \"JSON\"\n}) }}",
         "options": {}
       },
-      "id": "3e6c17ba-878a-42fc-b0f5-f59243beeae3",
+      "id": "63737e84-d264-4081-aaab-0ff38b2b9872",
       "name": "Buscar API Clockify Report",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56080,
-        19744
+        -56928,
+        19696
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -299,13 +299,13 @@
           }
         }
       },
-      "id": "fc4c6768-00c9-4d6a-945c-7ef1e9adf0b5",
+      "id": "bbd165fd-9e20-4c18-bb06-5ac6d97858b5",
       "name": "GLPI Iniciar Sessão",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56144,
-        20112
+        -56992,
+        20064
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -344,10 +344,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -57920,
-        19952
+        -58768,
+        19904
       ],
-      "id": "f5cdbec3-be21-4dc6-b937-fa4cc12333e6",
+      "id": "1574d0eb-47d6-45a0-ba9c-6fc08396e7ee",
       "name": "Configurar Constantes"
     },
     {
@@ -365,13 +365,13 @@
         "includeOtherFields": true,
         "options": {}
       },
-      "id": "4176a49e-2a9c-4770-bac1-fc63059d1043",
+      "id": "8ad7780d-4339-4e79-afbe-03fd7d9db531",
       "name": "⚙️ Configurar Endpoints",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.3,
       "position": [
-        -57632,
-        19952
+        -58480,
+        19904
       ]
     },
     {
@@ -379,26 +379,26 @@
         "fieldToSplitOut": "endpoints",
         "options": {}
       },
-      "id": "bb8d7099-4e41-4df2-adcb-b122b794776d",
+      "id": "1dae471a-432b-4d34-8f89-31e3f23aeb27",
       "name": "Split Out",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -57328,
-        19952
+        -58176,
+        19904
       ]
     },
     {
       "parameters": {
         "jsCode": "// n8n Code Node - Transform Clockify Time Entries to Database Format\n\nconst timeEntries = $input.first().json.timeentries;\n\nconst transformedEntries = timeEntries.map(entry => {\n  return {\n    json: {\n      id: entry._id,\n      description: entry.description || null,\n      userId: entry.userId,\n      userName: entry.userName || null,\n      userEmail: entry.userEmail || null,\n      projectId: entry.projectId,\n      projectName: entry.projectName || null,\n      projectColor: entry.projectColor || null,\n      clientId: entry.clientId || null,\n      clientName: entry.clientName || null,\n      taskId: entry.taskId,\n      approvalRequestId: entry.approvalRequestId,\n      \n      // Time Interval\n      time_start: entry.timeInterval?.start || null,\n      time_end: entry.timeInterval?.end || null,\n      time_duration: entry.timeInterval?.duration || null,\n      time_timezone: entry.timeInterval?.timeZone || null,\n      time_zoned_start: entry.timeInterval?.zonedStart || null,\n      time_zoned_end: entry.timeInterval?.zonedEnd || null,\n      time_off_start: entry.timeInterval?.offStart || null,\n      time_off_end: entry.timeInterval?.offEnd || null,\n      \n      billable: entry.billable,\n      type: entry.type,\n      isLocked: entry.isLocked,\n      currency: entry.currency,\n      \n      // Financial Values\n      amount: entry.amount,\n      rate: entry.rate,\n      earnedAmount: entry.earnedAmount,\n      earnedRate: entry.earnedRate,\n      costAmount: entry.costAmount,\n      costRate: entry.costRate\n    }\n  };\n});\n\nreturn transformedEntries;"
       },
-      "id": "8f145223-d8ba-4043-a3cf-a8b7f38d71b1",
+      "id": "f6ddb250-97e7-490a-abf1-55f99b469163",
       "name": "Extrair Relatório da API ClockFY",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -55840,
-        19616
+        -56688,
+        19568
       ],
       "alwaysOutputData": true
     },
@@ -406,13 +406,13 @@
       "parameters": {
         "jsCode": "// Clockify extraction and normalization\n\nconst pairedItem = $input.first().pairedItem ?? { item: 0 };\n\nfunction withPair(items) {\n  return items.map(item => ({ ...item, pairedItem }));\n}\n\nfunction asList(value) {\n  if (Array.isArray(value)) return value;\n  if (value && typeof value === 'object') {\n    if (Array.isArray(value.data)) return value.data;\n    if (Array.isArray(value.value)) return value.value;\n    return [value];\n  }\n  return [];\n}\n\nfunction collectRecords() {\n  const items = $input.all();\n  let records = [];\n  for (const item of items) {\n    records = records.concat(asList(item.json));\n  }\n  return records;\n}\n\nfunction transformUsers(users) {\n  return withPair(users.map(user => {\n    const settings = user.settings || {};\n    return {\n      json: {\n        id: String(user.id || ''),\n        email: user.email,\n        name: user.name,\n        profilePicture: user.profilePicture,\n        activeWorkspace: user.activeWorkspace,\n        defaultWorkspace: user.defaultWorkspace,\n        status: user.status,\n        weekStart: settings.weekStart,\n        timeZone: settings.timeZone,\n        timeFormat: settings.timeFormat,\n        dateFormat: settings.dateFormat,\n        sendNewsletter: settings.sendNewsletter,\n        weeklyUpdates: settings.weeklyUpdates,\n        longRunning: settings.longRunning,\n        scheduledReports: settings.scheduledReports,\n        approval: settings.approval,\n        pto: settings.pto,\n        alerts: settings.alerts,\n        reminders: settings.reminders,\n        timeTrackingManual: settings.timeTrackingManual,\n        isCompactViewOn: settings.isCompactViewOn,\n        dashboardSelection: settings.dashboardSelection,\n        dashboardViewType: settings.dashboardViewType,\n        dashboardPinToTop: settings.dashboardPinToTop,\n        projectListCollapse: settings.projectListCollapse,\n        collapseAllProjectLists: settings.collapseAllProjectLists,\n        groupSimilarEntriesDisabled: settings.groupSimilarEntriesDisabled,\n        myStartOfDay: settings.myStartOfDay,\n        projectPickerTaskFilter: settings.projectPickerTaskFilter,\n        lang: settings.lang,\n        multiFactorEnabled: settings.multiFactorEnabled,\n        theme: settings.theme,\n        scheduling: settings.scheduling,\n        onboarding: settings.onboarding,\n        invoiceReminders: settings.invoiceReminders,\n        showOnlyWorkingDays: settings.showOnlyWorkingDays,\n        memberships: user.memberships,\n        summaryReportSettings: settings.summaryReportSettings,\n        customFields: user.customFields\n      }\n    };\n  }));\n}\n\nfunction transformProjects(projects) {\n  return withPair(projects.map(project => {\n    const hourlyRate = project.hourlyRate || {};\n    const costRate = project.costRate || {};\n    const estimate = project.estimate || {};\n    const timeEstimate = project.timeEstimate || {};\n    const budgetEstimate = project.budgetEstimate || {};\n    return {\n      json: {\n        id: String(project.id || ''),\n        name: project.name,\n        clientId: project.clientId,\n        workspaceId: project.workspaceId,\n        billable: project.billable,\n        archived: project.archived,\n        color: project.color,\n        duration: project.duration,\n        clientName: project.clientName,\n        note: project.note,\n        public: project.public,\n        template: project.template,\n        hourly_amount: hourlyRate.amount,\n        hourly_currency: hourlyRate.currency,\n        cost_amount: costRate.amount,\n        cost_currency: costRate.currency,\n        estimate_value: estimate.estimate,\n        estimate_type: estimate.type,\n        time_est_estimate: timeEstimate.estimate,\n        time_est_type: timeEstimate.type,\n        time_est_reset_option: timeEstimate.resetOption,\n        time_est_active: timeEstimate.active,\n        time_est_include_non_billable: timeEstimate.includeNonBillable,\n        budget_est_estimate: budgetEstimate.estimate,\n        budget_est_type: budgetEstimate.type,\n        budget_est_reset_option: budgetEstimate.resetOption,\n        budget_est_active: budgetEstimate.active,\n        memberships: project.memberships\n      }\n    };\n  }));\n}\n\nfunction transformClients(clients) {\n  return withPair(clients.map(client => ({\n    json: {\n      id: String(client.id || ''),\n      name: client.name,\n      email: client.email,\n      ccEmails: client.ccEmails,\n      workspaceId: client.workspaceId,\n      archived: client.archived,\n      address: client.address,\n      note: client.note,\n      currencyId: client.currencyId,\n      currencyCode: client.currencyCode\n    }\n  })));\n}\n\nfunction transformTags(tags) {\n  return withPair(tags.map(tag => ({\n    json: {\n      id: String(tag.id || ''),\n      name: tag.name,\n      workspaceId: tag.workspaceId,\n      archived: tag.archived\n    }\n  })));\n}\n\nfunction detectKind(sample) {\n  if (!sample || typeof sample !== 'object') return 'generic';\n  if ('settings' in sample) return 'users';\n  if ('hourlyRate' in sample || 'estimate' in sample || 'timeEstimate' in sample || 'budgetEstimate' in sample) return 'projects';\n  if ('ccEmails' in sample || 'currencyId' in sample || 'currencyCode' in sample) return 'clients';\n  if ('workspaceId' in sample && 'name' in sample && 'id' in sample) return 'tags';\n  return 'generic';\n}\n\nconst records = collectRecords();\nif (records.length === 0) return [];\n\nconst kind = detectKind(records[0]);\nif (kind === 'users') return transformUsers(records);\nif (kind === 'projects') return transformProjects(records);\nif (kind === 'clients') return transformClients(records);\nif (kind === 'tags') return transformTags(records);\n\nreturn withPair(records.map(item => {\n  if (item && typeof item === 'object') {\n    return { json: { ...item, id: String(item.id || '') } };\n  }\n  return { json: { id: String(item || ''), value: item } };\n}));"
       },
-      "id": "b58e1102-9967-462b-b15b-567fba470061",
+      "id": "22e45d81-25f9-4e72-9a64-45b28e253ce7",
       "name": "Extrair Data da API ClockFY",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -55984,
-        19520
+        -56832,
+        19472
       ],
       "alwaysOutputData": true
     },
@@ -464,13 +464,13 @@
           }
         }
       },
-      "id": "71e8cb47-d543-4a79-bb9a-b6bd1d00989e",
+      "id": "3373a574-ad2b-4a4c-a306-c2b0100f647b",
       "name": "Buscar API VHSYS",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56288,
-        19312
+        -57136,
+        19264
       ],
       "retryOnFail": true,
       "credentials": {
@@ -489,13 +489,13 @@
       "parameters": {
         "jsCode": "// Extrai o array 'data' da resposta da API VHSYS\n// Combina dados de todas as páginas e transforma em itens individuais\n\nconst items = $input.all();\nconst pairedItem = $input.first().pairedItem ?? { item: 0 };\n\nlet dataArray = [];\n\n// Coleta dados de todas as páginas\nfor (const inputItem of items) {\n  const data = inputItem.json?.data;\n  if (Array.isArray(data)) {\n    dataArray = dataArray.concat(data);\n  }\n}\n\n// Verifica se existe o campo 'data'\nif (dataArray.length === 0) {\n  return [];\n}\n\nconsole.log(`VHSYS: Processando ${dataArray.length} registros de ${items.length} páginas`);\n\n// Transforma cada elemento do array em um item separado\nreturn dataArray.map(item => ({\n  json: item,\n  pairedItem\n}));"
       },
-      "id": "877203ca-c416-4122-9b2a-78edb0e64345",
+      "id": "b6123f2f-bbf8-449d-960e-f8e11ea3615b",
       "name": "Extrair Data da API VHSYS",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -55984,
-        19296
+        -56832,
+        19248
       ],
       "alwaysOutputData": true
     },
@@ -537,13 +537,13 @@
           }
         }
       },
-      "id": "ffce7b82-4e38-4709-bf23-73761ccd7e90",
+      "id": "ad72a9bb-e9de-44f7-8489-6ab587b297a5",
       "name": "Buscar API Clockify",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56288,
-        19536
+        -57136,
+        19488
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -565,13 +565,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "55bf3fe3-476d-421c-a0ca-0291f4ae51e6",
+      "id": "18f0849f-bb4d-48c8-8ad7-f78bbb82e811",
       "name": "UPSERT no Banco",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -55152,
-        19696
+        -56000,
+        19648
       ],
       "credentials": {
         "postgres": {
@@ -587,10 +587,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -56896,
-        19952
+        -57744,
+        19904
       ],
-      "id": "cd0be2b2-83fb-4d0a-86d1-c78caf56da39",
+      "id": "b0fc72fd-46ec-47b9-90d1-c8c122987bf1",
       "name": "Loop Over Items"
     },
     {
@@ -623,13 +623,13 @@
           }
         }
       },
-      "id": "2a9561e8-4c3a-436a-812b-bf7d6b68208a",
+      "id": "bb3babea-b598-4723-a2b9-16b1a9bd0057",
       "name": "GLPI extrair dados",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -55728,
-        20096
+        -56576,
+        20048
       ],
       "alwaysOutputData": false,
       "retryOnFail": true,
@@ -673,10 +673,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -55872,
-        19824
+        -56720,
+        19776
       ],
-      "id": "46f8a781-f479-465b-907e-ea8a1f6e1553",
+      "id": "3d2d1b21-e768-47df-9d0a-83c1b0962fde",
       "name": "Check if more pages"
     },
     {
@@ -696,10 +696,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -56320,
-        19744
+        -57168,
+        19696
       ],
-      "id": "acec8ca8-5b2f-4a76-a584-19b5ccf55ba8",
+      "id": "e892db85-bee5-42d6-a179-4c2fd4878da0",
       "name": "Increment Pagination Clockify"
     },
     {
@@ -719,10 +719,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -55648,
-        19808
+        -56496,
+        19760
       ],
-      "id": "9b81eaaf-64bb-4b98-a918-8e6b892d10fa",
+      "id": "b1e8d516-9a19-4b51-b99d-c84720ab2016",
       "name": "Forward Prev Page Num"
     },
     {
@@ -734,10 +734,10 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        -57088,
-        19792
+        -57936,
+        19744
       ],
-      "id": "9f2307ac-d076-4e91-a314-1e8e5f75b9f5",
+      "id": "51f424e1-6529-4946-ac6d-75f3320063c8",
       "name": "Aggregate"
     },
     {
@@ -768,10 +768,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -55632,
-        19632
+        -56480,
+        19584
       ],
-      "id": "819db685-8a57-4cb5-854c-d46d5676f475",
+      "id": "636ce5bc-311f-4205-adfe-84312abbcfe8",
       "name": "If1"
     }
   ],
@@ -967,11 +967,6 @@
         ]
       ]
     },
-    "UPSERT no Banco": {
-      "main": [
-        []
-      ]
-    },
     "Loop Over Items": {
       "main": [
         [],
@@ -1061,9 +1056,10 @@
   "active": false,
   "settings": {
     "executionOrder": "v1",
+    "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "f0d8b449-9e0e-46c4-9925-fdbb0041557e",
+  "versionId": "2d4ea9ba-2fa0-4626-9574-d9b8799dd3cd",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

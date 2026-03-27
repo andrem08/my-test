@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        7520
+        -7904,
+        6208
       ],
-      "id": "f0feb88e-b04e-4e8e-b56d-abee8757c1ae",
+      "id": "7908c489-5739-460c-8713-405b1a60a391",
       "name": "Execute: NF Service"
     },
     {
@@ -51,10 +51,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        7328
+        -7904,
+        6016
       ],
-      "id": "3bf0207c-9c50-45da-9917-a3899f739b8a",
+      "id": "d55373e1-ec72-4e15-b9d4-3e8ad146367d",
       "name": "Execute: NF label Id's"
     },
     {
@@ -79,10 +79,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        7136
+        -7904,
+        5824
       ],
-      "id": "87cecae0-2383-4518-a196-6f6295cbab48",
+      "id": "26690060-ca34-4112-a17e-83ddf5aa8bbd",
       "name": "Execute: NF label"
     },
     {
@@ -107,10 +107,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        6752
+        -7904,
+        5440
       ],
-      "id": "89e3f43c-b303-4fcc-961f-f77e6e47d2ce",
+      "id": "c51c22db-84ba-405d-8a31-d54355b17500",
       "name": "Execute: NF Sales"
     },
     {
@@ -135,10 +135,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        6944
+        -7904,
+        5632
       ],
-      "id": "0ca7083c-0289-437b-8f1a-34d53957d4f9",
+      "id": "bca093b2-6e65-460b-8a5a-cf59f46be7f0",
       "name": "Execute: Service NF"
     },
     {
@@ -153,28 +153,15 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "b845038e-ff53-4e2f-b10a-6aeac381faec",
+      "id": "04a2e04b-a9cf-4d1c-a221-63d3b92c2314",
       "name": "Webhook Router",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -7184,
-        6752
+        -8848,
+        5424
       ],
       "webhookId": "vhsys-router-webhook"
-    },
-    {
-      "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = (req.method || 'GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || null,\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
-      },
-      "id": "96041cae-df62-4c1a-b592-951d1f65db93",
-      "name": "Extract Route & Parameters",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -6960,
-        6768
-      ]
     },
     {
       "parameters": {
@@ -198,10 +185,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        6560
+        -7904,
+        5248
       ],
-      "id": "c5fa5bd6-8e18-466a-915b-fb584f91dba9",
+      "id": "6667d3a2-a9a3-4bad-b7cf-e4b8e3203a0a",
       "name": "Execute: Regular Bills"
     },
     {
@@ -217,35 +204,35 @@
           "waitForSubWorkflow": true
         }
       },
-      "id": "7c389ee7-813c-47bc-a4cd-8039b8b7ae82",
+      "id": "6e74c827-9ea0-4416-9d5f-3ca386755bf0",
       "name": "Execute: Employers General",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -6304,
-        7904
+        -7904,
+        6592
       ]
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "Is8AcAK4ePg3oCM2",
+          "value": "XyUhAyUZ3Io9Rne4",
           "mode": "list",
-          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
-          "cachedResultName": "VHSYS-employers_plus_info"
+          "cachedResultUrl": "/workflow/XyUhAyUZ3Io9Rne4",
+          "cachedResultName": "VHSYS-employers_plus"
         },
         "options": {
           "waitForSubWorkflow": true
         }
       },
-      "id": "56d60202-e84d-4940-a82b-3a90043557a5",
+      "id": "39df1f94-5e9a-47b6-ab90-e4fed5a9da6f",
       "name": "Execute: Employers Plus",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -6304,
-        8096
+        -7904,
+        6784
       ]
     },
     {
@@ -261,39 +248,39 @@
           "waitForSubWorkflow": true
         }
       },
-      "id": "5c470c51-bf79-45e2-8a58-7f37e15e701b",
+      "id": "ffdad0b9-2b17-43d9-97ad-7fe18e313ee8",
       "name": "Execute: Employers Plus Info",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -6304,
-        8288
+        -7904,
+        6976
       ]
     },
     {
       "parameters": {
         "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
-      "id": "d2ab7ca5-11b8-43e8-905d-a89b7359823d",
+      "id": "63781029-aaea-4727-bc05-263380c5237f",
       "name": "404 Not Found",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -6304,
-        7712
+        -7904,
+        6400
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
       },
-      "id": "808b3132-d449-4451-87eb-5d9e2dfd6f38",
+      "id": "e8691cca-cc3b-4ef5-812f-a3ee37e44b2b",
       "name": "Normalize Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5872,
-        6752
+        -7264,
+        5408
       ]
     },
     {
@@ -304,13 +291,13 @@
           "responseCode": "={{ $json.statusCode || 200 }}"
         }
       },
-      "id": "72a435b9-00df-49a4-9759-5adc7698ac28",
+      "id": "76cc5446-7e9a-4cdc-b81d-1afb994a09d2",
       "name": "Respond to Webhook",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -5648,
-        6752
+        -7056,
+        5408
       ]
     },
     {
@@ -335,10 +322,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        5984
+        -7904,
+        4672
       ],
-      "id": "5f1564fa-322f-46f3-bfa4-78dc7685ca15",
+      "id": "a6c47abf-0bae-4c74-b8a2-7d5d2e559048",
       "name": "Execute: CC Status"
     },
     {
@@ -363,10 +350,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        5600
+        -7904,
+        4288
       ],
-      "id": "d047f982-010b-4064-b0f6-ea05bfda0147",
+      "id": "8327ca83-2f42-4781-bd10-5cbd8ae45937",
       "name": "Execute: Update Services"
     },
     {
@@ -391,10 +378,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        5408
+        -7904,
+        4096
       ],
-      "id": "9dbae5c8-a965-4026-b2a2-841a7feb8092",
+      "id": "6494e473-3ce4-4083-862c-4ea80f88b119",
       "name": "Execute: Health"
     },
     {
@@ -419,10 +406,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        6176
+        -7904,
+        4864
       ],
-      "id": "6f481633-4334-4410-9bde-7b4ce71b7de5",
+      "id": "9038f8a2-dccb-4bfa-b84d-3a727c7e2eb0",
       "name": "Execute: CC Next URL"
     },
     {
@@ -447,10 +434,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        6368
+        -7904,
+        5056
       ],
-      "id": "660257f8-4571-4820-9f83-72f1783fb828",
+      "id": "a7163a82-5660-406f-bfa5-aabd263cb8e5",
       "name": "Execute: CC Report"
     },
     {
@@ -475,10 +462,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -6304,
-        5792
+        -7904,
+        4480
       ],
-      "id": "87d4b381-b2a0-42aa-a4b6-41f9ea80d2d7",
+      "id": "10ce6c72-d9c8-4937-b784-2a67da19d9ac",
       "name": "Call 'VHSYS-get_update_extension_service_data-v1'"
     },
     {
@@ -857,7 +844,32 @@
                 "combinator": "and"
               },
               "renameOutput": true,
-              "outputKey": "employers_plus_info"
+              "outputKey": "employers_info"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bc9af070-e4e1-4246-885c-48f0de503268",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "clean_up",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "clean_up"
             }
           ]
         },
@@ -868,10 +880,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -6736,
-        6544
+        -8336,
+        5232
       ],
-      "id": "638f39a4-afee-45c7-8a6b-1e6bb3ebc643",
+      "id": "adc8997f-78ff-4320-8f82-bac5e43357d6",
       "name": "Switch"
     },
     {
@@ -881,34 +893,186 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -5872,
-        7712
+        -7472,
+        6400
       ],
-      "id": "71c29ac8-0cf7-4ba6-85a7-8c11f0e5fbc7",
+      "id": "42fb0b19-7542-4e40-abdc-63b0a8761f8e",
       "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b2074c7e-5494-4fac-9e7e-937eff9ceab1",
+              "leftValue": "={{ $json.statusCode == 200 || $json.statusCode == 201 || $json.body.ok }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -6832,
+        5408
+      ],
+      "id": "c7105927-71a3-4812-bb9a-da6d8cbc7019",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.body.message }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -6592,
+        5504
+      ],
+      "id": "9a9b63e5-259c-40ac-b4d4-4db594a4541c",
+      "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('PUT').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+      },
+      "id": "526d53a9-282c-4eb2-b7d6-1c8ed638e2c8",
+      "name": "Extract Route & Parameters (PUT)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        5312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+      },
+      "id": "2aaeb19e-a7e3-46e9-ae14-b04048d727dd",
+      "name": "Extract Route & Parameters (GET)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        5472
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('POST').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+      },
+      "id": "ce561645-7eb3-4c3b-aa95-06b133434a0b",
+      "name": "Extract Route & Parameters (POST)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        5632
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "VQsdVpBigGsHo5Eo",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/VQsdVpBigGsHo5Eo",
+          "cachedResultName": "VHSYS-clean_up"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -7904,
+        7168
+      ],
+      "id": "d7eaa8a1-6bec-4ff9-9051-d1aded1e6142",
+      "name": "Call 'VHSYS-clean_up'"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook Router": [
+      {
+        "json": {
+          "headers": {
+            "host": "n8n.srv1252717.hstgr.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+            "content-length": "4",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+            "content-type": "application/json",
+            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FGj%2BUwwuo3%2B3kG87vp4Zk2DqclMS3KurC1X98MaeemG45LutQK67hj4wyMpgLDg8a%2B%2Be5R9RbjAw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BbBS9yxclpyVh3hkJld4cJtu9TbeMT8jxoBw0Ovm8t519cQtn%2B52ZlbIknwdUa4fmOmTXZZQZSOTVpAwCHkr6tRLaXWSAYlI8hYIr6igYQvmfs5KKnJFl%2BhPMB5%2Fctltv2CmBW2of0lpRvjCXGDCdUA88io0zYj14%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19DiW4WMrOQ%2BLGstGFa1j5gXx0TiTnfyQ1nt%2FebmkWnTWbNljeVEycDtrfwoMq8J5R0Z0vl3YsJqpjYPrfmlgCxtSloR%2B166IDjED2wSXeQYbqjJWvXKOt%2Bomm8fcxIQhVrv4fqnderdH3%2FkWyUzFBDd2J%2FqOnEuZ0%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B%2BpyRzuOjZOpwhwAWWRvXInXxoIOjXR5d37RpTh%2BqDGYjmb0RygH%2BkjlCGxQSmhoWSkKjGgzsIRX2iq44eRd6qx63wq4VP4zCHcMtu0Ps7IUpeyV7qai4ScYmkKto%2FmEC7XwSVfPA2yA%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774260152718%2C%22019d1a23-ccd1-7bf7-8ebe-459eb5454e7e%22%2C1774260047057%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+            "origin": "https://n8n.srv1252717.hstgr.cloud",
+            "priority": "u=1, i",
+            "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "same-origin",
+            "x-forwarded-for": "201.81.90.19",
+            "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "fda5ae5afd08",
+            "x-real-ip": "201.81.90.19"
+          },
+          "params": {},
+          "query": {
+            "route": "service_nf_report"
+          },
+          "body": {},
+          "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook Router": {
       "main": [
         [
           {
-            "node": "Extract Route & Parameters",
+            "node": "Extract Route & Parameters (PUT)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Extract Route & Parameters",
+            "node": "Extract Route & Parameters (GET)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Extract Route & Parameters",
+            "node": "Extract Route & Parameters (POST)",
             "type": "main",
             "index": 0
           }
@@ -964,17 +1128,6 @@
         [
           {
             "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract Route & Parameters": {
-      "main": [
-        [
-          {
-            "node": "Switch",
             "type": "main",
             "index": 0
           }
@@ -1222,7 +1375,81 @@
         ],
         [
           {
+            "node": "Call 'VHSYS-clean_up'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "404 Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Route & Parameters (PUT)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Route & Parameters (GET)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Route & Parameters (POST)": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'VHSYS-clean_up'": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
             "type": "main",
             "index": 0
           }
@@ -1236,7 +1463,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "80bcfd24-f2a4-4675-a986-e94e711310f2",
+  "versionId": "22b87bcb-5de4-4c6a-bb40-62d3f365f26a",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

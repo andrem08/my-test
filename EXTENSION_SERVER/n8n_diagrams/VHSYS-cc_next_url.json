@@ -3,123 +3,48 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "65d12043-aa60-4b24-9d9d-faef5c0f75ed",
+      "id": "4253981e-e108-4779-acca-3e4128f4ec5b",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -1376,
-        416
+        -2384,
+        -272
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT\n  cc_id,\n  entries_runned,\n  outputs_runned\nFROM auxiliary.update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
-        "options": {
-          "connectionTimeout": 30,
-          "queryBatching": "single"
-        }
+        "query": "-- Busca o próximo centro de custo que precisa ser processado\n-- Filtra onde entries_runned=0 OU outputs_runned=0\nSELECT cc_id, entries_runned, outputs_runned\nFROM auxiliary.update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
+        "options": {}
       },
-      "id": "e41d764e-36f6-4b77-9a0f-6a7b5df43c1a",
-      "name": "Get Random Pending CC",
+      "id": "92c4f696-eee6-4585-84f7-67ecc1dee442",
+      "name": "Get Next CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -1152,
-        416
+        -2144,
+        -272
       ],
       "credentials": {
         "postgres": {
           "id": "tnATsHmPQ4uK6XL9",
           "name": "Dev Database"
         }
-      },
-      "onError": "continueErrorOutput"
+      }
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.cc_id }}",
-              "rightValue": "",
-              "operator": {
-                "type": "string",
-                "operation": "exists",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
+        "jsCode": "// Build URL and response based on what needs processing\nconst row = $input.first().json;\n\nif (!row || !row.cc_id) {\n  return { message: 'No CC to process' };\n}\n\nconst ccId = row.cc_id;\nconst entryDone = row.entries_runned === 1;\nconst outputDone = row.outputs_runned === 1;\n\n// Determina qual tipo processar\nlet type = 'entrada';\nlet urlType = 'Entrada';\n\nif (entryDone && !outputDone) {\n  type = 'saida';\n  urlType = 'Saida';\n}\n\n// Gera URL do VHSYS\nconst today = new Date();\nconst dd = String(today.getDate()).padStart(2, '0');\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst yyyy = today.getFullYear();\nconst dateStr = `${dd}/${mm}/${yyyy}`;\n\nconst vhsysUrl = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${dateStr}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_next_url',\n  event: 'next_url_generated',\n  cc_id: ccId,\n  type: type,\n  level: 'info'\n}));\n\n// IMPORTANTE: TypeScript espera data.url.url (estrutura aninhada)\n// Linha 64 do updateReportCC.ts faz: const { url: dataUrl } = data\n// Linha 71 faz: await getData(dataUrl.url)\nreturn {\n  url: {\n    url: vhsysUrl,\n    cc_id: ccId,\n    type: type\n  }\n};"
       },
-      "id": "7407fce2-096e-49d1-b73d-b37fe4c01a0f",
-      "name": "Has Pending?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -928,
-        320
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// Monta URL do VHSYS com data BRT correta.\n// CRÍTICO: type = 'entrada'/'saida' (lowercase) para o banco\n//          Tipo = 'Entrada'/'Saida' (capitalizado) para a URL do VHSYS\n// ─────────────────────────────────────────────\nconst row          = $input.first().json;\nconst ccId         = row.cc_id;\nconst entryRunned  = parseInt(row.entries_runned);\nconst outputRunned = parseInt(row.outputs_runned);\n\n// Data atual em BRT (America/Sao_Paulo)\nconst now = new Date();\nconst brtOffset = -3 * 60; // UTC-3 em minutos\nconst brtDate   = new Date(now.getTime() + (now.getTimezoneOffset() + brtOffset) * 60000);\nconst day   = String(brtDate.getDate()).padStart(2, '0');\nconst month = String(brtDate.getMonth() + 1).padStart(2, '0');\nconst year  = brtDate.getFullYear();\nconst currentDate = `${day}/${month}/${year}`;\n\n// Determina tipo — prioridade: entrada antes de saida\nlet type, urlTipo;\nif (entryRunned === 0) {\n  type    = 'entrada';\n  urlTipo = 'Entrada';\n} else {\n  type    = 'saida';\n  urlTipo = 'Saida';\n}\n\nconst url = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${currentDate}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlTipo}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp      : new Date().toISOString(),\n  route          : 'cc_report_manage/next_url',\n  event          : 'cc_next_url_generated',\n  cc_id          : ccId,\n  type           : type,\n  date_brt       : currentDate,\n  entries_runned : entryRunned,\n  outputs_runned : outputRunned,\n  level          : 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: { url, cc_id: ccId, type }\n};"
-      },
-      "id": "5f152e5a-fae8-4c01-aa78-ff046e892e74",
-      "name": "Build Next URL",
+      "id": "851b6c5d-8298-4b5c-b577-f4e290e33a6c",
+      "name": "Build URL Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -704,
-        224
+        -1904,
+        -272
       ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Nenhum CC pendente — tudo processado\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'cc_next_url_no_pending',\n  level     : 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { url: null, cc_id: null, type: null, message: 'No pending CCs found' }\n};"
-      },
-      "id": "f7e9426a-1f3b-4063-b077-a9e2a3f407c9",
-      "name": "No Pending Found",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -704,
-        416
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp : new Date().toISOString(),\n  route     : 'cc_report_manage/next_url',\n  event     : 'db_error',\n  message   : errData.message || 'Unknown DB error',\n  level     : 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not fetch next CC URL' }\n};"
-      },
-      "id": "9d29ef42-a439-4bd5-ae56-1a669de31499",
-      "name": "Build DB Error Response",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -704,
-        608
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -480,
-        416
-      ],
-      "id": "9d55cfb0-06d5-4d00-a440-a460ce763695",
-      "name": "Return Response"
     }
   ],
   "pinData": {},
@@ -128,76 +53,18 @@
       "main": [
         [
           {
-            "node": "Get Random Pending CC",
+            "node": "Get Next CC",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Random Pending CC": {
+    "Get Next CC": {
       "main": [
         [
           {
-            "node": "Has Pending?",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Build DB Error Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Has Pending?": {
-      "main": [
-        [
-          {
-            "node": "Build Next URL",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "No Pending Found",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Next URL": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "No Pending Found": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build DB Error Response": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
+            "node": "Build URL Response",
             "type": "main",
             "index": 0
           }
@@ -215,7 +82,7 @@
     "saveDataErrorExecution": "all",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "60950064-5802-454c-bb6b-ce51a6bdea3b",
+  "versionId": "930fa40e-fea3-4e8e-b5b5-e0134d4516f1",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

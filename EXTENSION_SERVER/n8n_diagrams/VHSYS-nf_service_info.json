@@ -3,26 +3,26 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "2af01213-9f75-42aa-993a-a974af2134b8",
+      "id": "de79a0e3-8640-4418-a59b-131a04a70950",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -1680,
-        368
+        -3712,
+        1408
       ]
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_info\n// Rota   : POST /nf_service_info\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : { data: { services: [{ chave_nf, detalhes... }] } }\n// Output : { message: 'Service info updated successfully', services_info_updated: number } HTTP 201\n// Banco  : UPSERT nf_service_info por chave_nf + enriquecimento com labels\n// Chave  : chave_nf\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\nif (!body.data.services || !Array.isArray(body.data.services)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing or invalid services array' }\n  };\n}\n\nconst services = body.data.services;\n\nif (services.length === 0) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Services array cannot be empty' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'input_validated',\n  services_count: services.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, services };"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_info\n// Rota   : POST /nf_service_info\n// ─────────────────────────────────────────────\n// A extensão (getServiceNFInfo.ts) envia:\n//   body: JSON.stringify({ xml_ref: decodedText })\n// O Flask: data.get('xml_ref', '') → se vazio → 400\n// ─────────────────────────────────────────────\n\nconst input = $input.first().json;\nconst body = (input.body !== undefined) ? input.body : input;\nconst xml_string = (body.xml_ref !== undefined) ? String(body.xml_ref) : '';\n\nif (!xml_string.trim()) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'No XML data provided' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'input_validated',\n  xml_length: xml_string.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, xml_string };"
       },
-      "id": "3c576f5a-57d7-45c4-a9ff-2353b4fd2bd5",
+      "id": "cf8fb67b-5bde-4fa2-a22f-fb5a0d6e49a8",
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1440,
-        368
+        -3472,
+        1408
       ]
     },
     {
@@ -47,82 +47,75 @@
         },
         "options": {}
       },
-      "id": "2eb0c222-f59f-4cc9-bad2-24f32f0da0d7",
+      "id": "a8b257ba-c7b3-4cdf-a04f-0c573306bbb2",
       "name": "Is Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -1200,
-        368
+        -3232,
+        1408
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Transform e normaliza dados das informações de serviço\n// Expande cada serviço para um item separado\nconst ctx = $input.first().json;\nconst services = ctx.services;\n\n// Decode HTML entities function (reutilizada)\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/')\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\n// Helper para converter valor\nfunction parseValue(value) {\n  if (!value) return 0;\n  const cleaned = String(value).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\nconst decodedServices = decodeHtml(services);\n\nconst transformedServices = decodedServices.map((service, index) => {\n  const chaveNf = String(service.chave_nf || service.ChaveNF || service.id || '').trim();\n  \n  if (!chaveNf) {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'nf_service_info',\n      event: 'service_skipped_no_chave',\n      service_index: index,\n      service_data: service,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    chave_nf: chaveNf,\n    codigo_servico: String(service.codigo_servico || service.CodigoServico || '').trim(),\n    item_lista_servico: String(service.item_lista_servico || service.ItemListaServico || '').trim(),\n    codigo_cnae: String(service.codigo_cnae || service.CodigoCNAE || '').trim(),\n    codigo_tributacao_municipio: String(service.codigo_tributacao_municipio || service.CodigoTributacaoMunicipio || '').trim(),\n    discriminacao_detalhada: String(service.discriminacao_detalhada || service.DiscriminacaoDetalhada || service.Discriminacao || '').trim(),\n    quantidade: parseValue(service.quantidade || service.Quantidade || 1),\n    valor_unitario: parseValue(service.valor_unitario || service.ValorUnitario || 0),\n    valor_desconto: parseValue(service.valor_desconto || service.ValorDesconto || 0),\n    valor_outras_retencoes: parseValue(service.valor_outras_retencoes || service.ValorOutrasRetencoes || 0),\n    base_calculo_issqn: parseValue(service.base_calculo_issqn || service.BaseCalculoISSQN || 0),\n    aliquota_issqn: parseValue(service.aliquota_issqn || service.AliquotaISSQN || 0),\n    valor_issqn: parseValue(service.valor_issqn || service.ValorISSQN || 0),\n    municipio_incidencia: String(service.municipio_incidencia || service.MunicipioIncidencia || '').trim(),\n    numero_processo: String(service.numero_processo || service.NumeroProcesso || '').trim(),\n    observacoes: String(service.observacoes || service.Observacoes || '').trim()\n  };\n}).filter(service => service !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'services_transformed',\n  valid_services: transformedServices.length,\n  total_input: decodedServices.length,\n  level: 'info'\n}));\n\nreturn transformedServices;"
+        "jsCode": "// ─────────────────────────────────────────────\n// Parse XML + Transform\n// ─────────────────────────────────────────────\n// Espelha exatamente get_nf_service_info() do Flask:\n//   xmltodict.parse → xml_dict['xjx']['cmd']\n//   @t = nome do campo, #text = valor\n//   clean_cell() em cada valor\n//   del 'no-set', 'estoque_pedido', 'bloquear_edicao_cliente'\n//   cc_ref = CC_MANAGER.get_cc_label(obs_interno_pedido)\n// ─────────────────────────────────────────────\n\nconst ctx = $input.first().json;\nconst xml_string = ctx.xml_string;\n\n// ── clean_cell() — espelha Flask ──\nfunction cleanCell(value) {\n  if (typeof value !== 'string') return value;\n  let cleaned = value.replace(/\\\\n|\\\\t|\\\\r|\\n|\\t|\\r/g, ' ');\n  cleaned = cleaned.replace(/\\s+/g, ' ').trim();\n  return cleaned;\n}\n\n// ── get_cc_label() — ordem IDÊNTICA ao Flask (cost_center_manager.py) ──\n// Flask: extract_cc_value → extract_numeric_part → extract_prefix\n//        → extract_cc_text_value → extract_cc_text_value_exceptions\nfunction getCCLabel(text) {\n  if (!text) return '-1';\n  const s = String(text);\n  // Exceções fixas (método da instância)\n  if (s === 'RT - Vendas') return 'Vendas';\n  if (s === 'Marketing') return 'Marketing';\n  if (s === 'Vendas') return s;\n  if (s === 'Administração') return s;\n  // Nível 1: extract_cc_value → CC[-\\s]*(\\d+)\n  let m = s.match(/CC[-\\s]*(\\d+)/i);\n  if (m) return m[1];\n  // Nível 2: extract_numeric_part → \\b(\\d{6})\\b\n  m = s.match(/\\b(\\d{6})\\b/);\n  if (m) return m[1];\n  // Nível 3: extract_prefix → ^[A-Z]{2}-[A-Z0-9]{3}\n  m = s.match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  if (m) return m[0];\n  // Nível 4: extract_cc_text_value → CC- + 6 chars\n  let idx = s.indexOf('CC-');\n  if (idx !== -1) return s.substr(idx + 3, 6);\n  // Nível 5: extract_cc_text_value_exceptions → remove '/' e repete\n  const noSlash = s.replace(/\\//g, '');\n  idx = noSlash.indexOf('CC-');\n  if (idx !== -1) {\n    const end = noSlash.indexOf('/', idx);\n    if (end === -1) return noSlash.substr(idx + 3, 6);\n    return noSlash.substring(idx + 3, end);\n  }\n  return '-1';\n}\n\n// ── Parse XML (equivale a xmltodict.parse) ──\n// Extrai cada <cmd ... t=\"campo\" ...>valor</cmd>\nfunction parseXjxXml(xml) {\n  const info = {};\n  const cmdRegex = /<cmd[^>]+t=\"([^\"]*?)\"[^>]*>([\\s\\S]*?)<\\/cmd>/g;\n  let match;\n  while ((match = cmdRegex.exec(xml)) !== null) {\n    const fieldName = match[1];\n    let value = match[2].replace(/<\\!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1').trim();\n    info[fieldName] = cleanCell(value);\n  }\n  return info;\n}\n\nlet info_dict_ref;\ntry {\n  info_dict_ref = parseXjxXml(xml_string);\n} catch (e) {\n  return [{ json: { _error: true, message: 'Failed to parse XML: ' + String(e.message) } }];\n}\n\n// Espelha: del info_dict_ref['no-set'] / 'estoque_pedido' / 'bloquear_edicao_cliente'\ndelete info_dict_ref['no-set'];\ndelete info_dict_ref['estoque_pedido'];\ndelete info_dict_ref['bloquear_edicao_cliente'];\n\n// id_servico é a PK — vem do XML\nconst id_servico = String(info_dict_ref.id_servico || '').trim();\nif (!id_servico) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'missing_id_servico',\n    available_keys: Object.keys(info_dict_ref),\n    level: 'warn'\n  }));\n  return [{ json: { _error: true, message: 'Missing id_servico in XML' } }];\n}\n\n// cc_ref via get_cc_label(obs_interno_pedido)\nconst cc_ref = getCCLabel(info_dict_ref.obs_interno_pedido || '');\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'xml_parsed',\n  id_servico,\n  cc_ref,\n  fields_count: Object.keys(info_dict_ref).length,\n  level: 'info'\n}));\n\nreturn [{\n  json: {\n    id_servico,\n    obs_interno_pedido:          info_dict_ref.obs_interno_pedido          ?? null,\n    obs_pedido:                  info_dict_ref.obs_pedido                  ?? null,\n    numero_processo:             info_dict_ref.numero_processo             ?? null,\n    condicao_pagamento:          info_dict_ref.condicao_pagamento          ?? null,\n    condicao_pagamento_id:       info_dict_ref.condicao_pagamento_id       ?? null,\n    valor_iss:                   info_dict_ref.valor_iss                   ?? null,\n    aliq_iss:                    info_dict_ref.aliq_iss                    ?? null,\n    valor_ir:                    info_dict_ref.valor_ir                    ?? null,\n    aliq_ir:                     info_dict_ref.aliq_ir                     ?? null,\n    valor_contribuicao:          info_dict_ref.valor_contribuicao          ?? null,\n    aliq_contribuicao:           info_dict_ref.aliq_contribuicao           ?? null,\n    valor_pis:                   info_dict_ref.valor_pis                   ?? null,\n    aliq_pis:                    info_dict_ref.aliq_pis                    ?? null,\n    valor_cofins:                info_dict_ref.valor_cofins                ?? null,\n    aliq_cofins:                 info_dict_ref.aliq_cofins                 ?? null,\n    valor_material:              info_dict_ref.valor_material              ?? null,\n    valor_tributos_mun:          info_dict_ref.valor_tributos_mun          ?? null,\n    valor_aliq_tributos_mun:     info_dict_ref.valor_aliq_tributos_mun     ?? null,\n    valor_tributos:              info_dict_ref.valor_tributos              ?? null,\n    valor_aliq_tributos:         info_dict_ref.valor_aliq_tributos         ?? null,\n    valor_imposto:               info_dict_ref.valor_imposto               ?? null,\n    valor_aliquota:              info_dict_ref.valor_aliquota              ?? null,\n    valor_base_calculo:          info_dict_ref.valor_base_calculo          ?? null,\n    valor_condicionado:          info_dict_ref.valor_condicionado          ?? null,\n    valor_incondicionado:        info_dict_ref.valor_incondicionado        ?? null,\n    valor_deducoes:              info_dict_ref.valor_deducoes              ?? null,\n    itemLista_servico:           info_dict_ref.itemLista_servico           ?? null,\n    valor_total_nota:            info_dict_ref.valor_total_nota            ?? null,\n    valor_total_servicos:        info_dict_ref.valor_total_servicos        ?? null,\n    desc_servicos:               info_dict_ref.desc_servicos               ?? null,\n    serie_nota:                  info_dict_ref.serie_nota                  ?? null,\n    id_pedido:                   info_dict_ref.id_pedido                   ?? null,\n    vendedor_pedido_id:          info_dict_ref.vendedor_pedido_id          ?? null,\n    vendedor_pedido:             info_dict_ref.vendedor_pedido             ?? null,\n    ultrapassar_limite_credito:  info_dict_ref.ultrapassar_limite_credito  ?? null,\n    contas_pedido:               info_dict_ref.contas_pedido               ?? null,\n    id_cliente:                  info_dict_ref.id_cliente                  ?? null,\n    nome_cliente:                info_dict_ref.nome_cliente                ?? null,\n    cc_ref\n  }\n}];"
       },
-      "id": "fc64b8ef-1118-4102-b00b-f81ca6b67bdc",
-      "name": "Transform Service Info",
+      "id": "444c84aa-2b0d-49d4-be02-4ffe0893ba05",
+      "name": "Parse XML + Transform",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -960,
-        272
+        -2992,
+        1312
       ]
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "-- Enriquecimento com dados do label de serviço\nSELECT \n  {{ $json.chave_nf }} as chave_nf,\n  lbl.descricao as label_descricao,\n  lbl.aliquota_iss as label_aliquota_iss\nFROM auxiliary.nf_service_labels lbl\nWHERE lbl.codigo_servico = {{ $json.codigo_servico }}\n  AND lbl.ativo = true\nLIMIT 1;",
-        "options": {
-          "connectionTimeout": 30,
-          "queryBatching": "independently"
-        }
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
       },
-      "id": "d0cdc4b6-62e5-4d0a-968a-50b3dd192c70",
-      "name": "Enrich with Service Labels",
-      "type": "n8n-nodes-base.postgres",
+      "id": "32d88347-b1ba-4655-b817-25f56a9a5309",
+      "name": "Has Record?",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -720,
-        160
-      ],
-      "credentials": {
-        "postgres": {
-          "id": "tnATsHmPQ4uK6XL9",
-          "name": "Dev Database"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Combina dados do serviço com enriquecimento de labels\nconst enrichmentResults = $input.all();\nconst originalServices = $('Transform Service Info').all();\n\n// Cria mapa de enriquecimento\nconst enrichmentMap = {};\nenrichmentResults.forEach(result => {\n  if (result.json && result.json.chave_nf) {\n    enrichmentMap[result.json.chave_nf] = {\n      label_descricao: result.json.label_descricao,\n      label_aliquota_iss: result.json.label_aliquota_iss\n    };\n  }\n});\n\n// Aplica enriquecimento\nconst enrichedServices = originalServices.map(serviceItem => {\n  const service = serviceItem.json;\n  const enrichment = enrichmentMap[service.chave_nf] || {};\n  \n  return {\n    ...service,\n    label_descricao: enrichment.label_descricao || null,\n    label_aliquota_iss: enrichment.label_aliquota_iss || null\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'services_enriched',\n  enriched_count: enrichedServices.filter(s => s.label_descricao).length,\n  total_services: enrichedServices.length,\n  level: 'info'\n}));\n\nreturn enrichedServices;"
-      },
-      "id": "4f25a511-c99f-4325-a973-d58cc3081f25",
-      "name": "Combine Service Enrichment",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -480,
-        80
+        -2752,
+        1312
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.\"NF_Service\" (\n  \"id_servico\", \"obs_interno_pedido\", \"obs_pedido\", \"numero_processo\",\n  \"condicao_pagamento\", \"condicao_pagamento_id\", \"valor_iss\", \"aliq_iss\",\n  \"valor_ir\", \"aliq_ir\", \"valor_contribuicao\", \"aliq_contribuicao\",\n  \"valor_pis\", \"aliq_pis\", \"valor_cofins\", \"aliq_cofins\", \"valor_material\",\n  \"valor_tributos_mun\", \"valor_aliq_tributos_mun\", \"valor_tributos\",\n  \"valor_aliq_tributos\", \"valor_imposto\", \"valor_aliquota\", \"valor_base_calculo\",\n  \"valor_condicionado\", \"valor_incondicionado\", \"valor_deducoes\",\n  \"itemLista_servico\", \"valor_total_nota\", \"valor_total_servicos\",\n  \"desc_servicos\", \"serie_nota\", \"id_pedido\", \"vendedor_pedido_id\",\n  \"vendedor_pedido\", \"ultrapassar_limite_credito\", \"contas_pedido\",\n  \"id_cliente\", \"nome_cliente\", \"cc_ref\", \"created_at\", \"updated_at\"\n) VALUES (\n  {{ $json.chave_nf }}, {{ $json.observacoes }}, {{ $json.observacoes }}, {{ $json.numero_processo }}, {{ $json.condicao_pagamento }}, {{ $json.condicao_pagamento_id }}, {{ $json.valor_issqn }}::numeric, {{ $json.aliquota_issqn }}::numeric,\n  {{ $json.valor_ir }}::numeric, {{ $json.aliq_ir }}::numeric, {{ $json.valor_contribuicao }}::numeric, {{ $json.aliq_contribuicao }}::numeric,\n  {{ $json.valor_pis }}::numeric, {{ $json.aliq_pis }}::numeric, {{ $json.valor_cofins }}::numeric, {{ $json.aliq_cofins }}::numeric, {{ $json.valor_material }}::numeric,\n  {{ $json.valor_tributos_mun }}::numeric, {{ $json.valor_aliq_tributos_mun }}::numeric, {{ $json.valor_outras_retencoes }}::numeric,\n  {{ $json.valor_aliq_tributos }}::numeric, {{ $json.valor_imposto }}::numeric, {{ $json.aliquota_issqn }}::numeric, {{ $json.base_calculo_issqn }}::numeric,\n  {{ $json.valor_condicionado }}::numeric, {{ $json.valor_unitario }}::numeric, {{ $json.valor_desconto }}::numeric,\n  {{ $json.item_lista_servico }}, {{ $json.valor_total_nota }}::numeric, {{ $json.valor_unitario }}::numeric,\n  {{ $json.discriminacao_detalhada }}, {{ $json.serie_nota }}, {{ $json.id_pedido }}, {{ $json.vendedor_pedido_id }}, {{ $json.vendedor_pedido }}, {{ $json.ultrapassar_limite_credito }}, {{ $json.contas_pedido }}, {{ $json.id_cliente }}, {{ $json.nome_cliente }}, {{ $json.cc_ref }},\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"id_servico\")\nDO UPDATE SET \n  \"obs_interno_pedido\" = EXCLUDED.\"obs_interno_pedido\",\n  \"obs_pedido\" = EXCLUDED.\"obs_pedido\",\n  \"valor_total_nota\" = EXCLUDED.\"valor_total_nota\",\n  \"valor_total_servicos\" = EXCLUDED.\"valor_total_servicos\",\n  \"nome_cliente\" = EXCLUDED.\"nome_cliente\",\n  \"cc_ref\" = EXCLUDED.\"cc_ref\",\n  \"updated_at\" = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  \"NF_Service\".\"obs_interno_pedido\" IS DISTINCT FROM EXCLUDED.\"obs_interno_pedido\"\n  OR \"NF_Service\".\"valor_total_nota\" IS DISTINCT FROM EXCLUDED.\"valor_total_nota\"\n  OR \"NF_Service\".\"valor_total_servicos\" IS DISTINCT FROM EXCLUDED.\"valor_total_servicos\"\n  OR \"NF_Service\".\"nome_cliente\" IS DISTINCT FROM EXCLUDED.\"nome_cliente\"\n  OR \"NF_Service\".\"cc_ref\" IS DISTINCT FROM EXCLUDED.\"cc_ref\"\nRETURNING \"id_servico\", \"nome_cliente\", \"valor_total_nota\", \"cc_ref\";",
+        "query": "-- ─────────────────────────────────────────────\n-- VHSYS :: nf_service_info — UPSERT\n-- Tabela : nf_service (SQLAlchemy: NF_Service → nf_service)\n-- PK     : id_servico (Text)\n-- Todos os campos são Text — sem cast numérico\n-- ─────────────────────────────────────────────\nINSERT INTO nf_service (\n  id_servico,\n  obs_interno_pedido,\n  obs_pedido,\n  numero_processo,\n  condicao_pagamento,\n  condicao_pagamento_id,\n  valor_iss,\n  aliq_iss,\n  valor_ir,\n  aliq_ir,\n  valor_contribuicao,\n  aliq_contribuicao,\n  valor_pis,\n  aliq_pis,\n  valor_cofins,\n  aliq_cofins,\n  valor_material,\n  valor_tributos_mun,\n  valor_aliq_tributos_mun,\n  valor_tributos,\n  valor_aliq_tributos,\n  valor_imposto,\n  valor_aliquota,\n  valor_base_calculo,\n  valor_condicionado,\n  valor_incondicionado,\n  valor_deducoes,\n  \"itemLista_servico\",\n  valor_total_nota,\n  valor_total_servicos,\n  desc_servicos,\n  serie_nota,\n  id_pedido,\n  vendedor_pedido_id,\n  vendedor_pedido,\n  ultrapassar_limite_credito,\n  contas_pedido,\n  id_cliente,\n  nome_cliente,\n  cc_ref,\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $json.id_servico.replace(/'/g, \"''\") }}',\n  {{ $json.obs_interno_pedido         ? \"'\" + $json.obs_interno_pedido.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.obs_pedido                 ? \"'\" + $json.obs_pedido.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.numero_processo            ? \"'\" + $json.numero_processo.replace(/'/g, \"''\") + \"'\"            : 'NULL' }},\n  {{ $json.condicao_pagamento         ? \"'\" + $json.condicao_pagamento.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.condicao_pagamento_id      ? \"'\" + $json.condicao_pagamento_id.replace(/'/g, \"''\") + \"'\"      : 'NULL' }},\n  {{ $json.valor_iss                  ? \"'\" + $json.valor_iss.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.aliq_iss                   ? \"'\" + $json.aliq_iss.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.valor_ir                   ? \"'\" + $json.valor_ir.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.aliq_ir                    ? \"'\" + $json.aliq_ir.replace(/'/g, \"''\") + \"'\"                    : 'NULL' }},\n  {{ $json.valor_contribuicao         ? \"'\" + $json.valor_contribuicao.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.aliq_contribuicao          ? \"'\" + $json.aliq_contribuicao.replace(/'/g, \"''\") + \"'\"          : 'NULL' }},\n  {{ $json.valor_pis                  ? \"'\" + $json.valor_pis.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.aliq_pis                   ? \"'\" + $json.aliq_pis.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.valor_cofins               ? \"'\" + $json.valor_cofins.replace(/'/g, \"''\") + \"'\"               : 'NULL' }},\n  {{ $json.aliq_cofins                ? \"'\" + $json.aliq_cofins.replace(/'/g, \"''\") + \"'\"                : 'NULL' }},\n  {{ $json.valor_material             ? \"'\" + $json.valor_material.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_tributos_mun         ? \"'\" + $json.valor_tributos_mun.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_aliq_tributos_mun    ? \"'\" + $json.valor_aliq_tributos_mun.replace(/'/g, \"''\") + \"'\"    : 'NULL' }},\n  {{ $json.valor_tributos             ? \"'\" + $json.valor_tributos.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_aliq_tributos        ? \"'\" + $json.valor_aliq_tributos.replace(/'/g, \"''\") + \"'\"        : 'NULL' }},\n  {{ $json.valor_imposto              ? \"'\" + $json.valor_imposto.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.valor_aliquota             ? \"'\" + $json.valor_aliquota.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_base_calculo         ? \"'\" + $json.valor_base_calculo.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_condicionado         ? \"'\" + $json.valor_condicionado.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_incondicionado       ? \"'\" + $json.valor_incondicionado.replace(/'/g, \"''\") + \"'\"       : 'NULL' }},\n  {{ $json.valor_deducoes             ? \"'\" + $json.valor_deducoes.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.itemLista_servico          ? \"'\" + $json.itemLista_servico.replace(/'/g, \"''\") + \"'\"          : 'NULL' }},\n  {{ $json.valor_total_nota           ? \"'\" + $json.valor_total_nota.replace(/'/g, \"''\") + \"'\"           : 'NULL' }},\n  {{ $json.valor_total_servicos       ? \"'\" + $json.valor_total_servicos.replace(/'/g, \"''\") + \"'\"       : 'NULL' }},\n  {{ $json.desc_servicos              ? \"'\" + $json.desc_servicos.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.serie_nota                 ? \"'\" + $json.serie_nota.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.id_pedido                  ? \"'\" + $json.id_pedido.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.vendedor_pedido_id         ? \"'\" + $json.vendedor_pedido_id.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.vendedor_pedido            ? \"'\" + $json.vendedor_pedido.replace(/'/g, \"''\") + \"'\"            : 'NULL' }},\n  {{ $json.ultrapassar_limite_credito ? \"'\" + $json.ultrapassar_limite_credito.replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.contas_pedido              ? \"'\" + $json.contas_pedido.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.id_cliente                 ? \"'\" + $json.id_cliente.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.nome_cliente               ? \"'\" + $json.nome_cliente.replace(/'/g, \"''\") + \"'\"               : 'NULL' }},\n  {{ $json.cc_ref                     ? \"'\" + String($json.cc_ref).replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (id_servico) DO UPDATE SET\n  obs_interno_pedido          = EXCLUDED.obs_interno_pedido,\n  obs_pedido                  = EXCLUDED.obs_pedido,\n  numero_processo             = EXCLUDED.numero_processo,\n  condicao_pagamento          = EXCLUDED.condicao_pagamento,\n  condicao_pagamento_id       = EXCLUDED.condicao_pagamento_id,\n  valor_iss                   = EXCLUDED.valor_iss,\n  aliq_iss                    = EXCLUDED.aliq_iss,\n  valor_ir                    = EXCLUDED.valor_ir,\n  aliq_ir                     = EXCLUDED.aliq_ir,\n  valor_contribuicao          = EXCLUDED.valor_contribuicao,\n  aliq_contribuicao           = EXCLUDED.aliq_contribuicao,\n  valor_pis                   = EXCLUDED.valor_pis,\n  aliq_pis                    = EXCLUDED.aliq_pis,\n  valor_cofins                = EXCLUDED.valor_cofins,\n  aliq_cofins                 = EXCLUDED.aliq_cofins,\n  valor_material              = EXCLUDED.valor_material,\n  valor_tributos_mun          = EXCLUDED.valor_tributos_mun,\n  valor_aliq_tributos_mun     = EXCLUDED.valor_aliq_tributos_mun,\n  valor_tributos              = EXCLUDED.valor_tributos,\n  valor_aliq_tributos         = EXCLUDED.valor_aliq_tributos,\n  valor_imposto               = EXCLUDED.valor_imposto,\n  valor_aliquota              = EXCLUDED.valor_aliquota,\n  valor_base_calculo          = EXCLUDED.valor_base_calculo,\n  valor_condicionado          = EXCLUDED.valor_condicionado,\n  valor_incondicionado        = EXCLUDED.valor_incondicionado,\n  valor_deducoes              = EXCLUDED.valor_deducoes,\n  \"itemLista_servico\"         = EXCLUDED.\"itemLista_servico\",\n  valor_total_nota            = EXCLUDED.valor_total_nota,\n  valor_total_servicos        = EXCLUDED.valor_total_servicos,\n  desc_servicos               = EXCLUDED.desc_servicos,\n  serie_nota                  = EXCLUDED.serie_nota,\n  id_pedido                   = EXCLUDED.id_pedido,\n  vendedor_pedido_id          = EXCLUDED.vendedor_pedido_id,\n  vendedor_pedido             = EXCLUDED.vendedor_pedido,\n  ultrapassar_limite_credito  = EXCLUDED.ultrapassar_limite_credito,\n  contas_pedido               = EXCLUDED.contas_pedido,\n  id_cliente                  = EXCLUDED.id_cliente,\n  nome_cliente                = EXCLUDED.nome_cliente,\n  cc_ref                      = EXCLUDED.cc_ref,\n  updated_at                  = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING id_servico;",
         "options": {
           "connectionTimeout": 30,
-          "queryBatching": "independently"
+          "queryBatching": "single"
         }
       },
-      "id": "e32df8d2-3c79-4cdf-8f4c-99e0e62dacdf",
+      "id": "02663fdb-09c8-4545-a910-19e6495b8f19",
       "name": "Upsert Service Info",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -240,
-        80
+        -2512,
+        1200
       ],
       "credentials": {
         "postgres": {
@@ -134,55 +127,55 @@
     },
     {
       "parameters": {
-        "jsCode": "// Conta registros afetados e constrói resposta\nconst affectedRecords = $input.all()\n  .filter(item => item.json && item.json.chave_nf)\n  .length;\n\nconst enrichedCount = $input.all()\n  .filter(item => item.json && item.json.label_descricao)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'service_info_upserted',\n  services_info_updated: affectedRecords,\n  enriched_with_labels: enrichedCount,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Service info updated successfully',\n    services_info_updated: affectedRecords,\n    enriched_with_labels: enrichedCount\n  }\n};"
+        "jsCode": "// ── Sucesso ──\n// Flask retorna HTTP 200 (não 201)\nconst row = $input.first().json;\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'upsert_complete',\n  id_servico: row.id_servico,\n  level: 'info'\n}));\nreturn {\n  statusCode: 200,\n  body: { message: 'Data extracted, cleaned, and converted to DataFrame successfully' }\n};"
       },
-      "id": "44f76390-ed9d-407d-8724-b927670524b9",
-      "name": "Build Response",
+      "id": "d3ded9d3-6e74-46c6-8f94-1841fd02c2a3",
+      "name": "Build Success Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        0
+        -2272,
+        1104
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+        "jsCode": "// ── XML inválido ou sem id_servico ──\n// Retorna 200 para não bloquear o loop da extensão\nconst input = $input.first().json;\nconst msg = input.message || 'No valid record found in XML';\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'empty_or_parse_error',\n  detail: msg,\n  level: 'warn'\n}));\nreturn {\n  statusCode: 200,\n  body: { message: 'Data extracted, cleaned, and converted to DataFrame successfully' }\n};"
       },
-      "id": "b36d20ac-5a6e-4d74-97dc-257c0e5bc67a",
+      "id": "e499e09e-ffad-40af-b09c-bc3f1328aeb9",
+      "name": "Build Empty Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2512,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro de validação (sem xml_ref) ──\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "67bc22d6-84a9-4bc2-8800-da00a1923fe1",
       "name": "Build Validation Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -960,
-        464
+        -2992,
+        1520
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service info' }\n};"
+        "jsCode": "// ── Erro de banco durante o UPSERT ──\nconst errData = $input.first().json;\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service info' }\n};"
       },
-      "id": "910b3551-3d0d-495d-a10a-c647615ad678",
+      "id": "95ec5047-e8fb-4bd8-a05e-a7969753c7b3",
       "name": "Build DB Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        0,
-        160
+        -2272,
+        1296
       ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        240,
-        272
-      ],
-      "id": "fd3a35db-4c28-42ab-b21f-322fe8db1ec4",
-      "name": "Return Response"
     }
   ],
   "pinData": {},
@@ -213,7 +206,7 @@
       "main": [
         [
           {
-            "node": "Transform Service Info",
+            "node": "Parse XML + Transform",
             "type": "main",
             "index": 0
           }
@@ -227,37 +220,26 @@
         ]
       ]
     },
-    "Transform Service Info": {
+    "Parse XML + Transform": {
       "main": [
         [
           {
-            "node": "Enrich with Service Labels",
+            "node": "Has Record?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Enrich with Service Labels": {
+    "Has Record?": {
       "main": [
         [
           {
-            "node": "Combine Service Enrichment",
+            "node": "Build Empty Response",
             "type": "main",
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Build DB Error Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Combine Service Enrichment": {
-      "main": [
         [
           {
             "node": "Upsert Service Info",
@@ -271,47 +253,12 @@
       "main": [
         [
           {
-            "node": "Build Response",
+            "node": "Build Success Response",
             "type": "main",
             "index": 0
-          }
-        ],
-        [
+          },
           {
             "node": "Build DB Error Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Response": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Validation Error Response": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build DB Error Response": {
-      "main": [
-        [
-          {
-            "node": "Return Response",
             "type": "main",
             "index": 0
           }
@@ -325,7 +272,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "7cffcce4-f5c1-4bc9-92c3-47320ddd9611",
+  "versionId": "d38f2d1a-16c6-4f29-a67e-7dccd6dd4ce7",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

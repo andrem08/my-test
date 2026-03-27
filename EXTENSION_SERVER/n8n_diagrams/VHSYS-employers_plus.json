@@ -3,26 +3,26 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "6132dc2f-215c-4037-b946-560fd2bbc6e1",
+      "id": "53cde2dc-b962-417c-84e7-dbfcad929b7a",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -25664,
-        1368
+        -30992,
+        2864
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: employers_plus (INTEGRATED WITH employers_plus_info)\n// Rota   : POST /employers_plus  \n// Fase 4 : Fluxo EMPLOYERS completo\n// ─────────────────────────────────────────────\n// Input  : { xml_ref?: string, LayerLista?: string }\n// Output : { message: '...', transformed_data: {...} } HTTP 201\n// Banco  : UPSERT employersData + UPSERT/DELETE dependents + UPSERT/DELETE benefits  \n// Chave  : matricula (main), hash(id+nome_dep) (deps), hash(id+nome_ben) (benefits)\n// ─────────────────────────────────────────────\n// INTEGRATED: All functionality from employers_plus_info\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\n// Aceita xml_ref (formato esperado) ou LayerLista (formato atual da extensão)\nconst xmlRef = body.xml_ref;\nconst layerLista = body.LayerLista;\n\nif (!xmlRef && !layerLista) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: xml_ref or LayerLista' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'input_validated',\n  has_xml_ref: !!xmlRef,\n  has_layer_lista: !!layerLista,\n  level: 'info'\n}));\n\n// Função para decodificar entidades HTML\nfunction decodeHtml(str) {\n  if (!str || typeof str !== 'string') return str;\n  return str\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/&nbsp;/g, ' ')\n    .replace(/&iacute;/g, 'í')\n    .replace(/&ecirc;/g, 'ê')\n    .replace(/&ccedil;/g, 'ç')\n    .replace(/&otilde;/g, 'õ')\n    .replace(/&aacute;/g, 'á')\n    .replace(/&atilde;/g, 'ã')\n    .replace(/&eacute;/g, 'é')\n    .replace(/&oacute;/g, 'ó')\n    .replace(/&uacute;/g, 'ú')\n    .replace(/&acirc;/g, 'â')\n    .replace(/&ocirc;/g, 'ô')\n    .replace(/&ucirc;/g, 'û')\n    .replace(/&Aacute;/g, 'Á')\n    .replace(/&Eacute;/g, 'É')\n    .replace(/&Iacute;/g, 'Í')\n    .replace(/&Oacute;/g, 'Ó')\n    .replace(/&Uacute;/g, 'Ú')\n    .replace(/&Acirc;/g, 'Â')\n    .replace(/&Ecirc;/g, 'Ê')\n    .replace(/&Icirc;/g, 'Î')\n    .replace(/&Ocirc;/g, 'Ô')\n    .replace(/&Ucirc;/g, 'Û')\n    .replace(/&Atilde;/g, 'Ã')\n    .replace(/&Otilde;/g, 'Õ')\n    .replace(/&Ccedil;/g, 'Ç');\n}\n\n// Extrai dados dos funcionários da tabela HTML (ENHANCED FROM employers_plus_info)\nfunction extractEmployeesFromHtml(htmlString) {\n  const employees = [];\n  \n  // Regex para extrair as linhas da tabela com dados dos funcionários\n  const rowRegex = /<tr[^>]*class=\"table-row-body\"[^>]*codigo=\"(\\d+)\"[^>]*>([\\s\\S]*?)<\\/tr>/gi;\n  \n  let match;\n  while ((match = rowRegex.exec(htmlString)) !== null) {\n    const codigo = match[1];\n    const rowContent = match[2];\n    \n    // Extrai os dados de cada célula da linha\n    const cellRegex = /<td[^>]*class=\"table-item-body\"[^>]*data-clickable=\"true\">([^<]*?)<\\/td>/gi;\n    const cells = [];\n    \n    let cellMatch;\n    while ((cellMatch = cellRegex.exec(rowContent)) !== null) {\n      cells.push(decodeHtml(cellMatch[1].trim()));\n    }\n    \n    // Verifica se temos pelo menos 3 células (matricula, nome, cargo)\n    if (cells.length >= 3) {\n      const employee = {\n        id_funcionario: codigo,     // Map codigo to id_funcionario\n        matricula: cells[0],        // Primeiro campo: matrícula\n        nome_funcionario: cells[1], // Segundo campo: nome -> nome_funcionario\n        cargo: cells[2],            // Terceiro campo: cargo\n        status: 'ativo'            // Todos na listagem parecem estar ativos\n      };\n      \n      employees.push(employee);\n    }\n  }\n  \n  return employees;\n}\n\nlet htmlContent;\nlet employees = [];\n\n// Se tem xml_ref, extrai LayerLista do XML\nif (xmlRef) {\n  const layerListaMatch = xmlRef.match(/<cmd[^>]*t=[\"']LayerLista[\"'][^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/cmd>/i);\n  if (!layerListaMatch) {\n    return {\n      _valid: false,\n      statusCode: 400,\n      body: { ok: false, error: 'LayerLista not found in XML' }\n    };\n  }\n  htmlContent = layerListaMatch[1];\n} else {\n  // Usa LayerLista direto\n  htmlContent = layerLista;\n}\n\n// Valida que temos dados HTML\nif (!htmlContent || !htmlContent.includes('table-row-body')) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Invalid HTML table data' }\n  };\n}\n\n// Extrai a lista de funcionários\nemployees = extractEmployeesFromHtml(htmlContent);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'html_table_parsed',\n  employees_found: employees.length,\n  level: 'info'\n}));\n\nif (employees.length === 0) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'No employees found in HTML table' }\n  };\n}\n\n// Retorna dados validados para processamento\nreturn { _valid: true, employees };"
       },
-      "id": "620f522c-9360-436a-97b3-8cbceddc3ba7",
+      "id": "a6ad8480-47d6-4ada-a88d-a988f1dc6183",
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -25440,
-        1368
+        -30768,
+        2864
       ]
     },
     {
@@ -50,26 +50,26 @@
         },
         "options": {}
       },
-      "id": "6ab85ffe-1d96-4f60-bee5-7e29645c10af",
+      "id": "33548ddd-4dc4-45f7-8abf-e54141e995ea",
       "name": "Is Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -25216,
-        1368
+        -30544,
+        2864
       ]
     },
     {
       "parameters": {
         "jsCode": "// Processa dados de funcionários (INTEGRATED) - mantém estrutura para compatibilidade\nconst ctx = $input.first().json;\nconst employees = ctx.employees;\n\n// Processa cada funcionário mantendo estrutura original mas usando campos corretos\nconst processedEmployees = employees.map(emp => {\n  // Normaliza dados do funcionário usando matricula como chave principal\n  const id_funcionario = String(emp.id_funcionario || '').trim();\n  const matricula = String(emp.matricula || '').trim();\n  const nome_funcionario = String(emp.nome_funcionario || '').trim();\n  const cargo = String(emp.cargo || '').trim();\n  const status = String(emp.status || 'ativo').trim();\n  \n  return {\n    id_funcionario: id_funcionario,     // Mantém para compatibilidade\n    matricula: matricula,               // Chave principal (PRIMARY KEY)\n    nome_funcionario: nome_funcionario, // Already decoded in Validate Input\n    cargo: cargo,\n    status: status\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'employees_processed',\n  employees_count: processedEmployees.length,\n  level: 'info'\n}));\n\nreturn processedEmployees;"
       },
-      "id": "b2a6f2e4-d1eb-46fc-a63b-ea3977be7287",
+      "id": "944cbe0a-2ee6-4c95-a1da-cb57b693db9a",
       "name": "Process Employee Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24992,
-        1272
+        -30320,
+        2768
       ]
     },
     {
@@ -81,13 +81,13 @@
           "queryBatching": "independently"
         }
       },
-      "id": "dff6058f-5bd3-4d22-88a6-8488a5f8f8f0",
+      "id": "ef8881f5-f136-4676-b679-aeb430c04ff3",
       "name": "Check Employee Exists",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24768,
-        1344
+        -30096,
+        2848
       ],
       "credentials": {
         "postgres": {
@@ -100,19 +100,19 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- UPSERT: Inserir funcionário novo ou atualizar existente usando matricula como chave\nINSERT INTO auxiliary.\"employersData\" (\n  id_funcionario, matricula, nome_funcionario, cargo, status,\n  cpf, rg, data_nascimento, data_admissao,\n  salario, departamento,\n  created_at, updated_at,\n) VALUES (\n  '{{ $json.id_funcionario }}',\n  '{{ $json.matricula }}',\n  '{{ $json.nome_funcionario }}',\n  '{{ $json.cargo }}',\n  '{{ $json.status }}',\n  '{{ $json.cpf }}',\n  '{{ $json.rg }}',\n  '{{ $json.data_nascimento }}',\n  '{{ $json.data_admissao }}'\n  '{{ $json.salario }}'\n  '{{ $json.departamento }}',  \n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (matricula) DO UPDATE SET\n  id_funcionario   = EXCLUDED.id_funcionario,\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  cargo           = EXCLUDED.cargo,\n  status          = EXCLUDED.status,\n  cpf          = EXCLUDED.cpf,\n  rg          = EXCLUDED.rg,\n  data_nascimento          = EXCLUDED.data_nascimento,\n    data_admissao          = EXCLUDED.data_admissao,\n    salario          = EXCLUDED.salario,\n    departamento          = EXCLUDED.departamento,\n  updated_at      = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING id_funcionario, nome_funcionario, matricula, cargo, status;",
+        "query": "-- UPSERT: Inserir funcionário novo ou atualizar existente usando matricula como chave\nINSERT INTO auxiliary.\"employersData\" (\n  id_funcionario, matricula, nome_funcionario, cargo, status,\n  created_at, updated_at\n) VALUES (\n  '{{ $json.id_funcionario }}',\n  '{{ $json.matricula }}',\n  '{{ $json.nome_funcionario }}',\n  '{{ $json.cargo }}',\n  '{{ $json.status }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (matricula) DO UPDATE SET\n  id_funcionario   = EXCLUDED.id_funcionario,\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  cargo           = EXCLUDED.cargo,\n  status          = EXCLUDED.status,\n  updated_at      = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING id_funcionario, nome_funcionario, matricula, cargo, status;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
         }
       },
-      "id": "c3b67b59-4eec-489b-83cc-91ae34d3d8cb",
+      "id": "dc1f4bed-af2f-45c2-b543-e3312cf99f3a",
       "name": "Upsert Employee Data",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24320,
-        1184
+        -29648,
+        2688
       ],
       "credentials": {
         "postgres": {
@@ -124,41 +124,41 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build success response for processed employees (INTEGRATED)\nconst results = $input.all();\nconst processedEmployees = results.map(item => {\n  // O PostgreSQL retorna o resultado da query no formato { id_funcionario: 'xxx', nome_funcionario: 'yyy' }\n  if (item.json && item.json.id_funcionario) {\n    return {\n      id_funcionario: item.json.id_funcionario,\n      nome_funcionario: item.json.nome_funcionario || 'Unknown',\n      matricula: item.json.matricula || '',\n      cargo: item.json.cargo || '',\n      status: item.json.status || 'ativo'\n    };\n  }\n  return null;\n}).filter(emp => emp !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'employees_processing_completed',\n  total_processed: processedEmployees.length,\n  level: 'info'\n}));\n\n// statusCode 201 para manter compatibilidade com employers_plus_info\nreturn {\n  statusCode: 201,\n  body: {\n    message: `Successfully processed ${processedEmployees.length} employees.`,\n    processed_employees: processedEmployees,\n    employees_processed: processedEmployees.length,\n    total_count: processedEmployees.length\n  }\n};"
+        "jsCode": "// Build success response for processed employees (MODIFIED - Returns IDs for loop)\nconst results = $input.all();\nconst processedEmployees = results.map(item => {\n  // O PostgreSQL retorna o resultado da query no formato { id_funcionario: 'xxx', nome_funcionario: 'yyy' }\n  if (item.json && item.json.id_funcionario) {\n    return {\n      codigo: item.json.id_funcionario,  // CHANGED: codigo instead of id_funcionario for compatibility\n      id_funcionario: item.json.id_funcionario,\n      nome_funcionario: item.json.nome_funcionario || 'Unknown',\n      matricula: item.json.matricula || '',\n      cargo: item.json.cargo || '',\n      status: item.json.status || 'ativo'\n    };\n  }\n  return null;\n}).filter(emp => emp !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'employees_processing_completed',\n  total_processed: processedEmployees.length,\n  level: 'info'\n}));\n\n// MODIFIED: Return format compatible with extension expectation\nreturn {\n  statusCode: 201,\n  body: {\n    message: `Successfully processed ${processedEmployees.length} employees.`,\n    processed_employees: processedEmployees,\n    employees_processed: processedEmployees.length,\n    total_count: processedEmployees.length,\n    ids: processedEmployees  // ADDED: ids array for loop processing\n  }\n};"
       },
-      "id": "81df5b40-054f-4595-ada5-c1a0f16079dd",
+      "id": "650cecb6-304f-4a2f-91e8-56f1a01e6db5",
       "name": "Build Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24096,
-        1176
+        -29424,
+        2672
       ]
     },
     {
       "parameters": {
         "jsCode": "// Funcionário não existe na base - erro\nconst ctx = $('Process Employee Data').all()\n  .find(item => item.json.matricula === $input.first().json.matricula);\n\nconst matricula = ctx ? ctx.json.matricula : 'unknown';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus',\n  event: 'employee_not_found',\n  matricula: matricula,\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 404,\n  body: { \n    ok: false, \n    error: 'Employee not found', \n    message: `Employee with matricula ${matricula} does not exist in database` \n  }\n};"
       },
-      "id": "f9ef2ed9-f0d9-4191-9466-f929dc2232fd",
+      "id": "72158e21-184e-4e77-8c72-31bb72b8cbf0",
       "name": "Build Employee Not Found Error",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24544,
-        1392
+        -29872,
+        2896
       ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
       },
-      "id": "0a78744e-9622-4e3f-bbfe-5decd56c7a31",
+      "id": "75441a57-b2e0-467b-990a-c6a9b68291f8",
       "name": "Build Validation Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24992,
-        1464
+        -30320,
+        2960
       ]
     },
     {
@@ -179,11 +179,37 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -24544,
-        1184
+        -29872,
+        2688
       ],
-      "id": "c9c3d8bb-2794-4939-9394-157fb7abbeb3",
+      "id": "8657b66c-b1c6-4f0f-91fe-d84dcdbd1f41",
       "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract employee IDs for individual processing\nconst response = $input.first().json;\n\n// Check if we have the response with ids array\nif (!response.body || !response.body.ids) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'employers_plus_individual_loop',\n    event: 'no_ids_found_skipping_individual_processing',\n    level: 'info'\n  }));\n  \n  // Return original response - no individual processing needed\n  return response;\n}\n\nconst ids = response.body.ids;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus_individual_loop',\n  event: 'starting_individual_employee_processing',\n  total_employees: ids.length,\n  level: 'info'\n}));\n\n// Return each employee ID as separate items for the loop\nreturn ids.map(employee => ({\n  codigo: employee.codigo,\n  id_funcionario: employee.id_funcionario,\n  nome_funcionario: employee.nome_funcionario,\n  matricula: employee.matricula,\n  cargo: employee.cargo,\n  status: employee.status\n}));"
+      },
+      "id": "2ae055df-5a56-4081-8761-19fc3673e4e3",
+      "name": "Split Employee IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -29136,
+        2672
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// CORRECTED: Process ALL employees from Split Employee IDs, not just the first one\n// Extension will handle individual VHSYS HTTP requests for detailed employee data\n\n// Get ALL employee data that was split by the previous node\nconst allEmployeeData = $input.all();\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_plus_individual_loop',\n  event: 'processing_all_employees',\n  total_employees: allEmployeeData.length,\n  note: 'Individual employee data fetching should be handled by Chrome Extension due to authentication requirements',\n  level: 'info'\n}));\n\n// Process each employee but return the original response with all IDs\n// The key insight: we don't need individual processing here, just pass through the complete response\nconst processedEmployees = allEmployeeData.map(item => {\n  const employeeData = item.json;\n  return {\n    codigo: employeeData.codigo || 'unknown',\n    id_funcionario: employeeData.id_funcionario || '',\n    nome_funcionario: employeeData.nome_funcionario || 'Unknown',\n    matricula: employeeData.matricula || '',\n    cargo: employeeData.cargo || '',\n    status: employeeData.status || 'ativo'\n  };\n});\n\n// Return the complete response that the extension expects\nreturn {\n  statusCode: 201,\n  body: {\n    message: `Successfully processed ${processedEmployees.length} employees.`,\n    processed_employees: processedEmployees,\n    employees_processed: processedEmployees.length,\n    total_count: processedEmployees.length,\n    ids: processedEmployees  // This is what the extension needs for the loop\n  }\n};"
+      },
+      "id": "a66b55b8-26bb-4d2c-aa1f-59c1c92e4bc0",
+      "name": "Aggregate All Employees Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -28832,
+        2672
+      ]
     }
   ],
   "pinData": {
@@ -322,23 +348,18 @@
             "type": "main",
             "index": 0
           }
-        ],
-        []
+        ]
       ]
     },
     "Build Response": {
       "main": [
-        []
-      ]
-    },
-    "Build Employee Not Found Error": {
-      "main": [
-        []
-      ]
-    },
-    "Build Validation Error Response": {
-      "main": [
-        []
+        [
+          {
+            "node": "Split Employee IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Merge": {
@@ -346,6 +367,17 @@
         [
           {
             "node": "Upsert Employee Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Employee IDs": {
+      "main": [
+        [
+          {
+            "node": "Aggregate All Employees Response",
             "type": "main",
             "index": 0
           }
@@ -359,7 +391,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "70797d4b-65b1-4251-9404-ebe99f6256f7",
+  "versionId": "f6dcad63-0998-4c24-8492-9805d9630c56",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
