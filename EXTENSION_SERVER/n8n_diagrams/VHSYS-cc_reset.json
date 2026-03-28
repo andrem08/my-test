@@ -1,10 +1,10 @@
 {
-  "name": "VHSYS-cc_reset",
+  "name": "Extensao VHSYS - CC Reset",
   "nodes": [
     {
       "parameters": {},
       "id": "24e0b4a1-9c7f-4965-8373-6fa9b9e0ef9a",
-      "name": "When called by another workflow",
+      "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
@@ -22,7 +22,7 @@
         }
       },
       "id": "bb66f3e7-18ff-41e4-8c29-80862dbce67b",
-      "name": "Reset CC Report Status",
+      "name": "Resetar Status do CC Report",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
@@ -39,10 +39,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const rows = $input.all().map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'cc_report_reset',\n  total_rows: rows.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'CC REPORT UPDATE RESETED' }\n};"
+        "jsCode": "const rows = $input.all().map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'cc_report_reset',\n  total_rows: rows.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'Status do CC Report resetado com sucesso' }\n};"
       },
       "id": "057924b1-4279-4fc5-9b92-1c996e6bc5cc",
-      "name": "Build Success Response",
+      "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -52,10 +52,10 @@
     },
     {
       "parameters": {
-        "jsCode": "const errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not reset cc report status' }\n};"
+        "jsCode": "const errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'db_error',\n  message: errData.message || 'Erro desconhecido no banco',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Erro de banco', message: 'Nao foi possivel resetar o status do cc report' }\n};"
       },
       "id": "8428491e-a4e8-441a-8f3e-457b7c52fd1b",
-      "name": "Build DB Error Response",
+      "name": "Montar Resposta de Erro de Banco",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -129,29 +129,29 @@
   ],
   "pinData": {},
   "connections": {
-    "When called by another workflow": {
+    "Quando Chamado por Outro Workflow": {
       "main": [
         [
           {
-            "node": "Reset CC Report Status",
+            "node": "Resetar Status do CC Report",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Reset CC Report Status": {
+    "Resetar Status do CC Report": {
       "main": [
         [
           {
-            "node": "Build Success Response",
+            "node": "Montar Resposta de Sucesso",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build DB Error Response",
+            "node": "Montar Resposta de Erro de Banco",
             "type": "main",
             "index": 0
           }

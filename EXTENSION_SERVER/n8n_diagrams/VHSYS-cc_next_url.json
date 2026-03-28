@@ -1,10 +1,10 @@
 {
-  "name": "VHSYS-cc_next_url",
+  "name": "Extensao VHSYS - CC Proxima URL",
   "nodes": [
     {
       "parameters": {},
       "id": "56ee883e-a42e-41f5-ba71-8ef35f06a55c",
-      "name": "When called by another workflow",
+      "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
@@ -19,7 +19,7 @@
         "options": {}
       },
       "id": "e1ce5cee-c913-40f9-af80-34b1d080c0dd",
-      "name": "Get Next CC",
+      "name": "Buscar Proximo CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
@@ -35,10 +35,10 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build URL and response based on what needs processing\nconst row = $input.first().json;\n\nif (!row || !row.cc_id) {\n  return { message: 'No CC to process' };\n}\n\nconst ccId = row.cc_id;\nconst entryDone = row.entries_runned === 1;\nconst outputDone = row.outputs_runned === 1;\n\n// Determina qual tipo processar\nlet type = 'entrada';\nlet urlType = 'Entrada';\n\nif (entryDone && !outputDone) {\n  type = 'saida';\n  urlType = 'Saida';\n}\n\n// Gera URL do VHSYS\nconst today = new Date();\nconst dd = String(today.getDate()).padStart(2, '0');\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst yyyy = today.getFullYear();\nconst dateStr = `${dd}/${mm}/${yyyy}`;\n\nconst vhsysUrl = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${dateStr}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_next_url',\n  event: 'next_url_generated',\n  cc_id: ccId,\n  type: type,\n  level: 'info'\n}));\n\n// IMPORTANTE: TypeScript espera data.url.url (estrutura aninhada)\n// Linha 64 do updateReportCC.ts faz: const { url: dataUrl } = data\n// Linha 71 faz: await getData(dataUrl.url)\nreturn {\n  url: {\n    url: vhsysUrl,\n    cc_id: ccId,\n    type: type\n  }\n};"
+        "jsCode": "// Monta URL e resposta com base no que ainda falta processar\nconst row = $input.first().json;\n\nif (!row || !row.cc_id) {\n  return { message: 'Nenhum CC para processar' };\n}\n\nconst ccId = row.cc_id;\nconst entryDone = row.entries_runned === 1;\nconst outputDone = row.outputs_runned === 1;\n\n// Determina qual tipo processar\nlet type = 'entrada';\nlet urlType = 'Entrada';\n\nif (entryDone && !outputDone) {\n  type = 'saida';\n  urlType = 'Saida';\n}\n\n// Gera URL do VHSYS\nconst today = new Date();\nconst dd = String(today.getDate()).padStart(2, '0');\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst yyyy = today.getFullYear();\nconst dateStr = `${dd}/${mm}/${yyyy}`;\n\nconst vhsysUrl = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${dateStr}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_next_url',\n  event: 'url_gerada',\n  cc_id: ccId,\n  type: type,\n  level: 'info'\n}));\n\n// IMPORTANTE: TypeScript espera data.url.url (estrutura aninhada)\n// Linha 64 do updateReportCC.ts faz: const { url: dataUrl } = data\n// Linha 71 faz: await getData(dataUrl.url)\nreturn {\n  url: {\n    url: vhsysUrl,\n    cc_id: ccId,\n    type: type\n  }\n};"
       },
       "id": "6058ad97-f5ac-46d0-9875-6f42024f5b9e",
-      "name": "Build URL Response",
+      "name": "Montar Resposta de URL",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -97,22 +97,22 @@
   ],
   "pinData": {},
   "connections": {
-    "When called by another workflow": {
+    "Quando Chamado por Outro Workflow": {
       "main": [
         [
           {
-            "node": "Get Next CC",
+            "node": "Buscar Proximo CC",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get Next CC": {
+    "Buscar Proximo CC": {
       "main": [
         [
           {
-            "node": "Build URL Response",
+            "node": "Montar Resposta de URL",
             "type": "main",
             "index": 0
           }

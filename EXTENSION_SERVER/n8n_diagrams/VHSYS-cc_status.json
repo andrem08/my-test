@@ -1,10 +1,10 @@
 {
-  "name": "VHSYS-cc_status",
+  "name": "Extensao VHSYS - CC Status",
   "nodes": [
     {
       "parameters": {},
       "id": "584ce86b-c989-41db-9749-4fd7fb7ff809",
-      "name": "When called by another workflow",
+      "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
@@ -19,7 +19,7 @@
         "options": {}
       },
       "id": "54c4fe11-bc0f-4e70-99f5-6b03d783297d",
-      "name": "Get CC Status",
+      "name": "Buscar Status do CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
@@ -35,10 +35,10 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build status response\nconst row = $input.first().json;\n\nconst totalLines = parseInt(row.total_lines || 0);\nconst numEntries = parseInt(row.number_of_entries || 0);\nconst numOutputs = parseInt(row.number_of_outputs || 0);\n\n// Se entries e outputs processados = total, então não está rodando\nconst running = !(numEntries === totalLines && numOutputs === totalLines);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_status',\n  event: 'status_checked',\n  running: running,\n  total_lines: totalLines,\n  entries: numEntries,\n  outputs: numOutputs,\n  level: 'info'\n}));\n\nreturn {\n  running: running,\n  total_lines: totalLines,\n  number_of_entries: numEntries,\n  number_of_outputs: numOutputs\n};"
+        "jsCode": "// Monta resposta de status\nconst row = $input.first().json;\n\nconst totalLines = parseInt(row.total_lines || 0);\nconst numEntries = parseInt(row.number_of_entries || 0);\nconst numOutputs = parseInt(row.number_of_outputs || 0);\n\n// Se entries e outputs processados = total, então não está rodando\nconst running = !(numEntries === totalLines && numOutputs === totalLines);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_status',\n  event: 'status_checked',\n  running: running,\n  total_lines: totalLines,\n  entries: numEntries,\n  outputs: numOutputs,\n  level: 'info'\n}));\n\nreturn {\n  running: running,\n  total_lines: totalLines,\n  number_of_entries: numEntries,\n  number_of_outputs: numOutputs\n};"
       },
       "id": "7003269d-4dce-4736-acd7-0ca647f528df",
-      "name": "Build Status Response",
+      "name": "Montar Resposta de Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -97,22 +97,22 @@
   ],
   "pinData": {},
   "connections": {
-    "When called by another workflow": {
+    "Quando Chamado por Outro Workflow": {
       "main": [
         [
           {
-            "node": "Get CC Status",
+            "node": "Buscar Status do CC",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get CC Status": {
+    "Buscar Status do CC": {
       "main": [
         [
           {
-            "node": "Build Status Response",
+            "node": "Montar Resposta de Status",
             "type": "main",
             "index": 0
           }
