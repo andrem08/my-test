@@ -30,3 +30,8 @@ EXTENSION_SERVER/test/payloads/phase3_nf_service/nf_service_labels.json
 EXTENSION_SERVER/test/payloads/phase3_nf_service/service_nf_report.json
 FIX_VALIDATION_nf_service_info_cache_buster.md
 ISSUE_ANALYSIS_nf_service_info_empty_response.md
+EXTENSION_SERVER/update_db_refs.py
+EXTENSION_SERVER/debug_file.py
+EXTENSION_SERVER/fix_db_refs_final.py
+EXTENSION_SERVER/migrate_db.py
+EXTENSION_SERVER/n8n_diagrams/json_test.json

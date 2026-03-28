@@ -2,149 +2,178 @@
   "name": "VHSYS-cc_report",
   "nodes": [
     {
-      "parameters": {},
-      "id": "fd5dd15a-334e-47cf-846d-747e6705ee94",
-      "name": "When called by another workflow",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "parameters": {
+        "content": "## Consolidacao e Fechamento\n\nConverge os ramos de insert e delete.\n\nAtualiza status por tipo:\n- entrada -> entries_runned\n- saida -> outputs_runned\n\nRetorna resposta 201 de conclusao.",
+        "height": 234,
+        "width": 440,
+        "color": 7
+      },
+      "id": "fce7c59d-746e-438f-b56a-0258972228ed",
+      "name": "Consolidacao e Fechamento",
+      "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -18528,
-        3136
+        -16576,
+        2928
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Valida payload da extensão\nconst input = $input.first().json;\nconst body = input.body || input;\n\nif (!body.data || !body.type || !body.cc_id) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Missing required fields: data, type, cc_id' }\n  };\n}\n\nif (body.type !== 'entrada' && body.type !== 'saida') {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Invalid type: must be entrada or saida' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'input_validated',\n  cc_id: body.cc_id,\n  type: body.type,\n  level: 'info'\n}));\n\nreturn { _valid: true, payload: body };"
+        "content": "## Persistencia de Remocoes\n\nPrepara IDs obsoletos para exclusao em lote.\n\nGera lista segura (escaping) e executa:\nDELETE ... WHERE ID IN (...)\n\nRemove rapidamente itens fora do estado atual.",
+        "height": 220,
+        "width": 456,
+        "color": 2
       },
-      "id": "b5441119-9545-4204-ab35-acb0fe20340a",
-      "name": "Validate Input",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -18304,
-        3136
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json._valid }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "id": "5c6a6b7d-b749-4db7-93c2-e997aa6dab73"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "f3e3b6f6-fb1b-4ed6-bfbe-59c2b8d76921",
-      "name": "Is Valid?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -18080,
-        3136
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Guard de early-exit antes de decode profundo\nconst ctx = $input.first().json;\nconst payload = ctx.payload || {};\n\nif (!payload.data || !payload.data.source || !payload.data.source.subItens || !payload.data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'early_empty_before_decode',\n    cc_id: payload.cc_id || 'unknown',\n    level: 'info'\n  }));\n\n  return {\n    payload: {\n      cc_id: payload.cc_id,\n      type: payload.type,\n      data: { source: null }\n    }\n  };\n}\n\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/').replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\nconst decoded = decodeHtml(payload);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'decoded_html',\n  cc_id: decoded.cc_id,\n  level: 'info'\n}));\n\nreturn { payload: decoded };"
-      },
-      "id": "cd944d40-05c5-47f3-a3a5-737aa5d2f604",
-      "name": "Decode HTML",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -17856,
-        3040
-      ]
-    },
-    {
-      "parameters": {
-        "jsCode": "// Verifica se página é válida e formata registros\nconst ctx = $input.first().json.payload;\nconst data = ctx.data;\n\nif (!data.source || !data.source.subItens || !data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'invalid_page',\n    cc_id: ctx.cc_id,\n    level: 'warn'\n  }));\n  return [{ json: { _empty: true, cc_id: ctx.cc_id, type: ctx.type } }];\n}\n\nconst source = data.source;\nconst ccLabel = source.itens[0].CentroCustos;\nconst subItens = source.subItens.ID1;\nconst ccId = ctx.cc_id;\nconst type = ctx.type;\n\nfunction generateIdToken(seed) {\n  let hash = 0;\n  for (let i = 0; i < seed.length; i++) {\n    const char = seed.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  return Math.abs(hash).toString(16);\n}\n\nfunction extractCcValue(input) {\n  const match = String(input || '').match(/CC[-\\s]*(\\d+)/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractNumericPart(input) {\n  const match = String(input || '').match(/\\b(\\d{6})\\b/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractPrefix(input) {\n  const match = String(input || '').match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  return match ? match[0] : '-1';\n}\n\nfunction extractCcTextValue(input) {\n  const normalized = String(input || '');\n  const index = normalized.indexOf('CC-');\n  return index !== -1 ? normalized.slice(index + 3, index + 9) : '-1';\n}\n\nfunction extractCcTextValueExceptions(input) {\n  const normalized = String(input || '').replace(/\\//g, '');\n  const index = normalized.indexOf('CC-');\n  if (index === -1) return '-1';\n  const endIndex = normalized.indexOf('/', index);\n  return endIndex === -1 ? normalized.slice(index + 3, index + 9) : normalized.slice(index + 3, endIndex);\n}\n\nfunction getCcLabel(labelText) {\n  if (labelText === 'RT - Vendas') return 'Vendas';\n  if (labelText === 'Marketing') return 'Marketing';\n  if (labelText === 'Vendas') return 'Vendas';\n  if (labelText === 'Administração') return 'Administração';\n\n  let label = extractCcValue(labelText);\n  if (label === '-1') {\n    label = extractNumericPart(labelText);\n    if (label === '-1') {\n      label = extractPrefix(labelText);\n      if (label === '-1') {\n        label = extractCcTextValue(labelText);\n        if (label === '-1') {\n          label = extractCcTextValueExceptions(labelText);\n        }\n      }\n    }\n  }\n  return label;\n}\n\n// Mantém a mesma semântica de índice para itens idênticos, porém em O(n)\nfunction annotateWithStableIndex(arr) {\n  const signatureToIndex = new Map();\n  let nextIndex = 0;\n\n  return arr.map((item) => {\n    const signature = JSON.stringify(item);\n    if (!signatureToIndex.has(signature)) {\n      signatureToIndex.set(signature, nextIndex++);\n    }\n\n    return { index: signatureToIndex.get(signature), ...item };\n  });\n}\n\nconst flattened = annotateWithStableIndex(subItens);\nconst ccSemantic = getCcLabel(ccLabel);\n\nconst formattedRecords = flattened.map(item => {\n  const INDEX = item.index;\n  const VENCIMENTO = item.Vencimento;\n  const FORNECEDOR = item.Fornecedor;\n  const NOME_DESPESA = item.NomeDespesa;\n  const SITUACAO = item.Situacao;\n  const VALOR = item.Valor;\n  const CATEGORIA = item.Categoria;\n\n  const SEED = `${INDEX}-${ccId}-${NOME_DESPESA}-${VENCIMENTO}-${FORNECEDOR}-${VALOR}-${SITUACAO}-${type}-${CATEGORIA}`;\n  const TOKEN = generateIdToken(SEED);\n\n  return {\n    json: {\n      ID: TOKEN,\n      ID_SEED: SEED,\n      CC: ccSemantic,\n      CC_LABEL: ccLabel,\n      ID_CC: ccId,\n      VENCIMENTO: VENCIMENTO,\n      FORNECEDOR: FORNECEDOR,\n      NOME_DESPESA: NOME_DESPESA,\n      SITUACAO: SITUACAO,\n      CATEGORIA: CATEGORIA,\n      VALOR: VALOR,\n      TYPE: type\n    }\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'records_formatted',\n  cc_id: ccId,\n  type: type,\n  count: formattedRecords.length,\n  level: 'info'\n}));\n\nif (formattedRecords.length === 0) {\n  return [{ json: { _empty: true, cc_id: ccId, type: type } }];\n}\n\nreturn formattedRecords;"
-      },
-      "id": "2e278c84-2d91-410c-a407-efcaa64080a7",
-      "name": "Format Records",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "33ad9cd4-a950-4a73-884e-0c4a328d7991",
+      "name": "Persistencia de Remocoes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
         -17632,
-        3040
+        3280
       ]
     },
     {
       "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json._empty }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "id": "7201d3cf-f4c3-4c5f-8641-32ce829d5249"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
+        "content": "## Persistencia de Inclusoes\n\nPrepara os novos registros para INSERT em lote.\n\nAplica escaping e normalizacao numerica.\n\nExecuta um unico INSERT batch para reduzir round-trips no banco.",
+        "height": 210,
+        "width": 408,
+        "color": 2
       },
-      "id": "be05eeab-aafd-40c0-9d7d-e3c45d38939e",
-      "name": "Has Records?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
+      "id": "b98664d4-405c-420a-9981-b2d411524347",
+      "name": "Persistencia de Inclusoes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        -17408,
-        3040
+        -17568,
+        2400
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Reduz execução redundante: passa apenas contexto necessário para query única no DB\nconst first = $input.first().json;\nreturn [{\n  json: {\n    cc_id: first.ID_CC,\n    type: first.TYPE\n  }\n}];"
+        "content": "## Caminho Sem Delta\n\nSe has_changes=false:\n- pula insert/delete\n- atualiza status de processamento\n- finaliza com 201\n\nEvita operacoes de banco desnecessarias.",
+        "height": 248,
+        "width": 458,
+        "color": 5
       },
-      "id": "7235ab6e-4629-43e0-b30b-0c0a0a870724",
-      "name": "Pick Context",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "id": "4fb55fb1-9a26-4bb7-a170-f5bfc6148ade",
+      "name": "Caminho Sem Delta",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        -17184,
-        2920
+        -18304,
+        3472
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Motor de Reconciliacao\n\nCompara IDs da extensao com IDs do banco.\n\nCalcula:\n- Insere -> se tem na extensao mas não no banco\n- Deleta -> se tem no banco mas não na extensão",
+        "height": 214,
+        "width": 404,
+        "color": 6
+      },
+      "id": "e8b66a28-633c-48aa-9ac5-6518023cda39",
+      "name": "Motor de Reconciliacao",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -18432,
+        2704
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Escopo e Snapshot do Banco\n\nDefine o escopo da consulta com cc_id e type.\n\nDepois busca no banco o estado atual desse mesmo escopo.\n\nResultado:\n- menos payload trafegando\n- base pronta para o diff.",
+        "height": 264,
+        "width": 376,
+        "color": 6
+      },
+      "id": "5ab276a6-a0b8-46d8-944e-7f7f74445bbf",
+      "name": "Escopo e Snapshot do Banco",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -18880,
+        2672
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Normalizacao de Registros\n\nTransforma subItens em registros padrao para comparacao.\n\nAqui o fluxo:\n- extrai CC semantico\n- gera indice estavel\n- cria ID deterministico (hash)",
+        "height": 216,
+        "width": 428,
+        "color": 4
+      },
+      "id": "66570626-ff55-4029-942a-62e68da8c738",
+      "name": "Normalizacao de Registros",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -19408,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Decodificacao e Early Exit\n\nSe nao houver subItens, sai cedo e manda para o caminho de pagina vazia.\n\nSe houver dados:\n- decodifica entidades HTML\n- preserva a estrutura do payload",
+        "height": 220,
+        "width": 392,
+        "color": 4
+      },
+      "id": "0bc1568e-5325-45c8-a784-0e8c868e50d2",
+      "name": "Decodificacao e Early Exit",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -19968,
+        2880
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Contrato de Entrada\n\nValida o payload recebido pelo router.\n\nCheca:\n- data, type, cc_id\n- type = entrada ou saida\n\nSe invalido: retorna 400.\nSe valido: segue com payload normalizado.",
+        "height": 236,
+        "width": 344,
+        "color": 3
+      },
+      "id": "68fb2e71-52c7-4bd5-8212-c2eb0721d9d3",
+      "name": "Contrato de Entrada",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -19936,
+        3344
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Arquitetura do Fluxo\n\nSincroniza o relatorio de centro de custo entre extensao e banco.\n\nEtapas:\n1) valida entrada\n2) normaliza dados\n3) calcula diff\n4) aplica insert/delete\n5) atualiza status\n6) responde ao chamador",
+        "height": 314,
+        "width": 574,
+        "color": 7
+      },
+      "id": "25379523-c5f1-4ab0-902c-ea276c5d2a33",
+      "name": "Arquitetura do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -20816,
+        3056
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \"ID\", \"ID_CC\", \"TYPE\"\nFROM auxiliary.\"Relatorio_CC\"\nWHERE \"ID_CC\" = '{{ $json.cc_id }}' AND \"TYPE\" = '{{ $json.type }}';",
+        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $json.cc_id }}';",
         "options": {}
       },
-      "id": "90dae5be-f27b-4e99-9895-cf24cd1e7760",
-      "name": "Get Existing Records",
+      "id": "f7de807d-e600-450a-b1b4-08fbb70b8563",
+      "name": "No Changes Update Status",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -16960,
-        2920
+        -17920,
+        3216
       ],
       "credentials": {
         "postgres": {
@@ -155,15 +184,219 @@
     },
     {
       "parameters": {
-        "jsCode": "// Calcula diff entre extensão e DB com leitura direta dos nós para evitar merge custoso\nconst currentRecords = $items('Format Records', 0, 0)\n  .map(item => item.json)\n  .filter(r => r && !r._empty && r.ID);\n\nconst dbRecords = $input.all()\n  .map(item => item.json)\n  .filter(r => r && r.ID);\n\nconst extensionIds = new Set(currentRecords.map(r => r.ID));\nconst currentData = Object.fromEntries(currentRecords.map(r => [r.ID, r]));\nconst dbIds = new Set(dbRecords.map(r => r.ID));\n\nconst toInsert = [];\nfor (const id of extensionIds) {\n  if (!dbIds.has(id)) toInsert.push(currentData[id]);\n}\n\nconst toDelete = [];\nfor (const id of dbIds) {\n  if (!extensionIds.has(id)) toDelete.push(id);\n}\n\nconst ccId = currentRecords[0]?.ID_CC || $('Pick Context').item.json.cc_id || '';\nconst type = currentRecords[0]?.TYPE || $('Pick Context').item.json.type || '';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'diff_calculated',\n  cc_id: ccId,\n  type: type,\n  extension_count: currentRecords.length,\n  db_count: dbRecords.length,\n  to_insert: toInsert.length,\n  to_delete: toDelete.length,\n  level: 'info'\n}));\n\nreturn {\n  json: {\n    cc_id: ccId,\n    type: type,\n    to_insert: toInsert,\n    to_delete: toDelete,\n    has_changes: toInsert.length > 0 || toDelete.length > 0\n  }\n};"
+        "jsCode": "// Reaproveita update de status padrão no caminho de página vazia\nconst ctx = $input.first().json;\n\nreturn {\n  json: {\n    cc_id: ctx.cc_id,\n    type: ctx.type\n  }\n};"
       },
-      "id": "07bd7217-3308-4a03-ad09-c083185f6b98",
-      "name": "Calculate Diff",
+      "id": "f1564938-c8eb-4050-a0f2-7e4eb7c8cfe3",
+      "name": "Empty Update Status",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -16736,
-        2920
+        -18144,
+        3264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json;\n\nreturn {\n  statusCode: ctx.statusCode || 400,\n  body: ctx.body || { error: 'Validation failed' }\n};"
+      },
+      "id": "dad86b0a-7e29-4a7e-89c5-940e912da225",
+      "name": "Build Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -19488,
+        3264
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $input.first().json || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'completed',\n  cc_id: ctx.cc_id || 'unknown',\n  type: ctx.type || 'unknown',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'GET A NEW CC_REPORT BY CC id' }\n};"
+      },
+      "id": "ab9c8b78-bbd8-4084-8fbb-bea8169be00d",
+      "name": "Build Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16800,
+        3024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $('Has Changes?').item.json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $('Has Changes?').item.json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $('Has Changes?').item.json.cc_id }}';",
+        "options": {}
+      },
+      "id": "53262b5c-b97c-412e-a642-c572fd4977a6",
+      "name": "Update Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -17024,
+        2800
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "478f0aba-2eee-41dd-960c-53899a4c9159",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -17248,
+        2800
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM auxiliary.\"Relatorio_CC\"\nWHERE \"ID\" IN ({{ $json.ids_sql }});",
+        "options": {
+          "queryBatching": "single"
+        }
+      },
+      "id": "32d95284-f5af-4961-b870-41d59cd8e7d4",
+      "name": "Delete Records",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -17472,
+        3040
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._skip_delete }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "096f627a-98a8-49c7-aae3-be60d729be34"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "cfb31c4f-0f56-469f-a7c8-48435bdb6249",
+      "name": "Skip Delete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -17696,
+        2976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepara delete em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toDelete = diff.to_delete || [];\n\nif (toDelete.length === 0) {\n  return [{ json: { _skip_delete: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst ids_sql = toDelete.map((id) => `'${esc(id)}'`).join(', ');\n\nreturn [{\n  json: {\n    _skip_delete: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    delete_count: toDelete.length,\n    ids_sql\n  }\n}];"
+      },
+      "id": "c2e0a53d-dec5-497a-9b0c-6f33f96cc812",
+      "name": "Split Deletes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -17920,
+        2976
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.\"Relatorio_CC\" (\n  \"ID\", \"ID_SEED\", \"CC\", \"ID_CC\", \"CC_LABEL\",\n  \"VENCIMENTO\", \"FORNECEDOR\", \"NOME_DESPESA\", \"SITUACAO\",\n  \"DATA_PAGAMENTO\", \"CATEGORIA\", \"VALOR\", \"TYPE\",\n  \"created_at\", \"updated_at\"\n) VALUES\n{{ $json.values_sql }};",
+        "options": {
+          "queryBatching": "single"
+        }
+      },
+      "id": "238e5cb3-82df-4358-bc45-d45fedec60ae",
+      "name": "Insert Records",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -17472,
+        2656
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._skip_insert }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "5bf233be-4a90-4184-b288-e479f1803d6d"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3b39aef5-d64a-4444-b439-9524220db5b2",
+      "name": "Skip Insert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -17696,
+        2736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepara insert em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toInsert = diff.to_insert || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { _skip_insert: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst num = (v, fallback = 0) => {\n  const n = Number(String(v ?? '').replace(',', '.'));\n  return Number.isFinite(n) ? n : fallback;\n};\n\nconst values_sql = toInsert.map((rec) => {\n  const venc = num(rec.VENCIMENTO, 0);\n  const valor = num(rec.VALOR, 0);\n  return `(\n  '${esc(rec.ID)}',\n  '${esc(rec.ID_SEED)}',\n  '${esc(rec.CC)}',\n  '${esc(rec.ID_CC)}',\n  '${esc(rec.CC_LABEL)}',\n  to_timestamp(${venc})::timestamp,\n  '${esc(rec.FORNECEDOR)}',\n  '${esc(rec.NOME_DESPESA)}',\n  '${esc(rec.SITUACAO)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '${esc(rec.CATEGORIA)}',\n  ${valor},\n  '${esc(rec.TYPE)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)`;\n}).join(',\\n');\n\nreturn [{\n  json: {\n    _skip_insert: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    insert_count: toInsert.length,\n    values_sql\n  }\n}];"
+      },
+      "id": "c8f3f18f-4b43-4567-a91f-e7a078add922",
+      "name": "Split Inserts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -17920,
+        2736
       ]
     },
     {
@@ -191,186 +424,43 @@
         },
         "options": {}
       },
-      "id": "4b735735-2b2d-4b5a-944a-c2022c6c1284",
+      "id": "9a309862-edff-495d-b249-77d5f57528cf",
       "name": "Has Changes?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -16512,
-        2920
+        -18144,
+        2976
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Prepara insert em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toInsert = diff.to_insert || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { _skip_insert: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst num = (v, fallback = 0) => {\n  const n = Number(String(v ?? '').replace(',', '.'));\n  return Number.isFinite(n) ? n : fallback;\n};\n\nconst values_sql = toInsert.map((rec) => {\n  const venc = num(rec.VENCIMENTO, 0);\n  const valor = num(rec.VALOR, 0);\n  return `(\n  '${esc(rec.ID)}',\n  '${esc(rec.ID_SEED)}',\n  '${esc(rec.CC)}',\n  '${esc(rec.ID_CC)}',\n  '${esc(rec.CC_LABEL)}',\n  to_timestamp(${venc})::timestamp,\n  '${esc(rec.FORNECEDOR)}',\n  '${esc(rec.NOME_DESPESA)}',\n  '${esc(rec.SITUACAO)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '${esc(rec.CATEGORIA)}',\n  ${valor},\n  '${esc(rec.TYPE)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)`;\n}).join(',\\n');\n\nreturn [{\n  json: {\n    _skip_insert: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    insert_count: toInsert.length,\n    values_sql\n  }\n}];"
+        "jsCode": "// Calcula diff entre extensão e DB com leitura direta dos nós para evitar merge custoso\nconst currentRecords = $items('Format Records', 0, 0)\n  .map(item => item.json)\n  .filter(r => r && !r._empty && r.ID);\n\nconst dbRecords = $input.all()\n  .map(item => item.json)\n  .filter(r => r && r.ID);\n\nconst extensionIds = new Set(currentRecords.map(r => r.ID));\nconst currentData = Object.fromEntries(currentRecords.map(r => [r.ID, r]));\nconst dbIds = new Set(dbRecords.map(r => r.ID));\n\nconst toInsert = [];\nfor (const id of extensionIds) {\n  if (!dbIds.has(id)) toInsert.push(currentData[id]);\n}\n\nconst toDelete = [];\nfor (const id of dbIds) {\n  if (!extensionIds.has(id)) toDelete.push(id);\n}\n\nconst ccId = currentRecords[0]?.ID_CC || $('Pick Context').item.json.cc_id || '';\nconst type = currentRecords[0]?.TYPE || $('Pick Context').item.json.type || '';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'diff_calculated',\n  cc_id: ccId,\n  type: type,\n  extension_count: currentRecords.length,\n  db_count: dbRecords.length,\n  to_insert: toInsert.length,\n  to_delete: toDelete.length,\n  level: 'info'\n}));\n\nreturn {\n  json: {\n    cc_id: ccId,\n    type: type,\n    to_insert: toInsert,\n    to_delete: toDelete,\n    has_changes: toInsert.length > 0 || toDelete.length > 0\n  }\n};"
       },
-      "id": "94ca31ce-cf1c-49d5-9293-a49a39d93a06",
-      "name": "Split Inserts",
+      "id": "cffe2dd7-8414-4d31-b572-7a6296ed76fb",
+      "name": "Calculate Diff",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -16288,
-        2752
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json._skip_insert }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "id": "5bf233be-4a90-4184-b288-e479f1803d6d"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "883bc931-e47d-4a22-8b13-95fb27d6b4be",
-      "name": "Skip Insert?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -16064,
-        2752
+        -18368,
+        2976
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.\"Relatorio_CC\" (\n  \"ID\", \"ID_SEED\", \"CC\", \"ID_CC\", \"CC_LABEL\",\n  \"VENCIMENTO\", \"FORNECEDOR\", \"NOME_DESPESA\", \"SITUACAO\",\n  \"DATA_PAGAMENTO\", \"CATEGORIA\", \"VALOR\", \"TYPE\",\n  \"created_at\", \"updated_at\"\n) VALUES\n{{ $json.values_sql }};",
-        "options": {
-          "queryBatching": "single"
-        }
+        "query": "SELECT \"ID\", \"ID_CC\", \"TYPE\"\nFROM auxiliary.\"Relatorio_CC\"\nWHERE \"ID_CC\" = '{{ $json.cc_id }}' AND \"TYPE\" = '{{ $json.type }}';",
+        "options": {}
       },
-      "id": "1c75d2de-0681-4f37-a8a5-24e11f4a79d0",
-      "name": "Insert Records",
+      "id": "62e1c11e-7d60-4c84-8d6c-c5c8d893ec23",
+      "name": "Get Existing Records",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -15840,
-        2704
+        -18592,
+        2976
       ],
-      "credentials": {
-        "postgres": {
-          "id": "tnATsHmPQ4uK6XL9",
-          "name": "Dev Database"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Prepara delete em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toDelete = diff.to_delete || [];\n\nif (toDelete.length === 0) {\n  return [{ json: { _skip_delete: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst ids_sql = toDelete.map((id) => `'${esc(id)}'`).join(', ');\n\nreturn [{\n  json: {\n    _skip_delete: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    delete_count: toDelete.length,\n    ids_sql\n  }\n}];"
-      },
-      "id": "649eb789-9ccf-47b6-a4a9-383c345e05a5",
-      "name": "Split Deletes",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -16288,
-        3208
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json._skip_delete }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "id": "096f627a-98a8-49c7-aae3-be60d729be34"
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "4bf38d80-0129-41c9-89a3-0fb97b881e35",
-      "name": "Skip Delete?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        -16064,
-        3208
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "DELETE FROM auxiliary.\"Relatorio_CC\"\nWHERE \"ID\" IN ({{ $json.ids_sql }});",
-        "options": {
-          "queryBatching": "single"
-        }
-      },
-      "id": "379bd03d-c9ce-4167-86cc-21a9d4dbe808",
-      "name": "Delete Records",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.3,
-      "position": [
-        -15840,
-        3328
-      ],
-      "credentials": {
-        "postgres": {
-          "id": "tnATsHmPQ4uK6XL9",
-          "name": "Dev Database"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "mode": "combine",
-        "combineBy": "combineAll",
-        "options": {}
-      },
-      "id": "c93ad47b-636f-4973-a669-2e6c2b4e3839",
-      "name": "Merge Results",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3,
-      "position": [
-        -15536,
-        3024
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $('Has Changes?').item.json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $('Has Changes?').item.json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $('Has Changes?').item.json.cc_id }}';",
-        "options": {}
-      },
-      "id": "b106595e-5963-40bb-8020-f439f384ae90",
-      "name": "Update Status",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.3,
-      "position": [
-        -15312,
-        3024
-      ],
+      "alwaysOutputData": true,
       "credentials": {
         "postgres": {
           "id": "tnATsHmPQ4uK6XL9",
@@ -380,689 +470,139 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'completed',\n  cc_id: ctx.cc_id || 'unknown',\n  type: ctx.type || 'unknown',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'GET A NEW CC_REPORT BY CC id' }\n};"
+        "jsCode": "// Reduz execução redundante: passa apenas contexto necessário para query única no DB\nconst first = $input.first().json;\nreturn [{\n  json: {\n    cc_id: first.ID_CC,\n    type: first.TYPE\n  }\n}];"
       },
-      "id": "e2002bad-87ce-46b2-a23d-73c14ff276f6",
-      "name": "Build Success",
+      "id": "7f43fa42-244a-443f-94b6-d395b476fbc4",
+      "name": "Pick Context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -15088,
+        -18816,
+        2976
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._empty }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "7201d3cf-f4c3-4c5f-8641-32ce829d5249"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b82cf36a-a67b-4888-a7a3-fb40b23697c8",
+      "name": "Has Records?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -19040,
         3072
       ]
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\n\nreturn {\n  statusCode: ctx.statusCode || 400,\n  body: ctx.body || { error: 'Validation failed' }\n};"
+        "jsCode": "// Verifica se página é válida e formata registros\nconst ctx = $input.first().json.payload;\nconst data = ctx.data;\n\nif (!data.source || !data.source.subItens || !data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'invalid_page',\n    cc_id: ctx.cc_id,\n    level: 'warn'\n  }));\n  return [{ json: { _empty: true, cc_id: ctx.cc_id, type: ctx.type } }];\n}\n\nconst source = data.source;\nconst ccLabel = source.itens[0].CentroCustos;\nconst subItens = source.subItens.ID1;\nconst ccId = ctx.cc_id;\nconst type = ctx.type;\n\nfunction generateIdToken(seed) {\n  let hash = 0;\n  for (let i = 0; i < seed.length; i++) {\n    const char = seed.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  return Math.abs(hash).toString(16);\n}\n\nfunction extractCcValue(input) {\n  const match = String(input || '').match(/CC[-\\s]*(\\d+)/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractNumericPart(input) {\n  const match = String(input || '').match(/\\b(\\d{6})\\b/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractPrefix(input) {\n  const match = String(input || '').match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  return match ? match[0] : '-1';\n}\n\nfunction extractCcTextValue(input) {\n  const normalized = String(input || '');\n  const index = normalized.indexOf('CC-');\n  return index !== -1 ? normalized.slice(index + 3, index + 9) : '-1';\n}\n\nfunction extractCcTextValueExceptions(input) {\n  const normalized = String(input || '').replace(/\\//g, '');\n  const index = normalized.indexOf('CC-');\n  if (index === -1) return '-1';\n  const endIndex = normalized.indexOf('/', index);\n  return endIndex === -1 ? normalized.slice(index + 3, index + 9) : normalized.slice(index + 3, endIndex);\n}\n\nfunction getCcLabel(labelText) {\n  if (labelText === 'RT - Vendas') return 'Vendas';\n  if (labelText === 'Marketing') return 'Marketing';\n  if (labelText === 'Vendas') return 'Vendas';\n  if (labelText === 'Administração') return 'Administração';\n\n  let label = extractCcValue(labelText);\n  if (label === '-1') {\n    label = extractNumericPart(labelText);\n    if (label === '-1') {\n      label = extractPrefix(labelText);\n      if (label === '-1') {\n        label = extractCcTextValue(labelText);\n        if (label === '-1') {\n          label = extractCcTextValueExceptions(labelText);\n        }\n      }\n    }\n  }\n  return label;\n}\n\n// Mantém a mesma semântica de índice para itens idênticos, porém em O(n)\nfunction annotateWithStableIndex(arr) {\n  const signatureToIndex = new Map();\n  let nextIndex = 0;\n\n  return arr.map((item) => {\n    const signature = JSON.stringify(item);\n    if (!signatureToIndex.has(signature)) {\n      signatureToIndex.set(signature, nextIndex++);\n    }\n\n    return { index: signatureToIndex.get(signature), ...item };\n  });\n}\n\nconst flattened = annotateWithStableIndex(subItens);\nconst ccSemantic = getCcLabel(ccLabel);\n\nconst formattedRecords = flattened.map(item => {\n  const INDEX = item.index;\n  const VENCIMENTO = item.Vencimento;\n  const FORNECEDOR = item.Fornecedor;\n  const NOME_DESPESA = item.NomeDespesa;\n  const SITUACAO = item.Situacao;\n  const VALOR = item.Valor;\n  const CATEGORIA = item.Categoria;\n\n  const SEED = `${INDEX}-${ccId}-${NOME_DESPESA}-${VENCIMENTO}-${FORNECEDOR}-${VALOR}-${SITUACAO}-${type}-${CATEGORIA}`;\n  const TOKEN = generateIdToken(SEED);\n\n  return {\n    json: {\n      ID: TOKEN,\n      ID_SEED: SEED,\n      CC: ccSemantic,\n      CC_LABEL: ccLabel,\n      ID_CC: ccId,\n      VENCIMENTO: VENCIMENTO,\n      FORNECEDOR: FORNECEDOR,\n      NOME_DESPESA: NOME_DESPESA,\n      SITUACAO: SITUACAO,\n      CATEGORIA: CATEGORIA,\n      VALOR: VALOR,\n      TYPE: type\n    }\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'records_formatted',\n  cc_id: ccId,\n  type: type,\n  count: formattedRecords.length,\n  level: 'info'\n}));\n\nif (formattedRecords.length === 0) {\n  return [{ json: { _empty: true, cc_id: ccId, type: type } }];\n}\n\nreturn formattedRecords;"
       },
-      "id": "44e77caa-19c4-453a-b4b1-4abd7f98d414",
-      "name": "Build Error",
+      "id": "dcef011b-c6b4-4c1b-997c-aac96ffb8d4a",
+      "name": "Format Records",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -17856,
-        3232
+        -19264,
+        3072
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Reaproveita update de status padrão no caminho de página vazia\nconst ctx = $input.first().json;\n\nreturn {\n  json: {\n    cc_id: ctx.cc_id,\n    type: ctx.type\n  }\n};"
+        "jsCode": "// Guard de early-exit antes de decode profundo\nconst ctx = $input.first().json;\nconst payload = ctx.payload || {};\n\nif (!payload.data || !payload.data.source || !payload.data.source.subItens || !payload.data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'early_empty_before_decode',\n    cc_id: payload.cc_id || 'unknown',\n    level: 'info'\n  }));\n\n  return {\n    payload: {\n      cc_id: payload.cc_id,\n      type: payload.type,\n      data: { source: null }\n    }\n  };\n}\n\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/').replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\nconst decoded = decodeHtml(payload);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'decoded_html',\n  cc_id: decoded.cc_id,\n  level: 'info'\n}));\n\nreturn { payload: decoded };"
       },
-      "id": "186d307f-50a6-4969-b911-49b1be55c670",
-      "name": "Empty Update Status",
+      "id": "ff12f21e-482f-4693-9917-112d7b4bb344",
+      "name": "Decode HTML",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -16512,
-        3208
+        -19488,
+        3072
       ]
     },
     {
       "parameters": {
-        "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $json.cc_id }}';",
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "5c6a6b7d-b749-4db7-93c2-e997aa6dab73"
+            }
+          ],
+          "combinator": "and"
+        },
         "options": {}
       },
-      "id": "699d79ad-ee6e-4e64-9431-4d7c5a713ece",
-      "name": "No Changes Update Status",
-      "type": "n8n-nodes-base.postgres",
+      "id": "36cc8746-8bdb-4727-b9ad-dc7d45c79d4f",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -16144,
-        3792
-      ],
-      "credentials": {
-        "postgres": {
-          "id": "tnATsHmPQ4uK6XL9",
-          "name": "Dev Database"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "content": "## Arquitetura do Fluxo\n\nSincroniza o relatorio de centro de custo entre extensao e banco.\n\nEtapas:\n1) valida entrada\n2) normaliza dados\n3) calcula diff\n4) aplica insert/delete\n5) atualiza status\n6) responde ao chamador",
-        "height": 314,
-        "width": 574,
-        "color": 7
-      },
-      "id": "32b82bf9-8f7e-4929-87fb-1997d1caf523",
-      "name": "Arquitetura do Fluxo",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -19152,
-        3136
+        -19712,
+        3168
       ]
     },
     {
       "parameters": {
-        "content": "## Contrato de Entrada\n\nValida o payload recebido pelo router.\n\nCheca:\n- data, type, cc_id\n- type = entrada ou saida\n\nSe invalido: retorna 400.\nSe valido: segue com payload normalizado.",
-        "height": 348,
-        "width": 360,
-        "color": 3
+        "jsCode": "// Valida payload da extensão\nconst input = $input.first().json;\nconst body = input.body || input;\n\nif (!body.data || !body.type || !body.cc_id) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Missing required fields: data, type, cc_id' }\n  };\n}\n\nif (body.type !== 'entrada' && body.type !== 'saida') {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Invalid type: must be entrada or saida' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'input_validated',\n  cc_id: body.cc_id,\n  type: body.type,\n  level: 'info'\n}));\n\nreturn { _valid: true, payload: body };"
       },
-      "id": "9bbf12ea-f339-459c-86f9-04dd9cd66f87",
-      "name": "Contrato de Entrada",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
+      "id": "8c5762ac-7f7b-4e5e-a213-4b2fa818728e",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -18560,
-        2720
+        -19936,
+        3168
       ]
     },
     {
-      "parameters": {
-        "content": "## Decodificacao e Early Exit\n\nSe nao houver subItens, sai cedo e manda para o caminho de pagina vazia.\n\nSe houver dados:\n- decodifica entidades HTML\n- preserva a estrutura do payload\n\nIsso reduz custo quando o retorno vem vazio.",
-        "height": 300,
-        "width": 504,
-        "color": 4
-      },
-      "id": "2279ae43-bde3-4db9-a677-2bfbfb728a79",
-      "name": "Decodificacao e Early Exit",
-      "type": "n8n-nodes-base.stickyNote",
+      "parameters": {},
+      "id": "8c33da4d-c734-44b8-8328-1b1f9f163bb5",
+      "name": "When called by another workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -17968,
-        2688
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Normalizacao de Registros\n\nTransforma subItens em registros padrao para comparacao.\n\nAqui o fluxo:\n- extrai CC semantico\n- gera indice estavel\n- cria ID deterministico (hash)\n\nSaida: itens canonicos por ID.",
-        "height": 328,
-        "width": 380,
-        "color": 4
-      },
-      "id": "1b65e079-9122-4b46-8853-aac111ba7442",
-      "name": "Normalizacao de Registros",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -17680,
-        3408
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Caminho de Pagina Vazia\n\nQuando _empty=true:\n- nao calcula diff\n- nao faz insert/delete\n- atualiza flags de status\n- retorna sucesso\n\nGarante execucao consistente mesmo sem registros.",
-        "height": 292,
-        "width": 360,
-        "color": 5
-      },
-      "id": "8ba2955c-0f52-466d-8e49-3173b822e6f3",
-      "name": "Caminho de Pagina Vazia",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -17008,
-        3296
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Escopo e Snapshot do Banco\n\nDefine o escopo da consulta com cc_id e type.\n\nDepois busca no banco o estado atual desse mesmo escopo.\n\nResultado:\n- menos payload trafegando\n- base pronta para o diff.",
-        "height": 312,
-        "width": 376,
-        "color": 6
-      },
-      "id": "fd759a19-47a9-4be1-9331-82e07ffcd7f2",
-      "name": "Escopo e Snapshot do Banco",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -17344,
-        2592
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Motor de Reconciliacao\n\nCompara IDs da extensao com IDs do banco.\n\nCalcula:\n- to_insert = so na extensao\n- to_delete = so no banco\n- has_changes\n\nEntrega o delta para persistencia.",
-        "height": 310,
-        "width": 404,
-        "color": 6
-      },
-      "id": "b00e93d7-76d2-4f1f-ae6c-41ac7dbc2140",
-      "name": "Motor de Reconciliacao",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16832,
-        2544
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Caminho Sem Delta\n\nSe has_changes=false:\n- pula insert/delete\n- atualiza status de processamento\n- finaliza com 201\n\nEvita operacoes de banco desnecessarias.",
-        "height": 248,
-        "width": 458,
-        "color": 5
-      },
-      "id": "b550f2a7-678f-42ec-9f18-580e07434d11",
-      "name": "Caminho Sem Delta",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16672,
-        3744
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Persistencia de Inclusoes\n\nPrepara os novos registros para INSERT em lote.\n\nAplica escaping e normalizacao numerica.\n\nExecuta um unico INSERT batch para reduzir round-trips no banco.",
-        "height": 258,
-        "width": 360,
-        "color": 2
-      },
-      "id": "fabd99fe-7b90-4485-9ffc-5278563403d8",
-      "name": "Persistencia de Inclusoes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16112,
-        2384
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Persistencia de Remocoes\n\nPrepara IDs obsoletos para exclusao em lote.\n\nGera lista segura (escaping) e executa:\nDELETE ... WHERE ID IN (...)\n\nRemove rapidamente itens fora do estado atual.",
-        "height": 220,
-        "width": 456,
-        "color": 2
-      },
-      "id": "c0b9d31c-f238-4447-bbbf-48f7d845e07a",
-      "name": "Persistencia de Remocoes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -16096,
-        3488
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Consolidacao e Fechamento\n\nConverge os ramos de insert e delete.\n\nAtualiza status por tipo:\n- entrada -> entries_runned\n- saida -> outputs_runned\n\nRetorna resposta 201 de conclusao.",
-        "height": 282,
-        "width": 520,
-        "color": 7
-      },
-      "id": "424ded73-24e1-4cb8-a805-f6838da37292",
-      "name": "Consolidacao e Fechamento",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -14800,
-        3008
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Resposta de Erro de Validacao\n\nAtivado quando a validacao inicial falha.\n\nRetorna:\n- statusCode definido na validacao\n- body com motivo do erro\n\nNao executa nenhuma operacao de banco.",
-        "height": 380,
-        "width": 332,
-        "color": 3
-      },
-      "id": "f1c01195-69ee-4f26-a8bf-3c490b865540",
-      "name": "Resposta de Erro de Validacao",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -18240,
-        3440
+        -20160,
+        3168
       ]
     }
   ],
-  "pinData": {
-    "When called by another workflow": [
-      {
-        "json": {
-          "route": "cc_report",
-          "method": "POST",
-          "body": {
-            "data": {
-              "options": {
-                "orientation": "Portrait",
-                "sort": [
-                  {
-                    "parent": "0",
-                    "field": "CentroCustos",
-                    "order": "asc"
-                  }
-                ],
-                "logo": "logo.php?Empresa=67941",
-                "nomeRelatorio": "CentroCustos",
-                "descRelatorio": "Relat&oacute;rio de Centro de Custos"
-              },
-              "columns": [
-                {
-                  "text": "Centro de custos",
-                  "dataField": "CentroCustos",
-                  "type": "string",
-                  "width": "230",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Valor total",
-                  "dataField": "ValorTotal",
-                  "type": "moeda",
-                  "width": "90",
-                  "display": ""
-                },
-                {
-                  "text": "Situa&ccedil;&atilde;o",
-                  "dataField": "Situacao",
-                  "type": "string",
-                  "width": "90",
-                  "display": ""
-                }
-              ],
-              "subColumns": [
-                {
-                  "text": "Vencimento",
-                  "dataField": "Vencimento",
-                  "type": "date",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Fornecedor",
-                  "dataField": "Fornecedor",
-                  "type": "string",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Nome da despesa",
-                  "dataField": "NomeDespesa",
-                  "type": "string",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Situa&ccedil;&atilde;o",
-                  "dataField": "Situacao",
-                  "type": "string",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Categoria",
-                  "dataField": "Categoria",
-                  "type": "string",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                },
-                {
-                  "text": "Valor",
-                  "dataField": "Valor",
-                  "type": "moeda",
-                  "width": "120",
-                  "display": "",
-                  "disabled": "1"
-                }
-              ],
-              "source": {
-                "itens": [
-                  {
-                    "ID": "1",
-                    "CentroCustos": "210608-BSBR / TAM-90 / Scanner Amauri",
-                    "ValorTotal": "29093.5",
-                    "Situacao": "Inativo"
-                  }
-                ],
-                "subItens": {
-                  "ID1": [
-                    {
-                      "ID": "0",
-                      "Vencimento": "1641783600",
-                      "Fornecedor": "",
-                      "NomeDespesa": "RPS Serviço 466",
-                      "Situacao": "Pago (10/01/2022)",
-                      "Categoria": "Serviços",
-                      "Valor": "29093.50"
-                    }
-                  ]
-                }
-              },
-              "total": {
-                "ID0": [
-                  {
-                    "name": "Valor Total Receitas",
-                    "value": "29093.5",
-                    "type": "moeda"
-                  },
-                  {
-                    "name": "Valor Total Despesas",
-                    "value": "0",
-                    "type": "moeda"
-                  },
-                  {
-                    "name": "Saldo Final",
-                    "value": "29093.5",
-                    "type": "moeda"
-                  }
-                ]
-              }
-            },
-            "cc_id": "129969",
-            "type": "entrada"
-          },
-          "query": {},
-          "parameters": {
-            "rt_token": "YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
-          },
-          "original_request": {
-            "headers": {
-              "host": "n8n.srv1252717.hstgr.cloud",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
-              "content-length": "1729",
-              "accept": "*/*",
-              "accept-encoding": "gzip, deflate, br, zstd",
-              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
-              "content-type": "application/json",
-              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19DFGeVNDHHIkWHYTx2yFmbrN%2BjV9n6E%2FxajFyQRhJZsLhlYMU0Dr8%2FhGRL23makDZO8ruQ0v3Wpg%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FJKCHJWBbB%2BaBJ0rAfRduf9BFwolYunCF5%2FdcEVSfogPX9nZXTpTTklHuAX2CniQCj5PouMtoU8%2FRuHG4Dqxa99H1eKAGm%2FcHCV%2F4E6YOHfBjB9NQ6JoabXeBVmSgMaQqsjULQbkKVRN95z%2BSJ41MGK9Jky8%2BtHdE%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX184lISlmJb09KHKXtqxfJ982NVD%2FTYPNe2g0f8eRWmW5Oh935F2Yg8fGoLe8%2BznW%2FK4rlnChJnnkgc2Wut4dz4aoheI%2FK0Y%2Fn4UJcMjVe2DRjvS0gkuY1GPRnAVsuBRJs%2BvYbESL2pY%2BVJsbUDquX0xZoJpuwygcFk%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2FFA8PwMCCgfix589z7FuNQwYpjJJkwoh6eu9v5jEzF4nhywswKt4T0KplMLFzUceXtMUQJlcFlIoFUbwRdmqQTHLWiyEiOU0TKr7cyif7I6LIwODi%2Be1cgR8J6%2FW%2FAukMxePs%2FtZdQ8g%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774382848617%2C%22019d211c-2aad-7626-b907-7cd85b4ca382%22%2C1774376987308%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
-              "origin": "chrome-extension://hpiaaochclhppoichfmfpecghflmflil",
-              "priority": "u=1, i",
-              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
-              "sec-ch-ua-mobile": "?0",
-              "sec-ch-ua-platform": "\"Windows\"",
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "none",
-              "sec-fetch-storage-access": "active",
-              "x-forwarded-for": "201.81.90.19",
-              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
-              "x-forwarded-port": "443",
-              "x-forwarded-proto": "https",
-              "x-forwarded-server": "fda5ae5afd08",
-              "x-real-ip": "201.81.90.19"
-            },
-            "params": {},
-            "query": {
-              "route": "cc_report"
-            },
-            "body": {
-              "data": {
-                "options": {
-                  "orientation": "Portrait",
-                  "sort": [
-                    {
-                      "parent": "0",
-                      "field": "CentroCustos",
-                      "order": "asc"
-                    }
-                  ],
-                  "logo": "logo.php?Empresa=67941",
-                  "nomeRelatorio": "CentroCustos",
-                  "descRelatorio": "Relat&oacute;rio de Centro de Custos"
-                },
-                "columns": [
-                  {
-                    "text": "Centro de custos",
-                    "dataField": "CentroCustos",
-                    "type": "string",
-                    "width": "230",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Valor total",
-                    "dataField": "ValorTotal",
-                    "type": "moeda",
-                    "width": "90",
-                    "display": ""
-                  },
-                  {
-                    "text": "Situa&ccedil;&atilde;o",
-                    "dataField": "Situacao",
-                    "type": "string",
-                    "width": "90",
-                    "display": ""
-                  }
-                ],
-                "subColumns": [
-                  {
-                    "text": "Vencimento",
-                    "dataField": "Vencimento",
-                    "type": "date",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Fornecedor",
-                    "dataField": "Fornecedor",
-                    "type": "string",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Nome da despesa",
-                    "dataField": "NomeDespesa",
-                    "type": "string",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Situa&ccedil;&atilde;o",
-                    "dataField": "Situacao",
-                    "type": "string",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Categoria",
-                    "dataField": "Categoria",
-                    "type": "string",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  },
-                  {
-                    "text": "Valor",
-                    "dataField": "Valor",
-                    "type": "moeda",
-                    "width": "120",
-                    "display": "",
-                    "disabled": "1"
-                  }
-                ],
-                "source": {
-                  "itens": [
-                    {
-                      "ID": "1",
-                      "CentroCustos": "210608-BSBR / TAM-90 / Scanner Amauri",
-                      "ValorTotal": "29093.5",
-                      "Situacao": "Inativo"
-                    }
-                  ],
-                  "subItens": {
-                    "ID1": [
-                      {
-                        "ID": "0",
-                        "Vencimento": "1641783600",
-                        "Fornecedor": "",
-                        "NomeDespesa": "RPS Serviço 466",
-                        "Situacao": "Pago (10/01/2022)",
-                        "Categoria": "Serviços",
-                        "Valor": "29093.50"
-                      }
-                    ]
-                  }
-                },
-                "total": {
-                  "ID0": [
-                    {
-                      "name": "Valor Total Receitas",
-                      "value": "29093.5",
-                      "type": "moeda"
-                    },
-                    {
-                      "name": "Valor Total Despesas",
-                      "value": "0",
-                      "type": "moeda"
-                    },
-                    {
-                      "name": "Saldo Final",
-                      "value": "29093.5",
-                      "type": "moeda"
-                    }
-                  ]
-                }
-              },
-              "cc_id": "129969",
-              "type": "entrada"
-            },
-            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
-            "executionMode": "production"
-          }
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
-    "When called by another workflow": {
-      "main": [
-        [
-          {
-            "node": "Validate Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Validate Input": {
-      "main": [
-        [
-          {
-            "node": "Is Valid?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is Valid?": {
-      "main": [
-        [
-          {
-            "node": "Decode HTML",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Build Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Decode HTML": {
-      "main": [
-        [
-          {
-            "node": "Format Records",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Format Records": {
-      "main": [
-        [
-          {
-            "node": "Has Records?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Has Records?": {
-      "main": [
-        [
-          {
-            "node": "Empty Update Status",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Pick Context",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Pick Context": {
-      "main": [
-        [
-          {
-            "node": "Get Existing Records",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Existing Records": {
-      "main": [
-        [
-          {
-            "node": "Calculate Diff",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Calculate Diff": {
-      "main": [
-        [
-          {
-            "node": "Has Changes?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Has Changes?": {
+    "Empty Update Status": {
       "main": [
         [
           {
@@ -1070,26 +610,87 @@
             "type": "main",
             "index": 0
           }
-        ],
+        ]
+      ]
+    },
+    "No Changes Update Status": {
+      "main": [
         [
           {
-            "node": "Split Inserts",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Split Deletes",
+            "node": "Build Success",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split Inserts": {
+    "Update Status": {
       "main": [
         [
           {
-            "node": "Skip Insert?",
+            "node": "Build Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Results": {
+      "main": [
+        [
+          {
+            "node": "Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Records": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Skip Delete?": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "Delete Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Deletes": {
+      "main": [
+        [
+          {
+            "node": "Skip Delete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Records": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
             "type": "main",
             "index": 0
           }
@@ -1114,80 +715,18 @@
         ]
       ]
     },
-    "Insert Records": {
+    "Split Inserts": {
       "main": [
         [
           {
-            "node": "Merge Results",
+            "node": "Skip Insert?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Split Deletes": {
-      "main": [
-        [
-          {
-            "node": "Skip Delete?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Skip Delete?": {
-      "main": [
-        [
-          {
-            "node": "Merge Results",
-            "type": "main",
-            "index": 1
-          }
-        ],
-        [
-          {
-            "node": "Delete Records",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Delete Records": {
-      "main": [
-        [
-          {
-            "node": "Merge Results",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge Results": {
-      "main": [
-        [
-          {
-            "node": "Update Status",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Update Status": {
-      "main": [
-        [
-          {
-            "node": "Build Success",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Empty Update Status": {
+    "Has Changes?": {
       "main": [
         [
           {
@@ -1195,14 +734,128 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Split Deletes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Split Inserts",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
-    "No Changes Update Status": {
+    "Calculate Diff": {
       "main": [
         [
           {
-            "node": "Build Success",
+            "node": "Has Changes?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Records": {
+      "main": [
+        [
+          {
+            "node": "Calculate Diff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Context": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Records?": {
+      "main": [
+        [
+          {
+            "node": "Empty Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pick Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Records": {
+      "main": [
+        [
+          {
+            "node": "Has Records?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode HTML": {
+      "main": [
+        [
+          {
+            "node": "Format Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Decode HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When called by another workflow": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
             "type": "main",
             "index": 0
           }
@@ -1216,7 +869,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "424db40e-e704-4f9a-af96-5fb278e786d0",
+  "versionId": "b358aab5-bb94-45ce-88cb-ffb70305e179",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
