@@ -55,7 +55,7 @@ def fix_cc_report_file():
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Get existing records for this CC_ID and TYPE\nSELECT \"ID\"\nFROM \"Relatorio_CC\"\nWHERE \"ID_CC\" = '{{ $json.cc_id }}'\n  AND \"TYPE\" = '{{ $json.type }}';",
+        "query": "-- Get existing records for this CC_ID and TYPE\nSELECT \"id\"\nFROM raw_data.\"vhx_relatorio_cc\"\nWHERE \"id_cc\" = '{{ $json.cc_id }}'\n  AND \"type\" = '{{ $json.type }}';",
         "options": {}
       },
       "id": "cc-report-existing-005",
@@ -121,7 +121,7 @@ def fix_cc_report_file():
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Insert new CC report record\nINSERT INTO \"Relatorio_CC\" (\n  \"ID\",\n  \"ID_SEED\",\n  \"ID_CC\",\n  \"CC\",\n  \"CC_LABEL\",\n  \"VENCIMENTO\",\n  \"FORNECEDOR\",\n  \"NOME_DESPESA\",\n  \"SITUACAO\",\n  \"DATA_PAGAMENTO\",\n  \"CATEGORIA\",\n  \"VALOR\",\n  \"TYPE\",\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $json.record.ID }}',\n  '{{ $json.record.ID_SEED }}',\n  '{{ $json.record.CC_ID }}',\n  'NO-SET',\n  '{{ $json.record.CC_LABEL }}',\n  to_timestamp({{ $json.record.VENCIMENTO }}),\n  '{{ $json.record.FORNECEDOR }}',\n  '{{ $json.record.NOME_DESPESA }}',\n  '{{ $json.record.SITUACAO }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '{{ $json.record.CATEGORIA }}',\n  {{ $json.record.VALOR }},\n  '{{ $json.record.TYPE }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n);",
+        "query": "-- Insert new CC report record\nINSERT INTO raw_data.\"vhx_relatorio_cc\" (\n  \"id\",\n  \"id_seed\",\n  \"id_cc\",\n  \"cc\",\n  \"cc_label\",\n  \"vencimento\",\n  \"fornecedor\",\n  \"nome_despesa\",\n  \"situacao\",\n  \"data_pagamento\",\n  \"categoria\",\n  \"valor\",\n  \"type\",\n  \"created_at\",\n  \"updated_at\"\n) VALUES (\n  '{{ $json.record.ID }}',\n  '{{ $json.record.ID_SEED }}',\n  '{{ $json.record.CC_ID }}',\n  'NO-SET',\n  '{{ $json.record.CC_LABEL }}',\n  to_timestamp({{ $json.record.VENCIMENTO }}),\n  '{{ $json.record.FORNECEDOR }}',\n  '{{ $json.record.NOME_DESPESA }}',\n  '{{ $json.record.SITUACAO }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '{{ $json.record.CATEGORIA }}',\n  {{ $json.record.VALOR }},\n  '{{ $json.record.TYPE }}',\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n);",
         "options": {}
       },
       "id": "cc-report-insert-009",
@@ -177,7 +177,7 @@ def fix_cc_report_file():
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Delete record by ID\nDELETE FROM \"Relatorio_CC\"\nWHERE \"ID\" = '{{ $json.id_to_delete }}';",
+        "query": "-- Delete record by ID\nDELETE FROM raw_data.\"vhx_relatorio_cc\"\nWHERE \"id\" = '{{ $json.id_to_delete }}';",
         "options": {}
       },
       "id": "cc-report-delete-012",
@@ -517,3 +517,8 @@ if valid_count == len(files) and all_pass:
 else:
     print("⚠ Some files have issues - see above for details")
     sys.exit(1)
+
+
+
+
+

@@ -35,3 +35,7 @@ EXTENSION_SERVER/debug_file.py
 EXTENSION_SERVER/fix_db_refs_final.py
 EXTENSION_SERVER/migrate_db.py
 EXTENSION_SERVER/n8n_diagrams/json_test.json
+EXTENSION_SERVER/final_fix_and_validate.py
+EXTENSION_SERVER/recreate_cc_report.py
+EXTENSION_SERVER/recreate_clean_cc_report.py
+EXTENSION_SERVER/n8n_diagrams/json_test.json

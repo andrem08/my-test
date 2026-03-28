@@ -1,0 +1,291 @@
+{
+  "tables": [
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_relatorio_cc",
+      "fields": [
+        {
+          "name": "id",
+          "type": "VARCHAR(255)",
+          "primary_key": true
+        },
+        {
+          "name": "id_seed",
+          "type": "TEXT"
+        },
+        {
+          "name": "id_cc",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cc",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cc_label",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "vencimento",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "fornecedor",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_despesa",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "situacao",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "data_pagamento",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "categoria",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "valor",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "checks": [
+        {
+          "constraint": "type IN ('entrada', 'saida')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_vhx_relatorio_cc_cc",
+          "columns": [
+            "cc"
+          ]
+        },
+        {
+          "name": "idx_vhx_relatorio_cc_categoria",
+          "columns": [
+            "categoria"
+          ]
+        },
+        {
+          "name": "idx_vhx_relatorio_cc_situacao",
+          "columns": [
+            "situacao"
+          ]
+        },
+        {
+          "name": "idx_vhx_relatorio_cc_type",
+          "columns": [
+            "type"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Relatório de Centro de Custos extraído do VHSYS via Extensão do Chrome"
+        },
+        {
+          "type": "column",
+          "column": "id",
+          "comment": "Identificador único deterministico (hash) do registro"
+        },
+        {
+          "type": "column",
+          "column": "id_seed",
+          "comment": "Semente para geração do hash"
+        },
+        {
+          "type": "column",
+          "column": "valor",
+          "comment": "Valor numérico normalizado (sem vírgula)"
+        },
+        {
+          "type": "column",
+          "column": "type",
+          "comment": "Tipo: 'entrada' ou 'saida'"
+        }
+      ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_despesas_recorrentes",
+      "fields": [
+        {
+          "name": "id_custo",
+          "type": "VARCHAR(255)",
+          "primary_key": true
+        },
+        {
+          "name": "id_empresa",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_conta",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "id_categoria",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "categoria_custo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "id_banco",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "id_fornecedor",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_fornecedor",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "vencimento_custo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "valor_custo",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "observacoes_custo",
+          "type": "TEXT"
+        },
+        {
+          "name": "id_centro_custos",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "status_custo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "forma_pagamento",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "periodicidade",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "dia_semana_ocorrencia",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "dia_mes_ocorrencia",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "intervalo_dias_ocorrencia",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "data_inicio_ocorrencia",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_fim_ocorrencia",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_cad_custo",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "lixeira",
+          "type": "VARCHAR(16)"
+        }
+      ],
+      "checks": [
+        {
+          "constraint": "lixeira IN ('Sim', 'Nao')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_vhx_desp_rec_empresa",
+          "columns": [
+            "id_empresa"
+          ]
+        },
+        {
+          "name": "idx_vhx_desp_rec_categoria",
+          "columns": [
+            "id_categoria"
+          ]
+        },
+        {
+          "name": "idx_vhx_desp_rec_fornecedor",
+          "columns": [
+            "id_fornecedor"
+          ]
+        },
+        {
+          "name": "idx_vhx_desp_rec_centro_custos",
+          "columns": [
+            "id_centro_custos"
+          ]
+        },
+        {
+          "name": "idx_vhx_desp_rec_status",
+          "columns": [
+            "status_custo"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Tabela principal de despesas recorrentes extraídas do VHSYS via Extensão Chrome."
+        },
+        {
+          "type": "column",
+          "column": "id_custo",
+          "comment": "Chave primária - Identificador da despesa recorrente"
+        },
+        {
+          "type": "column",
+          "column": "observacoes_custo",
+          "comment": "HTML decoded, armazena observações detalhadas (pode ser NULL)"
+        },
+        {
+          "type": "column",
+          "column": "data_inicio_ocorrencia",
+          "comment": "Data de início convertida de string para TIMESTAMP"
+        },
+        {
+          "type": "column",
+          "column": "data_fim_ocorrencia",
+          "comment": "Data de término convertida de string para TIMESTAMP"
+        },
+        {
+          "type": "column",
+          "column": "lixeira",
+          "comment": "Flag de exclusão lógica (geralmente 'Sim' ou 'Nao')"
+        }
+      ]
+    }
+  ]
+}
