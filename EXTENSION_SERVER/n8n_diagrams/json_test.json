@@ -716,6 +716,478 @@
           "comment": "Data de nascimento do dependente convertida para TIMESTAMP"
         }
       ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_notas_venda",
+      "fields": [
+        {
+          "name": "id_registro",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "nota",
+          "type": "VARCHAR(50)",
+          "primary_key": true
+        },
+        {
+          "name": "cliente",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cnpj",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "razao_social",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "endereco",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "numero",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "complemento",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "bairro",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cidade",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "estado",
+          "type": "VARCHAR(2)"
+        },
+        {
+          "name": "cep",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "telefone",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "vendedor",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "valor_produtos",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_desconto",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_frete",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_total",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "total_parcelas",
+          "type": "INTEGER"
+        },
+        {
+          "name": "valor_icms",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_ipi",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_st",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "peso_bruto",
+          "type": "DECIMAL(15,3)"
+        },
+        {
+          "name": "peso_liquido",
+          "type": "DECIMAL(15,3)"
+        },
+        {
+          "name": "transportadora",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "data_pedido",
+          "type": "BIGINT"
+        },
+        {
+          "name": "qtde_produtos",
+          "type": "INTEGER"
+        },
+        {
+          "name": "total_unidades",
+          "type": "INTEGER"
+        },
+        {
+          "name": "cfop",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "natureza",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "contas",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "estoque",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "comissao",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "chave",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "protocolo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "data_emissao",
+          "type": "BIGINT"
+        },
+        {
+          "name": "data_autorizacao",
+          "type": "BIGINT"
+        },
+        {
+          "name": "situacao",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "data_cad",
+          "type": "BIGINT"
+        },
+        {
+          "name": "data_mod",
+          "type": "BIGINT"
+        },
+        {
+          "name": "observacoes",
+          "type": "TEXT"
+        },
+        {
+          "name": "observacoes_internas",
+          "type": "TEXT"
+        },
+        {
+          "name": "categoria_financeira",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "volumes",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "emitido_por",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cancelado_por",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "data_cancelamento",
+          "type": "BIGINT"
+        }
+      ],
+      "checks": [
+        {
+          "constraint": "situacao IN ('Atendido', 'Cancelado')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_vhx_notas_venda_cnpj",
+          "columns": [
+            "cnpj"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_venda_cliente",
+          "columns": [
+            "cliente"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_venda_situacao",
+          "columns": [
+            "situacao"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_venda_data_emissao",
+          "columns": [
+            "data_emissao"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Relatório Completo de Notas Fiscais de Venda extraído do VHSYS via Webhook (n8n)."
+        },
+        {
+          "type": "column",
+          "column": "nota",
+          "comment": "Chave primária - Número da Nota Fiscal"
+        },
+        {
+          "type": "column",
+          "column": "data_emissao",
+          "comment": "Data em formato Unix Timestamp (Epoch)"
+        },
+        {
+          "type": "column",
+          "column": "id_registro",
+          "comment": "ID interno do registro no VHSYS (Mapeado do campo ID)"
+        }
+      ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_notas_servico",
+      "fields": [
+        {
+          "name": "id_registro",
+          "type": "VARCHAR(50)",
+          "primary_key": true
+        },
+        {
+          "name": "rps",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "nota",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "cliente",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cnpj",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "endereco",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "numero",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "complemento",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "bairro",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cidade",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "estado",
+          "type": "VARCHAR(2)"
+        },
+        {
+          "name": "cep",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "telefone",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "vendedor",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "valor_servicos",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_total",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "total_parcelas",
+          "type": "INTEGER"
+        },
+        {
+          "name": "valor_deducoes",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliquota",
+          "type": "DECIMAL(5,2)"
+        },
+        {
+          "name": "valor_iss",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "iss_retido",
+          "type": "VARCHAR(10)"
+        },
+        {
+          "name": "valor_cofins",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_pis",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_csll",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_ir",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_inss",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_tributos",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "data_pedido",
+          "type": "BIGINT"
+        },
+        {
+          "name": "local_prestacao",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "contas",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "chave",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "protocolo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "descricao",
+          "type": "TEXT"
+        },
+        {
+          "name": "data_emissao",
+          "type": "BIGINT"
+        },
+        {
+          "name": "situacao",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "data_cad",
+          "type": "BIGINT"
+        },
+        {
+          "name": "data_mod",
+          "type": "BIGINT"
+        }
+      ],
+      "checks": [
+        {
+          "constraint": "situacao IN ('Atendido', 'Cancelado', 'Em Aberto')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_vhx_notas_servico_cnpj",
+          "columns": [
+            "cnpj"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_servico_cliente",
+          "columns": [
+            "cliente"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_servico_situacao",
+          "columns": [
+            "situacao"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_servico_rps",
+          "columns": [
+            "rps"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Relatório de Notas Fiscais de Serviço extraído do VHSYS via Webhook (n8n)."
+        },
+        {
+          "type": "column",
+          "column": "id_registro",
+          "comment": "Chave primária - ID interno único do registro no VHSYS"
+        },
+        {
+          "type": "column",
+          "column": "rps",
+          "comment": "Número do RPS (Recibo Provisório de Serviços)"
+        },
+        {
+          "type": "column",
+          "column": "nota",
+          "comment": "Número da Nota Fiscal (pode ser 0 quando a nota ainda não foi emitida)"
+        },
+        {
+          "type": "column",
+          "column": "data_emissao",
+          "comment": "Data em formato Unix Timestamp (Epoch). Pode vir vazio para notas não emitidas."
+        },
+        {
+          "type": "column",
+          "column": "situacao",
+          "comment": "Status atual da nota (Ex: Atendido, Cancelado, Em Aberto)"
+        }
+      ]
     }
   ]
 }
