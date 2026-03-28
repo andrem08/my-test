@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_info\n// Rota   : POST /nf_service_info\n// ─────────────────────────────────────────────\n// A extensão (getServiceNFInfo.ts) envia:\n//   body: JSON.stringify({ xml_ref: decodedText })\n// O Flask: data.get('xml_ref', '') → se vazio → 400\n// ─────────────────────────────────────────────\n\nconst input = $input.first().json;\nconst body = (input.body !== undefined) ? input.body : input;\nconst xml_string = (body.xml_ref !== undefined) ? String(body.xml_ref) : '';\n\nif (!xml_string.trim()) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'No XML data provided' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'input_validated',\n  xml_length: xml_string.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, xml_string };"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_info\n// Rota   : POST /nf_service_info\n// ─────────────────────────────────────────────\n// Aceita múltiplos formatos de entrada:\n// 1) body: { xml_ref: '<xml...>' }\n// 2) body: '{\"xml_ref\":\"<xml...>\"}'\n// 3) body: '<xml...>'\n// 4) xml_ref direto no root\n// ─────────────────────────────────────────────\n\nconst input = $input.first().json || {};\n\nfunction tryParseJsonString(raw) {\n  if (typeof raw !== 'string') return null;\n  const s = raw.trim();\n  if (!s || (!s.startsWith('{') && !s.startsWith('['))) return null;\n  try {\n    return JSON.parse(s);\n  } catch {\n    return null;\n  }\n}\n\nfunction firstNonEmpty(values) {\n  for (const v of values) {\n    if (v === null || v === undefined) continue;\n    const s = String(v).trim();\n    if (s) return s;\n  }\n  return '';\n}\n\nconst rawBody = (input.body !== undefined) ? input.body : input;\nconst parsedBody = tryParseJsonString(rawBody);\nconst bodyObj = (parsedBody && typeof parsedBody === 'object')\n  ? parsedBody\n  : (rawBody && typeof rawBody === 'object' ? rawBody : null);\n\nconst xml_string = firstNonEmpty([\n  bodyObj?.xml_ref,\n  input.xml_ref,\n  // fallback: quando body já vem como XML puro\n  (typeof rawBody === 'string' && rawBody.includes('<xjx')) ? rawBody : '',\n  (typeof rawBody === 'string' && rawBody.includes('<?xml')) ? rawBody : ''\n]);\n\nif (!xml_string) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'validation_failed',\n    body_type: typeof rawBody,\n    has_body: rawBody !== undefined && rawBody !== null,\n    has_body_xml_ref: Boolean(bodyObj && bodyObj.xml_ref),\n    has_root_xml_ref: Boolean(input.xml_ref),\n    level: 'warn'\n  }));\n\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'No XML data provided' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'input_validated',\n  xml_length: xml_string.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, xml_string };"
       },
       "id": "cf8fb67b-5bde-4fa2-a22f-fb5a0d6e49a8",
       "name": "Validate Input",
@@ -31,7 +31,8 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 3
           },
           "conditions": [
             {
@@ -39,8 +40,10 @@
               "rightValue": "",
               "operator": {
                 "type": "boolean",
-                "operation": "true"
-              }
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "4dfa28c3-4ad9-4825-a29f-ba1df1a90e0f"
             }
           ],
           "combinator": "and"
@@ -58,7 +61,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// Parse XML + Transform\n// ─────────────────────────────────────────────\n// Espelha exatamente get_nf_service_info() do Flask:\n//   xmltodict.parse → xml_dict['xjx']['cmd']\n//   @t = nome do campo, #text = valor\n//   clean_cell() em cada valor\n//   del 'no-set', 'estoque_pedido', 'bloquear_edicao_cliente'\n//   cc_ref = CC_MANAGER.get_cc_label(obs_interno_pedido)\n// ─────────────────────────────────────────────\n\nconst ctx = $input.first().json;\nconst xml_string = ctx.xml_string;\n\n// ── clean_cell() — espelha Flask ──\nfunction cleanCell(value) {\n  if (typeof value !== 'string') return value;\n  let cleaned = value.replace(/\\\\n|\\\\t|\\\\r|\\n|\\t|\\r/g, ' ');\n  cleaned = cleaned.replace(/\\s+/g, ' ').trim();\n  return cleaned;\n}\n\n// ── get_cc_label() — ordem IDÊNTICA ao Flask (cost_center_manager.py) ──\n// Flask: extract_cc_value → extract_numeric_part → extract_prefix\n//        → extract_cc_text_value → extract_cc_text_value_exceptions\nfunction getCCLabel(text) {\n  if (!text) return '-1';\n  const s = String(text);\n  // Exceções fixas (método da instância)\n  if (s === 'RT - Vendas') return 'Vendas';\n  if (s === 'Marketing') return 'Marketing';\n  if (s === 'Vendas') return s;\n  if (s === 'Administração') return s;\n  // Nível 1: extract_cc_value → CC[-\\s]*(\\d+)\n  let m = s.match(/CC[-\\s]*(\\d+)/i);\n  if (m) return m[1];\n  // Nível 2: extract_numeric_part → \\b(\\d{6})\\b\n  m = s.match(/\\b(\\d{6})\\b/);\n  if (m) return m[1];\n  // Nível 3: extract_prefix → ^[A-Z]{2}-[A-Z0-9]{3}\n  m = s.match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  if (m) return m[0];\n  // Nível 4: extract_cc_text_value → CC- + 6 chars\n  let idx = s.indexOf('CC-');\n  if (idx !== -1) return s.substr(idx + 3, 6);\n  // Nível 5: extract_cc_text_value_exceptions → remove '/' e repete\n  const noSlash = s.replace(/\\//g, '');\n  idx = noSlash.indexOf('CC-');\n  if (idx !== -1) {\n    const end = noSlash.indexOf('/', idx);\n    if (end === -1) return noSlash.substr(idx + 3, 6);\n    return noSlash.substring(idx + 3, end);\n  }\n  return '-1';\n}\n\n// ── Parse XML (equivale a xmltodict.parse) ──\n// Extrai cada <cmd ... t=\"campo\" ...>valor</cmd>\nfunction parseXjxXml(xml) {\n  const info = {};\n  const cmdRegex = /<cmd[^>]+t=\"([^\"]*?)\"[^>]*>([\\s\\S]*?)<\\/cmd>/g;\n  let match;\n  while ((match = cmdRegex.exec(xml)) !== null) {\n    const fieldName = match[1];\n    let value = match[2].replace(/<\\!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1').trim();\n    info[fieldName] = cleanCell(value);\n  }\n  return info;\n}\n\nlet info_dict_ref;\ntry {\n  info_dict_ref = parseXjxXml(xml_string);\n} catch (e) {\n  return [{ json: { _error: true, message: 'Failed to parse XML: ' + String(e.message) } }];\n}\n\n// Espelha: del info_dict_ref['no-set'] / 'estoque_pedido' / 'bloquear_edicao_cliente'\ndelete info_dict_ref['no-set'];\ndelete info_dict_ref['estoque_pedido'];\ndelete info_dict_ref['bloquear_edicao_cliente'];\n\n// id_servico é a PK — vem do XML\nconst id_servico = String(info_dict_ref.id_servico || '').trim();\nif (!id_servico) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'missing_id_servico',\n    available_keys: Object.keys(info_dict_ref),\n    level: 'warn'\n  }));\n  return [{ json: { _error: true, message: 'Missing id_servico in XML' } }];\n}\n\n// cc_ref via get_cc_label(obs_interno_pedido)\nconst cc_ref = getCCLabel(info_dict_ref.obs_interno_pedido || '');\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'xml_parsed',\n  id_servico,\n  cc_ref,\n  fields_count: Object.keys(info_dict_ref).length,\n  level: 'info'\n}));\n\nreturn [{\n  json: {\n    id_servico,\n    obs_interno_pedido:          info_dict_ref.obs_interno_pedido          ?? null,\n    obs_pedido:                  info_dict_ref.obs_pedido                  ?? null,\n    numero_processo:             info_dict_ref.numero_processo             ?? null,\n    condicao_pagamento:          info_dict_ref.condicao_pagamento          ?? null,\n    condicao_pagamento_id:       info_dict_ref.condicao_pagamento_id       ?? null,\n    valor_iss:                   info_dict_ref.valor_iss                   ?? null,\n    aliq_iss:                    info_dict_ref.aliq_iss                    ?? null,\n    valor_ir:                    info_dict_ref.valor_ir                    ?? null,\n    aliq_ir:                     info_dict_ref.aliq_ir                     ?? null,\n    valor_contribuicao:          info_dict_ref.valor_contribuicao          ?? null,\n    aliq_contribuicao:           info_dict_ref.aliq_contribuicao           ?? null,\n    valor_pis:                   info_dict_ref.valor_pis                   ?? null,\n    aliq_pis:                    info_dict_ref.aliq_pis                    ?? null,\n    valor_cofins:                info_dict_ref.valor_cofins                ?? null,\n    aliq_cofins:                 info_dict_ref.aliq_cofins                 ?? null,\n    valor_material:              info_dict_ref.valor_material              ?? null,\n    valor_tributos_mun:          info_dict_ref.valor_tributos_mun          ?? null,\n    valor_aliq_tributos_mun:     info_dict_ref.valor_aliq_tributos_mun     ?? null,\n    valor_tributos:              info_dict_ref.valor_tributos              ?? null,\n    valor_aliq_tributos:         info_dict_ref.valor_aliq_tributos         ?? null,\n    valor_imposto:               info_dict_ref.valor_imposto               ?? null,\n    valor_aliquota:              info_dict_ref.valor_aliquota              ?? null,\n    valor_base_calculo:          info_dict_ref.valor_base_calculo          ?? null,\n    valor_condicionado:          info_dict_ref.valor_condicionado          ?? null,\n    valor_incondicionado:        info_dict_ref.valor_incondicionado        ?? null,\n    valor_deducoes:              info_dict_ref.valor_deducoes              ?? null,\n    itemLista_servico:           info_dict_ref.itemLista_servico           ?? null,\n    valor_total_nota:            info_dict_ref.valor_total_nota            ?? null,\n    valor_total_servicos:        info_dict_ref.valor_total_servicos        ?? null,\n    desc_servicos:               info_dict_ref.desc_servicos               ?? null,\n    serie_nota:                  info_dict_ref.serie_nota                  ?? null,\n    id_pedido:                   info_dict_ref.id_pedido                   ?? null,\n    vendedor_pedido_id:          info_dict_ref.vendedor_pedido_id          ?? null,\n    vendedor_pedido:             info_dict_ref.vendedor_pedido             ?? null,\n    ultrapassar_limite_credito:  info_dict_ref.ultrapassar_limite_credito  ?? null,\n    contas_pedido:               info_dict_ref.contas_pedido               ?? null,\n    id_cliente:                  info_dict_ref.id_cliente                  ?? null,\n    nome_cliente:                info_dict_ref.nome_cliente                ?? null,\n    cc_ref\n  }\n}];"
+        "jsCode": "// ─────────────────────────────────────────────\n// Parse XML + Transform\n// ─────────────────────────────────────────────\n// Espelha exatamente get_nf_service_info() do Flask:\n//   xmltodict.parse → xml_dict['xjx']['cmd']\n//   @t = nome do campo, #text = valor\n//   clean_cell() em cada valor\n//   del 'no-set', 'estoque_pedido', 'bloquear_edicao_cliente'\n//   cc_ref = CC_MANAGER.get_cc_label(obs_interno_pedido)\n// ─────────────────────────────────────────────\n\nconst ctx = $input.first().json;\nconst xml_string = ctx.xml_string;\\n\\nconst isEmptyListPayload = /Nenhum registro para exibir/i.test(xml_string || '');\\nif (isEmptyListPayload) {\\n  return [{ json: { _skip: true, message: 'Empty list payload' } }];\\n}\\n\\n// ── clean_cell() — espelha Flask ──\nfunction cleanCell(value) {\n  if (typeof value !== 'string') return value;\n  let cleaned = value.replace(/\\\\n|\\\\t|\\\\r|\\n|\\t|\\r/g, ' ');\n  cleaned = cleaned.replace(/\\s+/g, ' ').trim();\n  return cleaned;\n}\n\n// ── get_cc_label() — ordem IDÊNTICA ao Flask (cost_center_manager.py) ──\n// Flask: extract_cc_value → extract_numeric_part → extract_prefix\n//        → extract_cc_text_value → extract_cc_text_value_exceptions\nfunction getCCLabel(text) {\n  if (!text) return '-1';\n  const s = String(text);\n  // Exceções fixas (método da instância)\n  if (s === 'RT - Vendas') return 'Vendas';\n  if (s === 'Marketing') return 'Marketing';\n  if (s === 'Vendas') return s;\n  if (s === 'Administração') return s;\n  // Nível 1: extract_cc_value → CC[-\\s]*(\\d+)\n  let m = s.match(/CC[-\\s]*(\\d+)/i);\n  if (m) return m[1];\n  // Nível 2: extract_numeric_part → \\b(\\d{6})\\b\n  m = s.match(/\\b(\\d{6})\\b/);\n  if (m) return m[1];\n  // Nível 3: extract_prefix → ^[A-Z]{2}-[A-Z0-9]{3}\n  m = s.match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  if (m) return m[0];\n  // Nível 4: extract_cc_text_value → CC- + 6 chars\n  let idx = s.indexOf('CC-');\n  if (idx !== -1) return s.substr(idx + 3, 6);\n  // Nível 5: extract_cc_text_value_exceptions → remove '/' e repete\n  const noSlash = s.replace(/\\//g, '');\n  idx = noSlash.indexOf('CC-');\n  if (idx !== -1) {\n    const end = noSlash.indexOf('/', idx);\n    if (end === -1) return noSlash.substr(idx + 3, 6);\n    return noSlash.substring(idx + 3, end);\n  }\n  return '-1';\n}\n\n// ── Parse XML (equivale a xmltodict.parse) ──\n// Extrai cada <cmd ... t=\"campo\" ...>valor</cmd>\nfunction parseXjxXml(xml) {\n  const info = {};\n  const cmdRegex = /<cmd[^>]+t=\"([^\"]*?)\"[^>]*>([\\s\\S]*?)<\\/cmd>/g;\n  let match;\n  while ((match = cmdRegex.exec(xml)) !== null) {\n    const fieldName = match[1];\n    let value = match[2].replace(/<\\!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1').trim();\n    info[fieldName] = cleanCell(value);\n  }\n  return info;\n}\n\nlet info_dict_ref;\ntry {\n  info_dict_ref = parseXjxXml(xml_string);\n} catch (e) {\n  return [{ json: { _skip: true, message: 'Failed to parse XML: ' + String(e.message) } }];\n}\n\n// Espelha: del info_dict_ref['no-set'] / 'estoque_pedido' / 'bloquear_edicao_cliente'\ndelete info_dict_ref['no-set'];\ndelete info_dict_ref['estoque_pedido'];\ndelete info_dict_ref['bloquear_edicao_cliente'];\n\n// id_servico é a PK — vem do XML\nconst id_servico = String(info_dict_ref.id_servico || '').trim();\nif (!id_servico) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'missing_id_servico',\n    available_keys: Object.keys(info_dict_ref),\n    level: 'warn'\n  }));\n  return [{ json: { _skip: true, message: 'Missing id_servico in XML' } }];\n}\n\n// cc_ref via get_cc_label(obs_interno_pedido)\nconst cc_ref = getCCLabel(info_dict_ref.obs_interno_pedido || '');\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'xml_parsed',\n  id_servico,\n  cc_ref,\n  fields_count: Object.keys(info_dict_ref).length,\n  level: 'info'\n}));\n\nreturn [{\n  json: {\n    id_servico,\n    obs_interno_pedido:          info_dict_ref.obs_interno_pedido          ?? null,\n    obs_pedido:                  info_dict_ref.obs_pedido                  ?? null,\n    numero_processo:             info_dict_ref.numero_processo             ?? null,\n    condicao_pagamento:          info_dict_ref.condicao_pagamento          ?? null,\n    condicao_pagamento_id:       info_dict_ref.condicao_pagamento_id       ?? null,\n    valor_iss:                   info_dict_ref.valor_iss                   ?? null,\n    aliq_iss:                    info_dict_ref.aliq_iss                    ?? null,\n    valor_ir:                    info_dict_ref.valor_ir                    ?? null,\n    aliq_ir:                     info_dict_ref.aliq_ir                     ?? null,\n    valor_contribuicao:          info_dict_ref.valor_contribuicao          ?? null,\n    aliq_contribuicao:           info_dict_ref.aliq_contribuicao           ?? null,\n    valor_pis:                   info_dict_ref.valor_pis                   ?? null,\n    aliq_pis:                    info_dict_ref.aliq_pis                    ?? null,\n    valor_cofins:                info_dict_ref.valor_cofins                ?? null,\n    aliq_cofins:                 info_dict_ref.aliq_cofins                 ?? null,\n    valor_material:              info_dict_ref.valor_material              ?? null,\n    valor_tributos_mun:          info_dict_ref.valor_tributos_mun          ?? null,\n    valor_aliq_tributos_mun:     info_dict_ref.valor_aliq_tributos_mun     ?? null,\n    valor_tributos:              info_dict_ref.valor_tributos              ?? null,\n    valor_aliq_tributos:         info_dict_ref.valor_aliq_tributos         ?? null,\n    valor_imposto:               info_dict_ref.valor_imposto               ?? null,\n    valor_aliquota:              info_dict_ref.valor_aliquota              ?? null,\n    valor_base_calculo:          info_dict_ref.valor_base_calculo          ?? null,\n    valor_condicionado:          info_dict_ref.valor_condicionado          ?? null,\n    valor_incondicionado:        info_dict_ref.valor_incondicionado        ?? null,\n    valor_deducoes:              info_dict_ref.valor_deducoes              ?? null,\n    itemLista_servico:           info_dict_ref.itemLista_servico           ?? null,\n    valor_total_nota:            info_dict_ref.valor_total_nota            ?? null,\n    valor_total_servicos:        info_dict_ref.valor_total_servicos        ?? null,\n    desc_servicos:               info_dict_ref.desc_servicos               ?? null,\n    serie_nota:                  info_dict_ref.serie_nota                  ?? null,\n    id_pedido:                   info_dict_ref.id_pedido                   ?? null,\n    vendedor_pedido_id:          info_dict_ref.vendedor_pedido_id          ?? null,\n    vendedor_pedido:             info_dict_ref.vendedor_pedido             ?? null,\n    ultrapassar_limite_credito:  info_dict_ref.ultrapassar_limite_credito  ?? null,\n    contas_pedido:               info_dict_ref.contas_pedido               ?? null,\n    id_cliente:                  info_dict_ref.id_cliente                  ?? null,\n    nome_cliente:                info_dict_ref.nome_cliente                ?? null,\n    cc_ref\n  }\n}];"
       },
       "id": "444c84aa-2b0d-49d4-be02-4ffe0893ba05",
       "name": "Parse XML + Transform",
@@ -75,16 +78,18 @@
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "strict"
+            "typeValidation": "strict",
+            "version": 3
           },
           "conditions": [
             {
-              "leftValue": "={{ $json._error }}",
+              "leftValue": "={{ $json._skip }}",
               "rightValue": "",
               "operator": {
                 "type": "boolean",
                 "operation": "true"
-              }
+              },
+              "id": "8b31639f-41bc-4740-85f2-e22bbafa0796"
             }
           ],
           "combinator": "and"
@@ -147,8 +152,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2512,
-        1408
+        -2496,
+        1424
       ]
     },
     {
@@ -178,7 +183,62 @@
       ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "When called by another workflow": [
+      {
+        "json": {
+          "route": "nf_service_info",
+          "method": "POST",
+          "body": {
+            "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"js\">$('#salvar').removeClass('hide')</cmd><cmd n=\"js\"><![CDATA[showAlert('error', 'Notas fiscais de servi&ccedil;o', 'Nenhum registro para exibir!');]]></cmd><cmd n=\"js\">redirecionar();</cmd></xjx>"
+          },
+          "query": {},
+          "parameters": {
+            "rt_token": "YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+              "content-length": "278",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "content-type": "application/json",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2BY263lMELsxJsTgk6kjt%2FwZQD2KOlf5S3rXw0qCsgTTe83o5k1Rs79vhoIlNbTwdovgys7%2BMUEhQ%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX18%2BM9GNY7WI2lCU9eJ1gup1mTBM7AMk1U%2F4VKcT92RFndbwY8NtFp0NYe0BWL7ldT62MCkHj6KTUBuZMAZoJEuDWk9BxzUX1pO4zhDIFXLMejEWWKbwq9cctw6ZG4o7smsIjpJYP2fALh0z2G%2Bqd48UU7k83Kw04eA%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX18sLVF6XX7dt9WkzHKILoBpDR7Uqb52%2FhQMWpjx0PjUPfKAhMRHw0gxm6zBHulYUUpce5oTXD9sgRfvMRUVKYXh%2Fufr4tQBan5bSNa6iJ3yLmEVyMQhc0pdfmgmgJ6Stra6ql5fOVmXO8iJZlqzaJVIFobkrPSrlpQ%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774660790350%2C%22019d3201-e91a-7df7-b6c3-57ee26adfa99%22%2C1774660479258%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2BW5KVAbWmsD9fvFSysZAsR8j44wuoJNgXcDmxwrD7I3kLIzMx1aHz%2F4W6sCK9Cl2oN1Isk15zyoyxzxX%2BmsltQ%2FKMA96v8vdV0UR%2BHlad%2FRXngoK5fDSruka6OLIBzwSuQTK24iMM%2FTQ%3D%3D",
+              "origin": "chrome-extension://hpiaaochclhppoichfmfpecghflmflil",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "none",
+              "sec-fetch-storage-access": "active",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "9a525f8a2855",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "nf_service_info"
+            },
+            "body": {
+              "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"js\">$('#salvar').removeClass('hide')</cmd><cmd n=\"js\"><![CDATA[showAlert('error', 'Notas fiscais de servi&ccedil;o', 'Nenhum registro para exibir!');]]></cmd><cmd n=\"js\">redirecionar();</cmd></xjx>"
+            },
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
   "connections": {
     "When called by another workflow": {
       "main": [
@@ -256,7 +316,9 @@
             "node": "Build Success Response",
             "type": "main",
             "index": 0
-          },
+          }
+        ],
+        [
           {
             "node": "Build DB Error Response",
             "type": "main",
@@ -272,7 +334,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "d38f2d1a-16c6-4f29-a67e-7dccd6dd4ce7",
+  "versionId": "125eb9c1-5edc-4214-ae4f-645296ab7564",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import styled from "styled-components";
 import ServiceStatus from '~components/ServiceStatus';
+import { buildServerRoute } from '~components/env';
 import { DataContext } from "../../context/DataContext";
 import CCReportProgressBar from '~components/ProgressBar/CCReportProgressBar';
 
@@ -38,7 +39,7 @@ export default function RelatorioManagerCC() {
     const handlePutReset = async () => {
         setPutLoading(true);
         try {
-            const response = await fetch('https://rt-extension-server.azurewebsites.net/cc_report/reset', {
+            const response = await fetch(buildServerRoute('cc_report/reset'), {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

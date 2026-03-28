@@ -259,7 +259,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
+        "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report','cc_report/reset',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
       "id": "63781029-aaea-4727-bc05-263380c5237f",
       "name": "404 Not Found",
@@ -444,6 +444,34 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
+          "value": "a4r9wFc4B2QmL2Z1",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/a4r9wFc4B2QmL2Z1",
+          "cachedResultName": "VHSYS-cc_reset"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -7904,
+        5248
+      ],
+      "id": "79ca188d-f3f7-4099-a9d6-49a2455ce7cf",
+      "name": "Execute: CC Reset"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
           "value": "ul6IjUpAqixCTDc3",
           "mode": "list",
           "cachedResultUrl": "/workflow/ul6IjUpAqixCTDc3",
@@ -620,6 +648,31 @@
               },
               "renameOutput": true,
               "outputKey": "cc_report"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "61b98f7c-2b02-4eb9-b831-cf362f6e11ab",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "cc_report/reset",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cc_report_reset"
             },
             {
               "conditions": {
@@ -1255,6 +1308,17 @@
         ]
       ]
     },
+    "Execute: CC Reset": {
+      "main": [
+        [
+          {
+            "node": "Normalize Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Call 'VHSYS-get_update_extension_service_data-v1'": {
       "main": [
         [
@@ -1306,6 +1370,13 @@
         [
           {
             "node": "Execute: CC Report",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Execute: CC Reset",
             "type": "main",
             "index": 0
           }

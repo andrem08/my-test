@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT \n  \"codigo\",\n  \"numeronfs\",\n  \"cliente\",\n  \"status\"\nFROM auxiliary.\"NF_ServiceMetadata\"\nWHERE \"status\" = 'ATIVO'\nORDER BY \"codigo\";",
+        "query": "SELECT \n  \"codigo\",\n  \"numeronfs\",\n  \"cliente\",\n  \"status\"\nFROM auxiliary.\"NF_ServiceMetadata\"\nWHERE \"status\" = 'ATIVO' \n  AND \"numeronfs\" IS NOT NULL \n  AND \"numeronfs\" != ''\nORDER BY \"codigo\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -40,7 +40,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_labels_ids\n// Rota   : GET /nf_service_labels_ids\n// Fase 5 : Fluxos NF\n// ─────────────────────────────────────────────\n// Input  : Nenhum (GET)\n// Output : [{ codigo_servico, descricao, aliquota_iss, ativo }] HTTP 200\n// Banco  : SELECT nf_service_labels WHERE ativo = true\n// ─────────────────────────────────────────────\n// CRÍTICO: Retorna ARRAY DIRETO — NÃO encapsulado\n// A extensão Chrome espera: [...] não { data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\nconst labels = allRecords.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'labels_read',\n  total_labels: labels.length,\n  level: 'info'\n}));\n\n// statusCode 200 para GET (não 201)\nreturn {\n  statusCode: 200,\n  body: labels\n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_labels_ids\n// Rota   : GET /nf_service_labels_ids\n// ─────────────────────────────────────────────\n// Mantem filtro status='ATIVO' e retorna APENAS itens com numeronfs\n// compativel com a extensao: { status, data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\n\nconst labels = allRecords\n  .map(item => item.json || {})\n  .filter(row => row.codigo && row.numeronfs && String(row.numeronfs).trim() !== '')\n  .map(row => ({\n    codigo: row.codigo || '',\n    numeronfs: row.numeronfs || '',\n    cliente: row.cliente || '',\n    status: row.status || ''\n  }));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'labels_read',\n  total_input_items: allRecords.length,\n  total_labels_with_nf: labels.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    status: 'NF Service Metadata loaded successfully',\n    data: labels\n  }\n};"
       },
       "id": "2c9b0286-1d69-470f-bdd5-90eea83683ac",
       "name": "Format as Direct Array",
