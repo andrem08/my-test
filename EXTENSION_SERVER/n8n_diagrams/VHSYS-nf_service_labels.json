@@ -42,7 +42,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const affectedRecords = $input.all().length;\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'nf_service_labels', event: 'service_labels_upserted', labels_updated: affectedRecords, level: 'info' }));\nreturn { statusCode: 201, body: { message: 'Service labels updated successfully', labels_updated: affectedRecords } };"
+        "jsCode": "const affectedRecords = $input.all().length;\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), route: 'nf_service_labels', event: 'service_labels_upserted', labels_updated: affectedRecords, level: 'info' }));\nreturn { statusCode: 200, body: { message: 'Data extracted, cleaned, and converted to DataFrame successfully' } };"
       },
       "id": "69b523fb-f31a-438a-a3aa-716c3a82795a",
       "name": "Build Response",

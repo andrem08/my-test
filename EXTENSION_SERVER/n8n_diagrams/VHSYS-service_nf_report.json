@@ -3,26 +3,26 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "bc1930d0-8d02-4006-8cd4-31d9913bb25d",
+      "id": "81a7afb8-95c1-4ef6-8636-17f956c795b9",
       "name": "When called by another workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -13952,
-        3376
+        -15024,
+        3360
       ]
     },
     {
       "parameters": {
         "jsCode": "const input = $input.first().json || {};\n\nfunction parseIfJsonString(value) {\n  if (typeof value !== 'string') return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n}\n\nfunction asObject(value) {\n  const parsed = parseIfJsonString(value);\n  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) return parsed;\n  return null;\n}\n\nconst candidates = [\n  asObject(input.body),\n  asObject(input),\n  asObject(input.original_request?.body),\n  asObject(input.original_request),\n  asObject(input.query),\n  asObject(input.parameters)\n].filter(Boolean);\n\nlet payload = null;\nfor (const candidate of candidates) {\n  if (candidate.data?.source?.itens) {\n    payload = candidate;\n    break;\n  }\n}\n\nif (!payload) {\n  const bodyObj = asObject(input.body) || {};\n  const originalBodyObj = asObject(input.original_request?.body) || {};\n\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: {\n      ok: false,\n      error: 'Missing required field: data',\n      message: 'Payload is empty or does not include data.source.itens',\n      diagnostics: {\n        received_top_level_keys: Object.keys(asObject(input) || {}),\n        body_keys: Object.keys(bodyObj),\n        original_body_keys: Object.keys(originalBodyObj),\n        content_length: input.original_request?.headers?.['content-length'] || null\n      }\n    }\n  };\n}\n\nif (!payload.data?.source || !payload.data.source.itens) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required structure: data.source.itens' }\n  };\n}\n\nif (!Array.isArray(payload.data.source.itens)) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'itens must be an array' }\n  };\n}\n\nconst itens = payload.data.source.itens;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'input_validated',\n  itens_count: itens.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, itens };"
       },
-      "id": "6e5dde6e-691c-4dc7-819e-3762daadbc3e",
+      "id": "58d57183-b052-4950-bb56-9da632dcfbb1",
       "name": "Validate Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13728,
-        3376
+        -14800,
+        3360
       ]
     },
     {
@@ -50,44 +50,44 @@
         },
         "options": {}
       },
-      "id": "2cf9eced-cfe8-4a29-b187-d540ad323f0c",
+      "id": "5841db92-93b5-4c32-87f4-e0b47ea1e1dc",
       "name": "Is Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -13504,
-        3376
+        -14576,
+        3360
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Decode HTML entities + Transform Service NF data\nconst ctx = $input.first().json;\nconst itens = ctx.itens;\n\n// Decode HTML entities recursivamente\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g,  '&')\n      .replace(/&lt;/g,   '<')\n      .replace(/&gt;/g,   '>')\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g,  \"'\")\n      .replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/')\n      .replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\n// Helper para converter data\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  const cleaned = String(dateStr).replace(/[^0-9]/g, '');\n  if (cleaned.length === 8) {\n    const year1 = cleaned.substring(0, 4);\n    const year2 = cleaned.substring(4, 8);\n    if (year1.startsWith('20') || year1.startsWith('19')) {\n      return `${year1}-${cleaned.substring(4, 6)}-${cleaned.substring(6, 8)}`;\n    } else {\n      return `${year2}-${cleaned.substring(2, 4)}-${cleaned.substring(0, 2)}`;\n    }\n  }\n  return dateStr;\n}\n\n// Helper para converter valor\nfunction parseValue(value) {\n  if (!value) return 0;\n  const cleaned = String(value).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\n// Helper para gerar chave única\nfunction generateKey(item) {\n  const numero = String(item.NumeroNFS || item.Numero || '').trim();\n  const serie = String(item.SerieNFS || item.Serie || '').trim();\n  const dataEmissao = parseDate(item.DataEmissao || item.Data || '');\n  const cnpjPrestador = String(item.CnpjPrestador || item.CNPJ || '').replace(/\\D/g, '');\n  \n  return `${numero}-${serie}-${dataEmissao}-${cnpjPrestador}`;\n}\n\nconst decodedItens = decodeHtml(itens);\n\nconst transformedNFs = decodedItens.map((item, index) => {\n  const key = generateKey(item);\n  \n  if (!key || key === '---') {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'service_nf_report',\n      event: 'nf_skipped_invalid_key',\n      item_index: index,\n      item_data: item,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  const dataEmissao = parseDate(item.DataEmissao || item.Data || '');\n  const codigoServicoRaw = item.CodigoServico\n    || item.codigo_servico\n    || item.Codigo\n    || item.codigo\n    || item.CodServico\n    || item.CodigoTributacao\n    || item.Codigo_Tributacao\n    || item.NumeroNFS\n    || item.Numero\n    || '';\n  \n  return {\n    chave_nf: key,\n    numero_nf: String(item.NumeroNFS || item.Numero || '').trim(),\n    serie_nf: String(item.SerieNFS || item.Serie || '').trim(),\n    data_emissao: dataEmissao || 'NULL_VALUE', // Marca especial para NULL\n    cnpj_prestador: String(item.CnpjPrestador || item.CNPJ || '').replace(/\\D/g, ''),\n    razao_social_prestador: String(item.RazaoSocialPrestador || item.Prestador || '').trim(),\n    cnpj_tomador: String(item.CnpjTomador || item.CNPJTomador || '').replace(/\\D/g, ''),\n    razao_social_tomador: String(item.RazaoSocialTomador || item.Tomador || '').trim(),\n    valor_servico: parseValue(item.ValorServico || item.Valor || 0),\n    valor_deducoes: parseValue(item.ValorDeducoes || 0),\n    base_calculo: parseValue(item.BaseCalculo || 0),\n    aliquota_iss: parseValue(item.AliquotaISS || 0),\n    valor_iss: parseValue(item.ValorISS || 0),\n    valor_pis: parseValue(item.ValorPIS || 0),\n    valor_cofins: parseValue(item.ValorCOFINS || 0),\n    valor_inss: parseValue(item.ValorINSS || 0),\n    valor_ir: parseValue(item.ValorIR || 0),\n    valor_csll: parseValue(item.ValorCSLL || 0),\n    discriminacao_servico: String(item.DiscriminacaoServico || item.Servico || '').trim(),\n    codigo_servico: String(codigoServicoRaw || '').trim(),\n    situacao: String(item.Situacao || item.Status || 'Normal').trim()\n  };\n}).filter(nf => nf !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'nfs_transformed',\n  valid_nfs: transformedNFs.length,\n  total_input: decodedItens.length,\n  level: 'info'\n}));\n\nreturn transformedNFs;"
+        "jsCode": "const ctx = $input.first().json;\nconst itens = Array.isArray(ctx.itens) ? ctx.itens : [];\n\nfunction decodeHtml(value) {\n  if (typeof value !== 'string') return value;\n  return value\n    .replace(/&amp;/g, '&')\n    .replace(/&lt;/g, '<')\n    .replace(/&gt;/g, '>')\n    .replace(/&quot;/g, '\"')\n    .replace(/&#39;/g, \"'\")\n    .replace(/&#x27;/g, \"'\")\n    .replace(/&#x2F;/g, '/')\n    .replace(/&nbsp;/g, ' ');\n}\n\nfunction sanitizeForQuery(value) {\n  if (typeof value !== 'string') return value;\n  return value.replace(/\\$/g, '$ ');\n}\n\nconst transformed = itens\n  .map((item) => {\n    const data = {};\n    for (const key of Object.keys(item || {})) {\n      data[key] = sanitizeForQuery(decodeHtml(item[key]));\n    }\n\n    const rps = String(data.RPS || '').trim();\n    if (!rps) return null;\n\n    return {\n      ID: data.ID || null,\n      RPS: rps,\n      Nota: data.Nota || null,\n      Cliente: data.Cliente || null,\n      CNPJ: data.CNPJ || null,\n      Endereco: data.Endereco || null,\n      Numero: data.Numero || null,\n      Complemento: data.Complemento || null,\n      Bairro: data.Bairro || null,\n      Cidade: data.Cidade || null,\n      Estado: data.Estado || null,\n      CEP: data.CEP || null,\n      Email: data.Email || null,\n      Telefone: data.Telefone || null,\n      Vendedor: data.Vendedor || null,\n      ValorServicos: data.ValorServicos || '0',\n      ValorTotal: data.ValorTotal || '0',\n      TotalParcelas: data.TotalParcelas || null,\n      ValorDeducoes: data.ValorDeducoes || null,\n      Aliquota: data.Aliquota || null,\n      ValorISS: data.ValorISS || '0',\n      ISSRetido: data.ISSRetido || null,\n      ValorCOFINS: data.ValorCOFINS || '0',\n      ValorPIS: data.ValorPIS || '0',\n      ValorCSLL: data.ValorCSLL || '0',\n      ValorIR: data.ValorIR || '0',\n      ValorINSS: data.ValorINSS || '0',\n      ValorTributos: data.ValorTributos || '0',\n      DataPedido: data.DataPedido || null,\n      LocalPrestacao: data.LocalPrestacao || null,\n      Contas: data.Contas || null,\n      Chave: data.Chave || null,\n      Protocolo: data.Protocolo || null,\n      Descricao: data.Descricao || null,\n      DataEmissao: data.DataEmissao || null,\n      Situacao: data.Situacao || null,\n      DataCad: data.DataCad || null,\n      DataMod: data.DataMod || null\n    };\n  })\n  .filter(Boolean);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'nfs_transformed',\n  valid_nfs: transformed.length,\n  total_input: itens.length,\n  level: 'info'\n}));\n\nreturn transformed;"
       },
-      "id": "5ac5290a-edd0-4367-9a3f-170174e8bf8c",
+      "id": "ac70bfde-5a07-49f8-a5ea-7cb78a7ef7de",
       "name": "Decode + Transform Service NFs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -13280,
-        3280
+        -14352,
+        3264
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.\"ServiceNFReport\" (\n  \"RPS\", \"Chave\", \"Cliente\", \"CNPJ\", \"ValorServicos\", \n  \"ValorDeducoes\", \"Aliquota\", \"ValorISS\", \"ValorCOFINS\",\n  \"ValorPIS\", \"ValorCSLL\", \"ValorIR\", \"ValorINSS\",\n  \"Descricao\", \"DataEmissao\", \"Situacao\", \n  \"created_at\", \"updated_at\"\n) VALUES (\n  '{{ $json.numero_nf }}',\n  '{{ $json.chave_nf }}',\n  '{{ $json.razao_social_tomador }}',\n  '{{ $json.cnpj_tomador }}',\n  {{ $json.valor_servico }},\n  {{ $json.valor_deducoes }},\n  {{ $json.aliquota_iss }},\n  {{ $json.valor_iss }},\n  {{ $json.valor_cofins }},\n  {{ $json.valor_pis }},\n  {{ $json.valor_csll }},\n  {{ $json.valor_ir }},\n  {{ $json.valor_inss }},\n  '{{ $json.discriminacao_servico }}',\n  CASE WHEN '{{ $json.data_emissao }}' = 'NULL_VALUE' THEN NULL ELSE '{{ $json.data_emissao }}' END,\n  '{{ $json.situacao }}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"RPS\")\nDO UPDATE SET \n  \"Chave\" = EXCLUDED.\"Chave\",\n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"ValorServicos\" = EXCLUDED.\"ValorServicos\",\n  \"ValorDeducoes\" = EXCLUDED.\"ValorDeducoes\",\n  \"Aliquota\" = EXCLUDED.\"Aliquota\",\n  \"ValorISS\" = EXCLUDED.\"ValorISS\",\n  \"ValorCOFINS\" = EXCLUDED.\"ValorCOFINS\",\n  \"ValorPIS\" = EXCLUDED.\"ValorPIS\",\n  \"ValorCSLL\" = EXCLUDED.\"ValorCSLL\",\n  \"ValorIR\" = EXCLUDED.\"ValorIR\",\n  \"ValorINSS\" = EXCLUDED.\"ValorINSS\",\n  \"Descricao\" = EXCLUDED.\"Descricao\",\n  \"DataEmissao\" = EXCLUDED.\"DataEmissao\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"updated_at\" = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n  \"ServiceNFReport\".\"Chave\" IS DISTINCT FROM EXCLUDED.\"Chave\"\n  OR \"ServiceNFReport\".\"Cliente\" IS DISTINCT FROM EXCLUDED.\"Cliente\"\n  OR \"ServiceNFReport\".\"CNPJ\" IS DISTINCT FROM EXCLUDED.\"CNPJ\"\n  OR \"ServiceNFReport\".\"ValorServicos\" IS DISTINCT FROM EXCLUDED.\"ValorServicos\"\n  OR \"ServiceNFReport\".\"ValorDeducoes\" IS DISTINCT FROM EXCLUDED.\"ValorDeducoes\"\n  OR \"ServiceNFReport\".\"ValorISS\" IS DISTINCT FROM EXCLUDED.\"ValorISS\"\n  OR \"ServiceNFReport\".\"ValorCOFINS\" IS DISTINCT FROM EXCLUDED.\"ValorCOFINS\"\n  OR \"ServiceNFReport\".\"ValorPIS\" IS DISTINCT FROM EXCLUDED.\"ValorPIS\"\n  OR \"ServiceNFReport\".\"ValorCSLL\" IS DISTINCT FROM EXCLUDED.\"ValorCSLL\"\n  OR \"ServiceNFReport\".\"ValorIR\" IS DISTINCT FROM EXCLUDED.\"ValorIR\"\n  OR \"ServiceNFReport\".\"ValorINSS\" IS DISTINCT FROM EXCLUDED.\"ValorINSS\"\n  OR \"ServiceNFReport\".\"Descricao\" IS DISTINCT FROM EXCLUDED.\"Descricao\"\n  OR \"ServiceNFReport\".\"DataEmissao\" IS DISTINCT FROM EXCLUDED.\"DataEmissao\"\n  OR \"ServiceNFReport\".\"Situacao\" IS DISTINCT FROM EXCLUDED.\"Situacao\"\nRETURNING \"RPS\", \"Chave\", \"ValorServicos\", \"Situacao\";",
+        "query": "INSERT INTO auxiliary.\"ServiceNFReport\" (\n  \"ID\", \"RPS\", \"Nota\", \"Cliente\", \"CNPJ\",\n  \"Endereco\", \"Numero\", \"Complemento\", \"Bairro\", \"Cidade\",\n  \"Estado\", \"CEP\", \"Email\", \"Telefone\", \"Vendedor\",\n  \"ValorServicos\", \"ValorTotal\", \"TotalParcelas\", \"ValorDeducoes\", \"Aliquota\",\n  \"ValorISS\", \"ISSRetido\", \"ValorCOFINS\", \"ValorPIS\", \"ValorCSLL\",\n  \"ValorIR\", \"ValorINSS\", \"ValorTributos\", \"DataPedido\", \"LocalPrestacao\",\n  \"Contas\", \"Chave\", \"Protocolo\", \"Descricao\", \"DataEmissao\",\n  \"Situacao\", \"DataCad\", \"DataMod\",\n  \"created_at\", \"updated_at\"\n) VALUES (\n  {{ $json.ID ? \"'\" + String($json.ID).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  '{{ String($json.RPS).replace(/'/g, \"''\") }}',\n  {{ $json.Nota ? \"'\" + String($json.Nota).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Cliente ? \"'\" + String($json.Cliente).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.CNPJ ? \"'\" + String($json.CNPJ).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Endereco ? \"'\" + String($json.Endereco).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Numero ? \"'\" + String($json.Numero).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Complemento ? \"'\" + String($json.Complemento).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Bairro ? \"'\" + String($json.Bairro).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Cidade ? \"'\" + String($json.Cidade).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Estado ? \"'\" + String($json.Estado).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.CEP ? \"'\" + String($json.CEP).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Email ? \"'\" + String($json.Email).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Telefone ? \"'\" + String($json.Telefone).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Vendedor ? \"'\" + String($json.Vendedor).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorServicos ? \"'\" + String($json.ValorServicos).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorTotal ? \"'\" + String($json.ValorTotal).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.TotalParcelas ? \"'\" + String($json.TotalParcelas).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorDeducoes ? \"'\" + String($json.ValorDeducoes).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Aliquota ? \"'\" + String($json.Aliquota).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorISS ? \"'\" + String($json.ValorISS).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ISSRetido ? \"'\" + String($json.ISSRetido).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorCOFINS ? \"'\" + String($json.ValorCOFINS).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorPIS ? \"'\" + String($json.ValorPIS).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorCSLL ? \"'\" + String($json.ValorCSLL).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorIR ? \"'\" + String($json.ValorIR).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorINSS ? \"'\" + String($json.ValorINSS).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.ValorTributos ? \"'\" + String($json.ValorTributos).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.DataPedido ? \"'\" + String($json.DataPedido).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.LocalPrestacao ? \"'\" + String($json.LocalPrestacao).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Contas ? \"'\" + String($json.Contas).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Chave ? \"'\" + String($json.Chave).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Protocolo ? \"'\" + String($json.Protocolo).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Descricao ? \"'\" + String($json.Descricao).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.DataEmissao ? \"'\" + String($json.DataEmissao).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.Situacao ? \"'\" + String($json.Situacao).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.DataCad ? \"'\" + String($json.DataCad).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.DataMod ? \"'\" + String($json.DataMod).replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (\"RPS\")\nDO UPDATE SET\n  \"ID\" = EXCLUDED.\"ID\",\n  \"Nota\" = EXCLUDED.\"Nota\",\n  \"Cliente\" = EXCLUDED.\"Cliente\",\n  \"CNPJ\" = EXCLUDED.\"CNPJ\",\n  \"Endereco\" = EXCLUDED.\"Endereco\",\n  \"Numero\" = EXCLUDED.\"Numero\",\n  \"Complemento\" = EXCLUDED.\"Complemento\",\n  \"Bairro\" = EXCLUDED.\"Bairro\",\n  \"Cidade\" = EXCLUDED.\"Cidade\",\n  \"Estado\" = EXCLUDED.\"Estado\",\n  \"CEP\" = EXCLUDED.\"CEP\",\n  \"Email\" = EXCLUDED.\"Email\",\n  \"Telefone\" = EXCLUDED.\"Telefone\",\n  \"Vendedor\" = EXCLUDED.\"Vendedor\",\n  \"ValorServicos\" = EXCLUDED.\"ValorServicos\",\n  \"ValorTotal\" = EXCLUDED.\"ValorTotal\",\n  \"TotalParcelas\" = EXCLUDED.\"TotalParcelas\",\n  \"ValorDeducoes\" = EXCLUDED.\"ValorDeducoes\",\n  \"Aliquota\" = EXCLUDED.\"Aliquota\",\n  \"ValorISS\" = EXCLUDED.\"ValorISS\",\n  \"ISSRetido\" = EXCLUDED.\"ISSRetido\",\n  \"ValorCOFINS\" = EXCLUDED.\"ValorCOFINS\",\n  \"ValorPIS\" = EXCLUDED.\"ValorPIS\",\n  \"ValorCSLL\" = EXCLUDED.\"ValorCSLL\",\n  \"ValorIR\" = EXCLUDED.\"ValorIR\",\n  \"ValorINSS\" = EXCLUDED.\"ValorINSS\",\n  \"ValorTributos\" = EXCLUDED.\"ValorTributos\",\n  \"DataPedido\" = EXCLUDED.\"DataPedido\",\n  \"LocalPrestacao\" = EXCLUDED.\"LocalPrestacao\",\n  \"Contas\" = EXCLUDED.\"Contas\",\n  \"Chave\" = EXCLUDED.\"Chave\",\n  \"Protocolo\" = EXCLUDED.\"Protocolo\",\n  \"Descricao\" = EXCLUDED.\"Descricao\",\n  \"DataEmissao\" = EXCLUDED.\"DataEmissao\",\n  \"Situacao\" = EXCLUDED.\"Situacao\",\n  \"DataCad\" = EXCLUDED.\"DataCad\",\n  \"DataMod\" = EXCLUDED.\"DataMod\",\n  \"updated_at\" = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING \"RPS\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
         }
       },
-      "id": "0756d491-4906-4ff2-b07d-acf66c5c5648",
+      "id": "56f34567-3215-442f-925a-6762fad0763d",
       "name": "Upsert Service NF",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -13056,
-        3280
+        -14128,
+        3264
       ],
       "alwaysOutputData": false,
       "credentials": {
@@ -99,41 +99,41 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build a single response aggregating both database operations\nconst upsertRows = $items('Upsert Service NF', 0, 0).map(item => item.json).filter(row => row && row.RPS);\nconst metadataRows = $input.all().map(item => item.json).filter(row => row && row.codigo);\n\nconst metadataByCode = metadataRows.map(row => ({\n  codigo: row.codigo,\n  numeronfs: row.numeronfs\n}));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'workflow_completed',\n  service_nf_upserted: upsertRows.length,\n  metadata_updated: metadataRows.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Service NF report processed successfully',\n    service_nf_upserted: upsertRows.length,\n    metadata_updated: metadataRows.length,\n    metadata_by_code: metadataByCode\n  }\n};"
+        "jsCode": "const upsertRows = $items('Upsert Service NF', 0, 0).map(item => item.json).filter(row => row && row.RPS);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'workflow_completed',\n  service_nf_upserted: upsertRows.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'GET A NEW regular_bills status '\n  }\n};"
       },
-      "id": "75fe417a-197a-49ae-8e85-61c3a4e7244a",
+      "id": "29e64ff0-f4eb-4441-b432-11b6c3a57d37",
       "name": "Build Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12384,
-        3280
+        -13456,
+        3264
       ]
     },
     {
       "parameters": {
         "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
       },
-      "id": "89c13f8a-4b2d-488a-9956-85644c77c7a2",
+      "id": "d62908d2-330b-4b20-a586-34d48cd8e6ef",
       "name": "Build Validation Error Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12384,
-        3472
+        -13456,
+        3456
       ]
     },
     {
       "parameters": {
-        "jsCode": "// Extract aggregates from transformed source rows\nconst allNFs = $items('Decode + Transform Service NFs', 0, 0).map(item => item.json);\n\nconst codigoCount = {};\nfor (const nf of allNFs) {\n  const codigo = String(nf.codigo_servico || nf.numero_nf || '').trim();\n  if (!codigo) continue;\n  codigoCount[codigo] = (codigoCount[codigo] || 0) + 1;\n}\n\nconst aggregates = Object.entries(codigoCount).map(([codigo, count]) => ({\n  codigo,\n  numeronfs: String(count)\n}));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'aggregates_extracted',\n  unique_codigos: aggregates.length,\n  codigos_with_counts: codigoCount,\n  level: 'info'\n}));\n\nreturn aggregates;"
+        "jsCode": "// Extract aggregates with fallback for multiple payload shapes\nconst upstreamRows = $input.all().map(item => item.json || {});\nconst transformedRows = $items('Decode + Transform Service NFs', 0, 0).map(item => item.json || {});\n\nconst sourceRows = upstreamRows.length ? upstreamRows : transformedRows;\n\nfunction firstNonEmpty(...values) {\n  for (const value of values) {\n    const text = String(value || '').trim();\n    if (text) return text;\n  }\n  return '';\n}\n\nconst codigoCount = {};\nfor (const row of sourceRows) {\n  const codigo = firstNonEmpty(\n    row.codigo,\n    row.codigo_servico,\n    row.id_servico,\n    row.RPS,\n    row.numero_nf,\n    row.Nota\n  );\n\n  if (!codigo) continue;\n  codigoCount[codigo] = (codigoCount[codigo] || 0) + 1;\n}\n\nconst aggregates = Object.entries(codigoCount).map(([codigo, count]) => ({\n  codigo,\n  numeronfs: String(count)\n}));\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'service_nf_report',\n  event: 'aggregates_extracted',\n  input_rows: sourceRows.length,\n  output_rows: aggregates.length,\n  level: 'info'\n}));\n\nreturn aggregates;"
       },
-      "id": "1969c12b-9523-41e7-ad34-cb6ed6f0f053",
+      "id": "bf979a9c-3ca0-41a3-bbac-c055ca8717ef",
       "name": "Extract Aggregates for Metadata",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12832,
-        3280
+        -13904,
+        3264
       ]
     },
     {
@@ -145,13 +145,13 @@
           "queryBatching": "independently"
         }
       },
-      "id": "01621dce-8442-4202-846a-9a2ec42d22b4",
+      "id": "8de96af1-9cc0-4814-a435-efefcc13358a",
       "name": "Update Service Metadata",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -12608,
-        3280
+        -13680,
+        3264
       ],
       "alwaysOutputData": false,
       "credentials": {
@@ -168,64 +168,14 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -12160,
-        3376
+        -13232,
+        3360
       ],
-      "id": "1242c529-1a0f-40ef-80bc-71e24cab0f3b",
+      "id": "d72d8435-c314-4393-a31e-d6edc5dbfe92",
       "name": "Return Response"
     }
   ],
-  "pinData": {
-    "When called by another workflow": [
-      {
-        "json": {
-          "route": "service_nf_report",
-          "method": "POST",
-          "body": {},
-          "query": {},
-          "parameters": {
-            "rt_token": "YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
-          },
-          "original_request": {
-            "headers": {
-              "host": "n8n.srv1252717.hstgr.cloud",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
-              "content-length": "4",
-              "accept": "*/*",
-              "accept-encoding": "gzip, deflate, br, zstd",
-              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
-              "content-type": "application/json",
-              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774666228324%2C%22019d3228-3bc7-7c19-b181-feddc6090099%22%2C1774662990790%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2BhS3kUoLBmYPJtaxgP7%2Fq%2FpxGiU%2FYxWOaMN2ZCEi0DSlNW4%2FtI7qJ4Jm6RDfxeOVe1u%2B7TWfyhqA%3D%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B6Kv7xVIIMqxaUZu0Oz1FyA6kGK5m1C%2FSYzxkhhhB9G468kH4y7%2BUYq1hLBh7jgn%2FJY%2Bzhq3L6Q1FMWGi7SqZYg5ovq8%2FbhF3yajDmhxnCWYLNbDWO9hSq3pDBiq%2B4L1k8t%2FMUgi3%2BzA%3D%3D",
-              "origin": "https://n8n.srv1252717.hstgr.cloud",
-              "priority": "u=1, i",
-              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
-              "sec-ch-ua-mobile": "?0",
-              "sec-ch-ua-platform": "\"Windows\"",
-              "sec-fetch-dest": "empty",
-              "sec-fetch-mode": "cors",
-              "sec-fetch-site": "same-origin",
-              "x-forwarded-for": "201.81.90.19",
-              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
-              "x-forwarded-port": "443",
-              "x-forwarded-proto": "https",
-              "x-forwarded-server": "9a525f8a2855",
-              "x-real-ip": "201.81.90.19"
-            },
-            "params": {},
-            "query": {
-              "route": "service_nf_report"
-            },
-            "body": {},
-            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
-            "executionMode": "production"
-          }
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "When called by another workflow": {
       "main": [
@@ -282,7 +232,7 @@
       "main": [
         [
           {
-            "node": "Extract Aggregates for Metadata",
+            "node": "Build Response",
             "type": "main",
             "index": 0
           }
@@ -340,7 +290,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "7c2b8e40-01ee-4945-a79d-cbaa22575872",
+  "versionId": "6b0291be-96e2-41ee-b353-552826f238eb",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
