@@ -1,0 +1,136 @@
+{
+  "name": "Extensao VHSYS - CC Status",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8172f3c8-fe26-40f7-8e8a-116e6032c55d",
+      "name": "Quando Chamado por Outro Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2544,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Conta o status de processamento dos centros de custo\nSELECT \n  COUNT(*) as total_lines,\n  SUM(CASE WHEN entries_runned = 1 THEN 1 ELSE 0 END) as number_of_entries,\n  SUM(CASE WHEN outputs_runned = 1 THEN 1 ELSE 0 END) as number_of_outputs\nFROM auxiliary.update_cc_report_status;",
+        "options": {}
+      },
+      "id": "a44b9969-55cc-4ba9-b8c1-1cd83775f9a9",
+      "name": "Buscar Status do CC",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -2320,
+        768
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta resposta de status\nconst row = $input.first().json;\n\nconst totalLines = parseInt(row.total_lines || 0);\nconst numEntries = parseInt(row.number_of_entries || 0);\nconst numOutputs = parseInt(row.number_of_outputs || 0);\n\n// Se entries e outputs processados = total, então não está rodando\nconst running = !(numEntries === totalLines && numOutputs === totalLines);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_status',\n  event: 'status_checked',\n  running: running,\n  total_lines: totalLines,\n  entries: numEntries,\n  outputs: numOutputs,\n  level: 'info'\n}));\n\nreturn {\n  running: running,\n  total_lines: totalLines,\n  number_of_entries: numEntries,\n  number_of_outputs: numOutputs\n};"
+      },
+      "id": "a13eeeed-f226-417b-9054-a5ac1ee7e345",
+      "name": "Montar Resposta de Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2096,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Arquitetura do Fluxo\n\nResume o estado global do processamento de CC.\n\nRetorna:\n- running\n- total_lines\n- number_of_entries\n- number_of_outputs",
+        "height": 230,
+        "width": 372,
+        "color": 7
+      },
+      "id": "441502c6-9aff-4700-a6bd-f0ea69a76bef",
+      "name": "Arquitetura do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2976,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Agregacao no Banco\n\nConsulta update_cc_report_status e calcula totais:\n- linhas\n- entries_runned\n- outputs_runned",
+        "height": 194,
+        "width": 324,
+        "color": 6
+      },
+      "id": "81025539-5d01-4825-9f01-868df4ec9f7b",
+      "name": "Agregacao no Banco",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Regra de Running\n\nrunning = false somente quando:\n- entries == total_lines\n- e outputs == total_lines\n\nQualquer pendencia => running = true.",
+        "height": 200,
+        "width": 316,
+        "color": 4
+      },
+      "id": "47c4dc2a-40c8-4ffb-a218-49f20b1eeb13",
+      "name": "Regra de Running",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        704
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Quando Chamado por Outro Workflow": {
+      "main": [
+        [
+          {
+            "node": "Buscar Status do CC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Status do CC": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "70fed328-c901-42b2-ab24-7c6bcc59c4a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "UkWE6rMcSqAwTgKB",
+  "tags": []
+}

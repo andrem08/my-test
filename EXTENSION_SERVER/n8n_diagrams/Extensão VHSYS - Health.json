@@ -1,0 +1,87 @@
+{
+  "name": "Extensão VHSYS - Health",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "42387a7e-b452-4e63-9da0-6d8482827986",
+      "name": "Inicio do Fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: health\n// Rota   : GET /health\n// Fase 2 : Núcleo de status e controle\n// ─────────────────────────────────────────────\n// Sem efeitos no banco. Retorna liveness do n8n.\n\nconst now = new Date().toISOString();\n\nconsole.log(JSON.stringify({\n  timestamp: now,\n  route: 'health',\n  method: 'GET',\n  event: 'health_check',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 200,\n  body: {\n    status: 'ok',\n    service: 'VHSYS Extension Router',\n    version: 'v1',\n    timestamp: now\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        80
+      ],
+      "id": "7919821c-fc26-419a-baa0-27704de5635d",
+      "name": "Montar Resposta de Health"
+    },
+    {
+      "parameters": {
+        "content": "## Entrada de Dados\n\nRecebe a chamada interna da rota Health.\n\nObjetivo:\n- validar disponibilidade do fluxo\n- responder rapidamente sem acessar banco",
+        "height": 184,
+        "width": 340,
+        "color": 6
+      },
+      "id": "d842ba18-2317-4812-8ca6-019906dc5771",
+      "name": "Entrada de Dados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -928,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Resposta de Health\n\nMonta a resposta padrao de liveness da extensao.\n\nRetorno:\n- status: ok\n- service\n- version\n- timestamp",
+        "height": 232,
+        "width": 420,
+        "color": 5
+      },
+      "id": "aa96d09b-a5cb-4918-93a4-3d56d58a5d74",
+      "name": "Resposta de Health",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -112,
+        32
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Inicio do Fluxo": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "865d9c81-36cf-4268-90c0-3bb242bf6639",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "sjWsEoIsUa8qrPcp",
+  "tags": []
+}

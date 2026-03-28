@@ -1,0 +1,223 @@
+{
+  "name": "Extensão VHSYS - Limpeza de Status",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "4fc10c74-8e32-4aa9-84e9-90f89d219710",
+      "name": "Inicio do Fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nUPDATE auxiliary.update_extension_services\nSET\n  \"RUN_STATUS\"  = 0,\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n\t\"RUN_STATUS\" != 0\nRETURNING \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        48
+      ],
+      "id": "891c1027-a1ac-4068-bf35-1aa620284e6c",
+      "name": "Resetar Status dos Servicos",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Sucesso: todos os serviços resetados para RUN_STATUS = 0 ──\nconst allRows = $input.all();\nconst resetted = allRows.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'clean_up',\n  event: 'all_services_reset',\n  total_resetted: resetted.length,\n  services: resetted.map(r => r.ACTION),\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'Update extension service status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        32
+      ],
+      "id": "d04e6558-9947-47d3-bf0d-bd958cdb9b6e",
+      "name": "Montar Resposta de Sucesso"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro do Postgres durante o reset ──\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'clean_up',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not reset extension services status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        256
+      ],
+      "id": "90fd945b-fe12-48c6-bc75-1cae4fbd3e18",
+      "name": "Montar Resposta de Erro"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nUPDATE auxiliary.update_cc_report_status\nSET\n  \"entries_runned\"  = 0,\n  \"outputs_runned\" = 0,\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n\t\"entries_runned\" != 0 OR \"outputs_runned\" != 0\nRETURNING \"entries_runned\", \"outputs_runned\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -208,
+        256
+      ],
+      "id": "6f15e89b-2446-4ade-9f28-938cc5c5a694",
+      "name": "Resetar Status do Relatorio CC",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Entrada de Dados\n\nRecebe a chamada interna da rota clean_up para limpeza de estados.\n\nObjetivo:\n- reiniciar status de execucao\n- preparar ambiente para novos ciclos",
+        "height": 216,
+        "width": 420,
+        "color": 6
+      },
+      "id": "fff5b5bd-684c-4d13-b51e-1681e78bc204",
+      "name": "Entrada de Dados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Limpeza dos Servicos\n\nAtualiza auxiliary.update_extension_services e volta RUN_STATUS para 0.\n\nAplicacao:\n- apenas registros com status diferente de 0\n- registra horario da limpeza",
+        "height": 232,
+        "width": 420,
+        "color": 2
+      },
+      "id": "8d98789e-df26-46a8-9a42-7996277ec4bc",
+      "name": "Limpeza dos Servicos",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Limpeza do Relatorio CC\n\nZera os contadores de processamento em auxiliary.update_cc_report_status.\n\nCampos resetados:\n- entries_runned\n- outputs_runned",
+        "height": 216,
+        "width": 420,
+        "color": 2
+      },
+      "id": "5fcf9a02-0973-42ba-9463-b5f499c5d926",
+      "name": "Limpeza do Relatorio CC",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Retorno do Fluxo\n\nConsolida o resultado para o chamador.\n\nSaidas:\n- sucesso quando as atualizacoes executam\n- erro quando ocorre falha no banco",
+        "height": 216,
+        "width": 420,
+        "color": 5
+      },
+      "id": "fc46e59d-9e90-4268-b325-ac37ad03a0fd",
+      "name": "Retorno do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        96
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Inicio do Fluxo": {
+      "main": [
+        [
+          {
+            "node": "Resetar Status dos Servicos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Resetar Status do Relatorio CC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resetar Status dos Servicos": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Resposta de Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resetar Status do Relatorio CC": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Resposta de Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "9dfb81f2-2a8d-47cc-b3af-bd62a91f8ca1",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "VQsdVpBigGsHo5Eo",
+  "tags": []
+}

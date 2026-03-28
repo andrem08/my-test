@@ -1,0 +1,255 @@
+{
+  "name": "Extensão VHSYS - Consulta de Status dos Serviços",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "d5a0e0ca-21ec-4a52-a856-bdf57b94e67d",
+      "name": "Inicio do Fluxo",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  \"ACTION\",\n  \"RUN_AFTER\",\n  \"RUN_STATUS\",\n  \"PROGRESS_VALUE\",\n  \"LAST_RUN\",\n  \"LAST_UPDATE\",\n  CASE\n    WHEN \"LAST_RUN\" IS NULL         THEN false\n    WHEN \"RUN_STATUS\" = 0           THEN false\n    ELSE\n      EXTRACT(EPOCH FROM (\n        (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n        - \"LAST_RUN\"\n      )) / 60 > COALESCE(\"RUN_AFTER\", 720)\n  END AS \"SHOULD_RUN\"\nFROM auxiliary.update_extension_services\nORDER BY \"ACTION\";",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -1472,
+        656
+      ],
+      "id": "67b7e358-5f41-41fb-a3c2-7ff65180bfcf",
+      "name": "Consultar Status dos Servicos",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// CRÍTICO: Retorna ARRAY DIRETO — NÃO encapsulado\n// A extensão Chrome espera: [...] não { data: [...] }\n// ─────────────────────────────────────────────\n\nconst allRecords = $input.all();\nconst actions = allRecords.map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'status_read',\n  total_actions: actions.length,\n  level: 'info'\n}));\n\n// statusCode 201 preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: actions\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        560
+      ],
+      "id": "e2c7da8d-6f02-4fc0-a4eb-215bfa0be395",
+      "name": "Montar Resposta de Sucesso"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro de leitura do banco ──\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'get_update_extension_service_data',\n  event: 'db_read_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: 'Could not read extension services status' }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1248,
+        752
+      ],
+      "id": "9c485c83-7bc3-4009-bbb5-b67531bb4f01",
+      "name": "Montar Resposta de Erro"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return the response data as-is\nconst response = $input.first().json;\nreturn response;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        656
+      ],
+      "id": "455491f8-f60b-4d80-9611-a701ac46726a",
+      "name": "Retornar Resposta"
+    },
+    {
+      "parameters": {
+        "content": "## Entrada de Dados\n\nRecebe a chamada interna da rota get_update_extension_service_data.\n\nObjetivo:\n- consultar o estado atual dos servicos\n- preparar retorno para a extensao",
+        "height": 216,
+        "width": 420,
+        "color": 6
+      },
+      "id": "ea15d8ae-104e-4211-9d74-98ac089e72ae",
+      "name": "Entrada de Dados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2192,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Consulta no Banco\n\nBusca os dados em auxiliary.update_extension_services com calculo de SHOULD_RUN.\n\nCampos retornados:\n- ACTION\n- RUN_STATUS\n- PROGRESS_VALUE\n- SHOULD_RUN",
+        "height": 248,
+        "width": 420,
+        "color": 2
+      },
+      "id": "99188d94-9789-47b8-a9d2-90486f5b058b",
+      "name": "Consulta no Banco",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1712,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento da Resposta\n\nMonta o retorno no formato esperado pela extensao.\n\nFormato final:\n- body com array direto\n- sem encapsular em objeto extra",
+        "height": 184,
+        "width": 420,
+        "color": 7
+      },
+      "id": "a43bdefa-cd74-44eb-9f0f-001003dc0318",
+      "name": "Tratamento da Resposta",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1392,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Retorno do Fluxo\n\nFinaliza com resposta padrao para o chamador.\n\nSaidas:\n- sucesso com lista de status\n- erro de leitura quando o banco falha",
+        "height": 216,
+        "width": 356,
+        "color": 5
+      },
+      "id": "2033bce6-cf78-4d35-bd5c-c046559ed3eb",
+      "name": "Retorno do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        608
+      ]
+    }
+  ],
+  "pinData": {
+    "Inicio do Fluxo": [
+      {
+        "json": {
+          "route": "get_update_extension_service_data",
+          "method": "GET",
+          "body": {},
+          "query": {
+            "route": "get_update_extension_service_data"
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19u8XipXWxnQv4mhhRiWX2%2FTLrtS7b43HRuHAftIiocEbNaYsGMFwwu7BgD5knEGMR4gYrKzAwe9w%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX19H9wGqLFzGbv%2FsghvJYWSLZUZ9ZsD%2BKfSocRA%2FnMbfAI%2FfoTJxRFleEt%2F1AT1%2BuRVv69GRxWXBLW1NNSP208IVf%2BIJoAt%2F4iV2%2FljiCKOwuu3nPoJcWTMd%2BI9Tlq4Zv1BNsc8t7xdV7ayq3fXgjusolvSfMIqSJBI%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19FmsqfmCF%2F7GoqOUnZ0ax9yxGrvODbuH0hEeuPFkZyD2dDjFt4Nbo1cUnPv8XxQ3lufJci9FWQAo4N%2BFFQt8q95H06AV6lu%2BRWZRk9FpMNeNmaXE8VBrgPjOwTghasdHZ2qNwqp%2FK9idmBA8Kay3ZQc32aewLSwZo%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2Bd%2FfToVCj7pJt7fzcNIrdsVAz6Bx3MwpjFFj2xUwNzY9PYP0NjjQ4L3UNMtHg31bLfpbyRoKn1LMtOTL1UDPpXYQCZ%2BhEvrIS4Cx1qLL4%2FBGD2847OFImNg8uZOWiq%2FphMlPuFFe7B7g%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774035024837%2C%22019d0c73-9a0e-7017-883b-a61d08bc4443%22%2C1774030395916%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "none",
+              "sec-fetch-storage-access": "active",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "fda5ae5afd08",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "get_update_extension_service_data"
+            },
+            "body": {},
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Inicio do Fluxo": {
+      "main": [
+        [
+          {
+            "node": "Consultar Status dos Servicos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Status dos Servicos": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Resposta de Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Resposta de Sucesso": {
+      "main": [
+        [
+          {
+            "node": "Retornar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar Resposta de Erro": {
+      "main": [
+        [
+          {
+            "node": "Retornar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "223b9aec-4d5b-4aa6-9d39-d69d461ab3da",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "ul6IjUpAqixCTDc3",
+  "tags": []
+}

@@ -828,7 +828,7 @@
         },
         {
           "name": "data_pedido",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "qtde_produtos",
@@ -868,11 +868,11 @@
         },
         {
           "name": "data_emissao",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "data_autorizacao",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "situacao",
@@ -880,11 +880,11 @@
         },
         {
           "name": "data_cad",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "data_mod",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "observacoes",
@@ -912,12 +912,12 @@
         },
         {
           "name": "data_cancelamento",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         }
       ],
       "checks": [
         {
-          "constraint": "situacao IN ('Atendido', 'Cancelado')"
+          "constraint": "situacao IN ('Atendido', 'Cancelado', 'Em Aberto')"
         }
       ],
       "indexes": [
@@ -1087,7 +1087,7 @@
         },
         {
           "name": "data_pedido",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "local_prestacao",
@@ -1111,7 +1111,7 @@
         },
         {
           "name": "data_emissao",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "situacao",
@@ -1119,11 +1119,11 @@
         },
         {
           "name": "data_cad",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         },
         {
           "name": "data_mod",
-          "type": "BIGINT"
+          "type": "TIMESTAMP"
         }
       ],
       "checks": [

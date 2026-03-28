@@ -1,0 +1,140 @@
+{
+  "name": "Extensao VHSYS - CC Proxima URL",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "556abc5d-1284-48c3-ad6b-5096f6def58f",
+      "name": "Quando Chamado por Outro Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3280,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Busca o próximo centro de custo que precisa ser processado\n-- Filtra onde entries_runned=0 OU outputs_runned=0\nSELECT cc_id, entries_runned, outputs_runned\nFROM auxiliary.update_cc_report_status\nWHERE entries_runned = 0 OR outputs_runned = 0\nORDER BY RANDOM()\nLIMIT 1;",
+        "options": {}
+      },
+      "id": "861185d6-742c-4668-8fe6-2cba88f7863f",
+      "name": "Buscar Proximo CC",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -3040,
+        -240
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Monta URL e resposta com base no que ainda falta processar\nconst row = $input.first().json;\n\nif (!row || !row.cc_id) {\n  return { message: 'Nenhum CC para processar' };\n}\n\nconst ccId = row.cc_id;\nconst entryDone = row.entries_runned === 1;\nconst outputDone = row.outputs_runned === 1;\n\n// Determina qual tipo processar\nlet type = 'entrada';\nlet urlType = 'Entrada';\n\nif (entryDone && !outputDone) {\n  type = 'saida';\n  urlType = 'Saida';\n}\n\n// Gera URL do VHSYS\nconst today = new Date();\nconst dd = String(today.getDate()).padStart(2, '0');\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst yyyy = today.getFullYear();\nconst dateStr = `${dd}/${mm}/${yyyy}`;\n\nconst vhsysUrl = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${dateStr}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_next_url',\n  event: 'url_gerada',\n  cc_id: ccId,\n  type: type,\n  level: 'info'\n}));\n\n// IMPORTANTE: TypeScript espera data.url.url (estrutura aninhada)\n// Linha 64 do updateReportCC.ts faz: const { url: dataUrl } = data\n// Linha 71 faz: await getData(dataUrl.url)\nreturn {\n  url: {\n    url: vhsysUrl,\n    cc_id: ccId,\n    type: type\n  }\n};"
+      },
+      "id": "7b59dc33-67e2-4d83-b7d0-b711349dbe64",
+      "name": "Montar Resposta de URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Arquitetura do Fluxo\n\nSeleciona o proximo CC pendente e monta a URL do VHSYS.\n\nSaida:\n- data.url.url\n- cc_id\n- type",
+        "height": 224,
+        "width": 420,
+        "color": 7
+      },
+      "id": "b7740e3b-9894-49ec-8915-3433a6da2be4",
+      "name": "Arquitetura do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3776,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Selecao de Pendencia\n\nConsulta update_cc_report_status e pega 1 cc_id com processamento incompleto.\n\nFiltro:\n- entries_runned = 0\n- ou outputs_runned = 0",
+        "height": 218,
+        "width": 360,
+        "color": 6
+      },
+      "id": "f53f86cb-196f-4303-99dd-51e04ea7df13",
+      "name": "Selecao de Pendencia",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3136,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Montagem de URL\n\nDecide type (entrada ou saida) e gera URL com data atual.\n\nCompatibilidade:\n- retorno em data.url.url",
+        "height": 184,
+        "width": 336,
+        "color": 4
+      },
+      "id": "4554a31b-93c2-479f-8422-a2a351f6a94f",
+      "name": "Montagem de URL",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2608,
+        -304
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Quando Chamado por Outro Workflow": {
+      "main": [
+        [
+          {
+            "node": "Buscar Proximo CC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Proximo CC": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta de URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "saveDataErrorExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ca057fb6-7999-469b-8a98-d56133e259d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "YPMQGm7hD5eBn1da",
+  "tags": []
+}
