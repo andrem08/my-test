@@ -286,6 +286,436 @@
           "comment": "Flag de exclusão lógica (geralmente 'Sim' ou 'Nao')"
         }
       ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_funcionarios",
+      "fields": [
+        {
+          "name": "id_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "rg_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "cpf_funcionario",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "matricula_funcionario",
+          "type": "VARCHAR(50)",
+          "primary_key": true
+        },
+        {
+          "name": "sexo_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "local_nascimento_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "orgao_emissor_rg",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "serie_ctps_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "cep_funcionario",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "endereco_funcionario",
+          "type": "VARCHAR(500)"
+        },
+        {
+          "name": "numero_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "bairro_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cidade_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "uf_funcionario",
+          "type": "VARCHAR(2)"
+        },
+        {
+          "name": "complemento_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "celular_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "fone_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "email_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_pai_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_mae_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "observacoes_funcionario",
+          "type": "TEXT"
+        },
+        {
+          "name": "pis_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "ctps_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "uf_ctps_funcionario",
+          "type": "VARCHAR(2)"
+        },
+        {
+          "name": "banco_funcionario",
+          "type": "VARCHAR(100)"
+        },
+        {
+          "name": "agencia_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "conta_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "cargo_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_cargo_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "cbo_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "departamento_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "trabalho_inicio",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "trabalho_termino",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "intervalo_inicio",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "intervalo_termino",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "salario_funcionario",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "status_funcionario",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "data_admissao_funcionario",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_demissao_funcionario",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_nascimento_funcionario",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_cadastro",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "data_modificacao",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "checks": [
+        {
+          "constraint": "sexo_funcionario IN ('Masculino', 'Feminino', 'Outro')"
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_vhx_funcionarios_matricula",
+          "columns": [
+            "matricula_funcionario"
+          ],
+          "unique": true
+        },
+        {
+          "name": "idx_vhx_funcionarios_cpf",
+          "columns": [
+            "cpf_funcionario"
+          ]
+        },
+        {
+          "name": "idx_vhx_funcionarios_status",
+          "columns": [
+            "status_funcionario"
+          ]
+        },
+        {
+          "name": "idx_vhx_funcionarios_cargo",
+          "columns": [
+            "cargo_funcionario"
+          ]
+        },
+        {
+          "name": "idx_vhx_funcionarios_departamento",
+          "columns": [
+            "departamento_funcionario"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Cadastro principal de funcionários extraído do VHSYS via Extensão Chrome."
+        },
+        {
+          "type": "column",
+          "column": "id_funcionario",
+          "comment": "Chave primária - Identificador do funcionário"
+        },
+        {
+          "type": "column",
+          "column": "matricula_funcionario",
+          "comment": "Matrícula única do funcionário (usada para upsert no N8N)"
+        },
+        {
+          "type": "column",
+          "column": "salario_funcionario",
+          "comment": "Salário convertido para formato numérico DECIMAL(15,2)"
+        },
+        {
+          "type": "column",
+          "column": "status_funcionario",
+          "comment": "Status atual do funcionário (ex: Ativo, Desligado)"
+        },
+        {
+          "type": "column",
+          "column": "data_demissao_funcionario",
+          "comment": "Data de desligamento do funcionário (pode ser NULL)"
+        }
+      ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_beneficios_funcionarios",
+      "fields": [
+        {
+          "name": "benefit_id",
+          "type": "VARCHAR(255)",
+          "primary_key": true
+        },
+        {
+          "name": "id_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "valor",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "checks": [],
+      "indexes": [
+        {
+          "name": "idx_vhx_beneficios_funcionario",
+          "columns": [
+            "id_funcionario"
+          ]
+        },
+        {
+          "name": "idx_vhx_beneficios_nome",
+          "columns": [
+            "nome"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Benefícios vinculados aos funcionários extraídos do VHSYS via Extensão Chrome."
+        },
+        {
+          "type": "column",
+          "column": "benefit_id",
+          "comment": "Chave primária - Identificador único do registro de benefício (geralmente um hash)"
+        },
+        {
+          "type": "column",
+          "column": "id_funcionario",
+          "comment": "Chave estrangeira lógica para a tabela vhx_funcionarios"
+        },
+        {
+          "type": "column",
+          "column": "nome",
+          "comment": "Nome ou tipo do benefício (Ex: Transporte, Plano de Saúde, Refeição)"
+        },
+        {
+          "type": "column",
+          "column": "valor",
+          "comment": "Valor monetário do benefício (numérico)"
+        }
+      ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_dependentes",
+      "fields": [
+        {
+          "name": "dependents_id",
+          "type": "VARCHAR(255)",
+          "primary_key": true
+        },
+        {
+          "name": "id_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_funcionario",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "nome_dependente",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "tipo_dependente",
+          "type": "VARCHAR(100)"
+        },
+        {
+          "name": "fone_dependente",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "rg",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "cpf",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "name": "data_nascimento",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "checks": [],
+      "indexes": [
+        {
+          "name": "idx_vhx_dependentes_funcionario",
+          "columns": [
+            "id_funcionario"
+          ]
+        },
+        {
+          "name": "idx_vhx_dependentes_tipo",
+          "columns": [
+            "tipo_dependente"
+          ]
+        },
+        {
+          "name": "idx_vhx_dependentes_cpf",
+          "columns": [
+            "cpf"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Cadastro de dependentes dos funcionários extraído do VHSYS via Extensão Chrome."
+        },
+        {
+          "type": "column",
+          "column": "dependents_id",
+          "comment": "Chave primária - Identificador único do registro de dependente (hash)"
+        },
+        {
+          "type": "column",
+          "column": "id_funcionario",
+          "comment": "Chave estrangeira lógica para a tabela vhx_funcionarios"
+        },
+        {
+          "type": "column",
+          "column": "tipo_dependente",
+          "comment": "Grau de parentesco ou tipo de dependência (Ex: Conjuge, Filho)"
+        },
+        {
+          "type": "column",
+          "column": "data_nascimento",
+          "comment": "Data de nascimento do dependente convertida para TIMESTAMP"
+        }
+      ]
     }
   ]
 }

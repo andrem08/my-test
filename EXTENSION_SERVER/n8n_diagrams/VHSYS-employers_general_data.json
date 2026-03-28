@@ -1,10 +1,10 @@
 {
-  "name": "VHSYS-employers_general_data",
+  "name": "Extensao VHSYS - Carga Geral de Funcionarios",
   "nodes": [
     {
       "parameters": {},
       "id": "49716293-a5bb-4161-b0e2-68196c6245cb",
-      "name": "When called by another workflow",
+      "name": "Quando chamado por outro workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
@@ -17,7 +17,7 @@
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: employers_general_data\n// Rota   : POST /employers_general_data\n// Fase 4 : Fluxo EMPLOYERS completo\n// ─────────────────────────────────────────────\n// Input  : { data: { source: { itens: [{ ID, Nome, CPF, DataAdmissao, ... }] } } }\n// Output : { message: string, employees_updated: number } HTTP 201\n// Banco  : UPSERT funcionarios por id_funcionario\n// Chave  : id_funcionario (campo ID da API)\n// ─────────────────────────────────────────────\n\nconst body = $input.first().json.body || $input.first().json;\n\nif (!body.data) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing required field: data' }\n  };\n}\n\n// Verificar se os dados estão em data.source.itens (formato da extensão)\nlet employees = [];\nif (body.data.source && body.data.source.itens && Array.isArray(body.data.source.itens)) {\n  employees = body.data.source.itens;\n} else if (body.data.employees && Array.isArray(body.data.employees)) {\n  // Formato alternativo para compatibilidade\n  employees = body.data.employees;\n} else {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Missing or invalid employees array in data.source.itens or data.employees' }\n  };\n}\n\nif (employees.length === 0) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'Employees array cannot be empty' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'input_validated',\n  employees_count: employees.length,\n  data_format: body.data.source ? 'source.itens' : 'employees',\n  level: 'info'\n}));\n\nreturn { _valid: true, employees };"
       },
       "id": "3dbe9f93-00f9-483d-b768-b40aa42591c0",
-      "name": "Validate Input",
+      "name": "Validar Entrada da Requisicao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -51,7 +51,7 @@
         "options": {}
       },
       "id": "09b925c0-feb3-4403-b28e-dd1a7ff6a6cc",
-      "name": "Is Valid?",
+      "name": "Entrada E Valida?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
@@ -61,10 +61,10 @@
     },
     {
       "parameters": {
-        "jsCode": "// Transform e normaliza dados dos funcionários\n// Expande cada funcionário para um item separado\nconst ctx = $input.first().json;\nconst employees = ctx.employees;\n\n// Helper para formatar CPF\nfunction formatCpf(cpf) {\n  if (!cpf) return '';\n  const cleaned = String(cpf).replace(/\\D/g, '');\n  if (cleaned.length === 11) {\n    return cleaned.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');\n  }\n  return cpf;\n}\n\n// Helper para converter data Unix timestamp\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  \n  // Se é um timestamp Unix (número)\n  const timestamp = parseInt(dateStr);\n  if (!isNaN(timestamp)) {\n    const date = new Date(timestamp * 1000); // Unix timestamp em segundos\n    return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];\n  }\n  \n  // Fallback para outros formatos\n  const date = new Date(dateStr);\n  return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];\n}\n\n// Helper para converter salário\nfunction parseSalary(salary) {\n  if (!salary) return 0;\n  const cleaned = String(salary).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\nconst transformedEmployees = employees.map(emp => {\n  // Use ID (maiúsculo) como no formato real dos dados\n  const id = String(emp.ID || '').trim();\n  \n  if (!id) {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'employers_general_data',\n      event: 'employee_skipped_no_id',\n      employee_data: emp,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    nome_funcionario: String(emp.Nome || '').trim(),\n    matricula: String(emp.Matricula || '').trim(),\n    cargo: String(emp.Cargo || '').trim(),\n    cbo: String(emp.CBO || '').trim(),\n    rg: String(emp.Rg || '').trim(),\n    cpf: formatCpf(emp.CPF),\n    data_nascimento: parseDate(emp.DataNascimento),\n    salario: parseSalary(emp.Salario),\n    data_admissao: parseDate(emp.DataAdmissao),\n    data_demissao: parseDate(emp.DataDemissao),\n    status: String(emp.Status || '').trim(),\n    data_cadastro: parseDate(emp.DataCad),\n    data_modificacao: parseDate(emp.DataMod),\n    departamento: String(emp.Depto || '').trim()\n  };\n}).filter(emp => emp !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'employees_transformed',\n  valid_employees: transformedEmployees.length,\n  level: 'info'\n}));\n\nreturn transformedEmployees;"
+        "jsCode": "// Transform e normaliza dados dos funcionários\n// Expande cada funcionário para um item separado\nconst ctx = $input.first().json;\nconst employees = ctx.employees;\n\n// Helper para formatar CPF\nfunction formatCpf(cpf) {\n  if (!cpf) return '';\n  const cleaned = String(cpf).replace(/\\D/g, '');\n  if (cleaned.length === 11) {\n    return cleaned.replace(/(\\d{3})(\\d{3})(\\d{3})(\\d{2})/, '$1.$2.$3-$4');\n  }\n  return cpf;\n}\n\n// Helper para converter data Unix timestamp\nfunction parseDate(dateStr) {\n  if (!dateStr) return null;\n  \n  // Se é um timestamp Unix (número)\n  const timestamp = parseInt(dateStr);\n  if (!isNaN(timestamp)) {\n    const date = new Date(timestamp * 1000); // Unix timestamp em segundos\n    return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];\n  }\n  \n  // Fallback para outros formatos\n  const date = new Date(dateStr);\n  return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];\n}\n\n// Helper para converter salário\nfunction parseSalary(salary) {\n  if (!salary) return 0;\n  const cleaned = String(salary).replace(/[^0-9.,]/g, '').replace(',', '.');\n  const num = parseFloat(cleaned);\n  return isNaN(num) ? 0 : num;\n}\n\nconst transformedEmployees = employees.map(emp => {\n  // Use ID (maiúsculo) como no formato real dos dados\n  const id = String(emp.ID || '').trim();\n  \n  if (!id) {\n    console.log(JSON.stringify({\n      timestamp: new Date().toISOString(),\n      route: 'employers_general_data',\n      event: 'employee_skipped_no_id',\n      employee_data: emp,\n      level: 'warn'\n    }));\n    return null;\n  }\n\n  return {\n    id_funcionario: id,\n    nome_funcionario: String(emp.Nome || '').trim(),\n    matricula: String(emp.Matricula || '').trim(),\n    cargo: String(emp.Cargo || '').trim(),\n    cbo: String(emp.CBO || '').trim(),\n    rg: String(emp.Rg || '').trim(),\n    cpf: formatCpf(emp.CPF),\n    data_nascimento: parseDate(emp.DataNascimento),\n    salario: parseSalary(emp.Salario),\n    data_admissao: parseDate(emp.DataAdmissao),\n    data_demissao: parseDate(emp.DataDemissao),\n    status: String(emp.Status || '').trim(),\n    data_cadastro: parseDate(emp.DataCad),\n    data_modificacao: parseDate(emp.DataMod),\n    departamento: String(emp.Depto || '').trim()\n  };\n}).filter(emp => emp !== null);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'employees_transformed',\n  valid_employees: transformedEmployees.length,\n  level: 'info'\n}));\n\nreturn transformedEmployees;"
       },
       "id": "b8686672-bdbb-48b7-9716-d78e25bb0e01",
-      "name": "Transform Employees",
+      "name": "Transformar Funcionarios",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -75,14 +75,14 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Upsert employee data using N8N expressions\nINSERT INTO auxiliary.\"employersData\" (nome_funcionario, matricula, cargo, cbo, rg, cpf, \n  data_nascimento, salario, data_admissao, data_demissao, status, \n  data_cadastro, data_modificacao, departamento, created_at, updated_at\n) VALUES (\n  '{{ $json.nome_funcionario }}', '{{ $json.matricula }}', \n  '{{ $json.cargo }}', '{{ $json.cbo }}', '{{ $json.rg }}', '{{ $json.cpf }}',\n  {{ $json.data_nascimento ? \"'\" + $json.data_nascimento + \"'::date\" : \"NULL\" }}, \n  {{ $json.salario }}, \n  {{ $json.data_admissao ? \"'\" + $json.data_admissao + \"'::date\" : \"NULL\" }}, \n  {{ $json.data_demissao ? \"'\" + $json.data_demissao + \"'::date\" : \"NULL\" }}, \n  '{{ $json.status }}', \n  {{ $json.data_cadastro ? \"'\" + $json.data_cadastro + \"'::date\" : \"NULL\" }}, \n  {{ $json.data_modificacao ? \"'\" + $json.data_modificacao + \"'::date\" : \"NULL\" }}, \n  '{{ $json.departamento }}', '{{ $now.toString() }}', '{{ $now.toString() }}'\n)\nON CONFLICT (matricula) \nDO UPDATE SET \n  nome_funcionario = EXCLUDED.nome_funcionario,\n  cargo = EXCLUDED.cargo,\n  cbo = EXCLUDED.cbo,\n  rg = EXCLUDED.rg,\n  cpf = EXCLUDED.cpf,\n  data_nascimento = EXCLUDED.data_nascimento,\n  salario = EXCLUDED.salario,\n  data_admissao = EXCLUDED.data_admissao,\n  data_demissao = EXCLUDED.data_demissao,\n  status = EXCLUDED.status,\n  data_cadastro = EXCLUDED.data_cadastro,\n  data_modificacao = EXCLUDED.data_modificacao,\n  departamento = EXCLUDED.departamento,\n  updated_at = '{{ $now.toString() }}';",
+        "query": "-- Upsert employee data using N8N expressions\nINSERT INTO raw_data.vhx_funcionarios (id_funcionario, nome_funcionario, matricula_funcionario, cargo_funcionario, nome_cargo_funcionario, cbo_funcionario, rg_funcionario, cpf_funcionario,\n  data_nascimento_funcionario, salario_funcionario, data_admissao_funcionario, data_demissao_funcionario, status_funcionario,\n  data_cadastro, data_modificacao, departamento_funcionario, created_at, updated_at\n) VALUES (\n  '{{ $json.id_funcionario }}', '{{ $json.nome_funcionario }}', '{{ $json.matricula }}',\n  '{{ $json.cargo }}', '{{ $json.cargo }}', '{{ $json.cbo }}', '{{ $json.rg }}', '{{ $json.cpf }}',\n  {{ $json.data_nascimento ? \"'\" + $json.data_nascimento + \"'::date\" : \"NULL\" }},\n  {{ $json.salario }},\n  {{ $json.data_admissao ? \"'\" + $json.data_admissao + \"'::date\" : \"NULL\" }},\n  {{ $json.data_demissao ? \"'\" + $json.data_demissao + \"'::date\" : \"NULL\" }},\n  '{{ $json.status }}',\n  {{ $json.data_cadastro ? \"'\" + $json.data_cadastro + \"'::date\" : \"NULL\" }},\n  {{ $json.data_modificacao ? \"'\" + $json.data_modificacao + \"'::date\" : \"NULL\" }},\n  '{{ $json.departamento }}', (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (matricula_funcionario)\nDO UPDATE SET\n  id_funcionario = EXCLUDED.id_funcionario,\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  cargo_funcionario = EXCLUDED.cargo_funcionario,\n  nome_cargo_funcionario = EXCLUDED.nome_cargo_funcionario,\n  cbo_funcionario = EXCLUDED.cbo_funcionario,\n  rg_funcionario = EXCLUDED.rg_funcionario,\n  cpf_funcionario = EXCLUDED.cpf_funcionario,\n  data_nascimento_funcionario = EXCLUDED.data_nascimento_funcionario,\n  salario_funcionario = EXCLUDED.salario_funcionario,\n  data_admissao_funcionario = EXCLUDED.data_admissao_funcionario,\n  data_demissao_funcionario = EXCLUDED.data_demissao_funcionario,\n  status_funcionario = EXCLUDED.status_funcionario,\n  data_cadastro = EXCLUDED.data_cadastro,\n  data_modificacao = EXCLUDED.data_modificacao,\n  departamento_funcionario = EXCLUDED.departamento_funcionario,\n  updated_at = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING id_funcionario, matricula_funcionario;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "independently"
         }
       },
       "id": "bc91acbd-265e-4e2a-924b-fbe739cffd48",
-      "name": "Upsert Employees",
+      "name": "Inserir ou Atualizar Funcionarios",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
@@ -103,7 +103,7 @@
         "jsCode": "// Conta registros afetados e constrói resposta\nconst affectedRecords = $input.all()\n  .filter(item => item.json && item.json.id_funcionario)\n  .length;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'employees_upserted',\n  employees_updated: affectedRecords,\n  level: 'info'\n}));\n\n// statusCode 201 — preserva compatibilidade com Flask original\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Employees data updated successfully',\n    employees_updated: affectedRecords\n  }\n};"
       },
       "id": "ad57a16e-3dfd-4a4f-b646-8da939ae2a08",
-      "name": "Build Response",
+      "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -116,7 +116,7 @@
         "jsCode": "// Erro de validação\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
       },
       "id": "2bdef618-036a-4015-ab0d-66ebabab0279",
-      "name": "Build Validation Error Response",
+      "name": "Montar Erro de Validacao",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -129,7 +129,7 @@
         "jsCode": "// Erro de banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'employers_general_data',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update employees data' }\n};"
       },
       "id": "08e107df-ee57-4512-9e9d-fcd7002b1251",
-      "name": "Build DB Error Response",
+      "name": "Montar Erro de Banco de Dados",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
@@ -148,11 +148,11 @@
         1552
       ],
       "id": "25725df5-cfd3-4981-b330-2302e0a3ade1",
-      "name": "Return Response"
+      "name": "Retornar Resposta Final"
     }
   ],
   "pinData": {
-    "When called by another workflow": [
+    "Quando chamado por outro workflow": [
       {
         "json": {
           "route": "employers_general_data",
@@ -2537,102 +2537,102 @@
     ]
   },
   "connections": {
-    "When called by another workflow": {
+    "Quando chamado por outro workflow": {
       "main": [
         [
           {
-            "node": "Validate Input",
+            "node": "Validar Entrada da Requisicao",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validate Input": {
+    "Validar Entrada da Requisicao": {
       "main": [
         [
           {
-            "node": "Is Valid?",
+            "node": "Entrada E Valida?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is Valid?": {
+    "Entrada E Valida?": {
       "main": [
         [
           {
-            "node": "Transform Employees",
+            "node": "Transformar Funcionarios",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build Validation Error Response",
+            "node": "Montar Erro de Validacao",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Transform Employees": {
+    "Transformar Funcionarios": {
       "main": [
         [
           {
-            "node": "Upsert Employees",
+            "node": "Inserir ou Atualizar Funcionarios",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Upsert Employees": {
+    "Inserir ou Atualizar Funcionarios": {
       "main": [
         [
           {
-            "node": "Build Response",
+            "node": "Montar Resposta de Sucesso",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build DB Error Response",
+            "node": "Montar Erro de Banco de Dados",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Response": {
+    "Montar Resposta de Sucesso": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "Retornar Resposta Final",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Validation Error Response": {
+    "Montar Erro de Validacao": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "Retornar Resposta Final",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build DB Error Response": {
+    "Montar Erro de Banco de Dados": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "Retornar Resposta Final",
             "type": "main",
             "index": 0
           }
@@ -2654,3 +2654,4 @@
   "id": "ul7KFJNXYYJCida6",
   "tags": []
 }
+
