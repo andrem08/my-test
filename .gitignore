@@ -39,3 +39,14 @@ EXTENSION_SERVER/final_fix_and_validate.py
 EXTENSION_SERVER/recreate_cc_report.py
 EXTENSION_SERVER/recreate_clean_cc_report.py
 EXTENSION_SERVER/n8n_diagrams/json_test.json
+SYSTEM_RT/venv
+SYSTEM_RT/__pycache__/
+SYSTEM_RT/routes/__pycache__/
+*.pyc
+SYSTEM_RT/output.txt
+*.trunk
+*.vscode
+*.vscode/PythonImportHelper-v2-Completion.json
+SYSTEM_RT/migrations/
+SYSTEM_RT/migrations
+SYSTEM_RT/VHSYS/VHSYS_APIS_RESULTS/

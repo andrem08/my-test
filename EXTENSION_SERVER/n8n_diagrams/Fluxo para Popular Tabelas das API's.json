@@ -2,17 +2,6 @@
   "name": "Fluxo para Popular Tabelas das API's",
   "nodes": [
     {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -59024,
-        19904
-      ],
-      "id": "ff801bb0-4787-4784-875f-0281957d54cd",
-      "name": "When clicking ‘Execute workflow’"
-    },
-    {
       "parameters": {
         "content": "## ⚙️ Configurar Constantes\n\nDefine variaveis globais do workflow:\n\n• RT_CLOCKFY_WORKSPACE_ID\n• Outras chaves usadas nos requests",
         "height": 200,
@@ -558,7 +547,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "{{ (() => {\nconst data = $json;\n\nconst table = $(\"Split Out\").item.json.table;\nconst idField = $(\"Split Out\").item.json.id_field;\nconst schema = \"raw_data\";\n\nconst fields = Object.keys(data).filter(\n  (key) =>\n    !key.startsWith(\"_\") &&\n    !key.startsWith(\"$\") &&\n    key !== \"json\" &&\n    key !== \"pairedItem\",\n);\n\nif (fields.length === 0) {\n  return 'SELECT 1'\n}\n\nconst normalizedIdField = idField.toLowerCase();\nconst columns = fields.map((f) => '\"' + f.toLowerCase() + '\"').join(\", \");\nconst values = fields.map((f) => escapeSqlValue(data[f])).join(\", \");\nconst updateSet = fields\n  .filter((f) => f.toLowerCase() !== normalizedIdField)\n  .map((f) => '\"' + f.toLowerCase() + '\" = EXCLUDED.\"' + f.toLowerCase() + '\"')\n  .join(\", \");\n\nreturn (\n  \"INSERT INTO \" +\n  schema +\n  \".\" +\n  table +\n  \" (\" +\n  columns +\n  \") VALUES (\" +\n  values +\n  ') ON CONFLICT (\"' +\n  normalizedIdField +\n  '\") DO UPDATE SET ' +\n  updateSet +\n  \";\"\n);\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === \"\") {\n    return \"NULL\";\n  }\n  if (typeof value === \"string\" && value.startsWith(\"0000-00-00\")) {\n    return \"NULL\";\n  }\n  if (typeof value === \"number\") {\n    return value;\n  }\n  if (typeof value === \"boolean\") {\n    return value ? \"true\" : \"false\";\n  }\n  if (Array.isArray(value) || typeof value === \"object\") {\n    return \"'\" + JSON.stringify(value).replace(/'/g, \"''\").replace(/\\$/g, \"\\\\$\") + \"'::jsonb\";\n  }\n  // Escape single quotes, dollar signs, and backslashes for SQL string literals\n  return \"'\" + String(value).replace(/\\\\/g, \"\\\\\\\\\").replace(/'/g, \"''\").replace(/\\$/g, \"\\\\$\") + \"'\";\n}\n})() }}",
+        "query": "{{ (() => {\nconst data = $json;\n\nconst table = $(\"Split Out\").item.json.table;\nconst idField = $(\"Split Out\").item.json.id_field;\nconst schema = \"raw_data\";\n\nconst fields = Object.keys(data).filter(\n  (key) =>\n    !key.startsWith(\"_\") &&\n    !key.startsWith(\"$\") &&\n    key !== \"json\" &&\n    key !== \"pairedItem\"\n);\n\nif (fields.length === 0) {\n  return 'SELECT 1';\n}\n\nconst normalizedIdField = idField.toLowerCase();\nconst columns = fields.map((f) => '\"' + f.toLowerCase() + '\"').join(\", \");\nconst values = fields.map((f) => escapeSqlValue(data[f])).join(\", \");\nconst updateSet = fields\n  .filter((f) => f.toLowerCase() !== normalizedIdField)\n  .map((f) => '\"' + f.toLowerCase() + '\" = EXCLUDED.\"' + f.toLowerCase() + '\"')\n  .join(\", \");\n\nreturn (\n  \"INSERT INTO \" +\n  schema +\n  \".\" +\n  table +\n  \" (\" +\n  columns +\n  \") VALUES (\" +\n  values +\n  ') ON CONFLICT (\"' +\n  normalizedIdField +\n  '\") DO UPDATE SET ' +\n  updateSet +\n  \";\"\n);\n\nfunction escapeSqlValue(value) {\n  if (value === null || value === undefined || value === \"\") {\n    return \"NULL\";\n  }\n  if (typeof value === \"string\" && value.startsWith(\"0000-00-00\")) {\n    return \"NULL\";\n  }\n  if (typeof value === \"number\") {\n    return value;\n  }\n  if (typeof value === \"boolean\") {\n    return value ? \"true\" : \"false\";\n  }\n  if (Array.isArray(value) || typeof value === \"object\") {\n    // Troca $ por $ (cifrão + espaço) em objetos/arrays convertidos para string\n    return \"'\" + JSON.stringify(value).replace(/'/g, \"''\").replace(/\\$/g, \"$ \") + \"'::jsonb\";\n  }\n  // Troca $ por $ (cifrão + espaço) em strings normais\n  return \"'\" + String(value).replace(/\\\\/g, \"\\\\\\\\\").replace(/'/g, \"''\").replace(/\\$/g, \"$ \") + \"'\";\n}\n})() }}",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
@@ -773,6 +762,21 @@
       ],
       "id": "636ce5bc-311f-4205-adfe-84312abbcfe8",
       "name": "If1"
+    },
+    {
+      "parameters": {
+        "path": "9278833d-3687-4571-b1cd-54aacc667f07",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -59008,
+        19904
+      ],
+      "id": "f2a59201-9e2b-4387-ba1a-7efc82496453",
+      "name": "Webhook",
+      "webhookId": "9278833d-3687-4571-b1cd-54aacc667f07"
     }
   ],
   "pinData": {},
@@ -804,17 +808,6 @@
         [
           {
             "node": "UPSERT no Banco",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "When clicking ‘Execute workflow’": {
-      "main": [
-        [
-          {
-            "node": "Configurar Constantes",
             "type": "main",
             "index": 0
           }
@@ -1051,15 +1044,26 @@
           }
         ]
       ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Configurar Constantes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "2d4ea9ba-2fa0-4626-9574-d9b8799dd3cd",
+  "versionId": "6b043647-e8f5-44ca-8021-dc3f3b27a53c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
