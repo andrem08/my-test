@@ -1,5 +1,5 @@
 {
-  "name": "VHSYS-update_services",
+  "name": "Extensão VHSYS - Atualização de Status dos Serviços",
   "nodes": [
     {
       "parameters": {
@@ -8,24 +8,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        256,
-        96
+        -192,
+        -96
       ],
-      "id": "b8f40495-2f5f-4896-9795-1b860e80775c",
-      "name": "Return Response"
-    },
-    {
-      "parameters": {
-        "jsCode": "// ── Erro de validação (input inválido) ──\nconst input = $input.first().json;\n\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        32,
-        288
-      ],
-      "id": "1b4ef97c-fc3f-49c9-9989-15a408a3607a",
-      "name": "Build Validation Error Response"
+      "id": "495adce8-141f-4745-99cc-a38b46570b37",
+      "name": "Retornar Resposta"
     },
     {
       "parameters": {
@@ -34,11 +21,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        32,
-        96
+        -416,
+        0
       ],
-      "id": "7dc2e2d0-499c-47fc-b818-9328a6c7781b",
-      "name": "Build DB Error Response"
+      "id": "3de71df8-5915-42af-aece-774545fb5726",
+      "name": "Montar Resposta de Erro"
     },
     {
       "parameters": {
@@ -47,11 +34,11 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        32,
-        -96
+        -416,
+        -224
       ],
-      "id": "d59ed424-baf2-4dbf-bde9-b835cb103f16",
-      "name": "Build Success Response"
+      "id": "e106fb83-3693-442f-9620-961a043a160e",
+      "name": "Montar Resposta de Sucesso"
     },
     {
       "parameters": {
@@ -65,11 +52,11 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -192,
-        0
+        -640,
+        -176
       ],
-      "id": "a4dc8942-2284-4d37-a287-f1f99d89e8dc",
-      "name": "UPDATE Extension Status",
+      "id": "13b2e8b1-a661-4437-911a-b716171c9e94",
+      "name": "Atualizar Status do Servico",
       "credentials": {
         "postgres": {
           "id": "tnATsHmPQ4uK6XL9",
@@ -106,11 +93,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -416,
-        96
+        -864,
+        -96
       ],
-      "id": "42d0c0e8-c64d-41c6-a2d3-2f71bbfc922f",
-      "name": "Is Valid?"
+      "id": "4f255821-fae2-4063-9b5e-a2370454ab8c",
+      "name": "Dados Estao Corretos?"
     },
     {
       "parameters": {
@@ -119,26 +106,90 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -640,
-        96
+        -1088,
+        -96
       ],
-      "id": "a3c700c8-c7d6-4619-8ffe-d06264c7ed6e",
-      "name": "Validate Input"
+      "id": "9a9e7c64-baaf-471d-8c4b-2744bded2c53",
+      "name": "Validar Entrada"
     },
     {
       "parameters": {},
-      "id": "6d00615e-9ec1-436f-b9ac-2a7f282b5b95",
-      "name": "When called by another workflow",
+      "id": "962b5fe7-a111-4ef2-97f2-e98da7b4cb84",
+      "name": "Inicio do Fluxo",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -864,
+        -1312,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Entrada de Dados\n\nRecebe a chamada interna da rota update_services.\n\nObjetivo:\n- validar ACTION e RUNNING_STATUS\n- encaminhar apenas dados consistentes",
+        "height": 216,
+        "width": 420,
+        "color": 6
+      },
+      "id": "ab810776-f927-445a-9bd6-2b97466ee868",
+      "name": "Entrada de Dados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Validacao do Payload\n\nConfere obrigatoriedade de ACTION e faixa permitida de RUNNING_STATUS.\n\nValores aceitos:\n-1, 0, 1, 2",
+        "height": 184,
+        "width": 308,
+        "color": 7
+      },
+      "id": "e9da7ce5-b187-4139-b036-d49d2be465a4",
+      "name": "Validacao do Payload",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1200,
         96
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Persistencia no Banco\n\nAtualiza RUN_STATUS e LAST_UPDATE em auxiliary.update_extension_services.\n\nChave usada:\n- ACTION",
+        "height": 184,
+        "width": 356,
+        "color": 2
+      },
+      "id": "5b0788f2-c8da-4383-acb8-ff462a0b598d",
+      "name": "Persistencia no Banco",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -768,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Retorno do Fluxo\n\nConsolida o resultado para o chamador.\n\nSaidas:\n- sucesso com confirmacao\n- erro em caso de falha de validacao ou banco",
+        "height": 216,
+        "width": 356,
+        "color": 5
+      },
+      "id": "f8ecf517-a620-4969-8dfa-a289eb63840e",
+      "name": "Retorno do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -144
       ]
     }
   ],
   "pinData": {
-    "When called by another workflow": [
+    "Inicio do Fluxo": [
       {
         "json": {
           "route": "update_services",
@@ -192,91 +243,80 @@
     ]
   },
   "connections": {
-    "Build Validation Error Response": {
+    "Montar Resposta de Erro": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "Retornar Resposta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build DB Error Response": {
+    "Montar Resposta de Sucesso": {
       "main": [
         [
           {
-            "node": "Return Response",
+            "node": "Retornar Resposta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Success Response": {
+    "Atualizar Status do Servico": {
       "main": [
         [
           {
-            "node": "Return Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "UPDATE Extension Status": {
-      "main": [
-        [
-          {
-            "node": "Build Success Response",
+            "node": "Montar Resposta de Sucesso",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build DB Error Response",
+            "node": "Montar Resposta de Erro",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Is Valid?": {
+    "Dados Estao Corretos?": {
       "main": [
         [
           {
-            "node": "UPDATE Extension Status",
+            "node": "Atualizar Status do Servico",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Build Validation Error Response",
+            "node": "Montar Resposta de Erro",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Validate Input": {
+    "Validar Entrada": {
       "main": [
         [
           {
-            "node": "Is Valid?",
+            "node": "Dados Estao Corretos?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "When called by another workflow": {
+    "Inicio do Fluxo": {
       "main": [
         [
           {
-            "node": "Validate Input",
+            "node": "Validar Entrada",
             "type": "main",
             "index": 0
           }
@@ -290,7 +330,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "e7d8ef58-f42b-48fc-bfb1-24f0d1cdbcae",
+  "versionId": "77d9c678-fc1b-416d-bd67-5b6d8cb84444",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
