@@ -1,90 +1,6 @@
 {
-  "name": "VHSYS-Router",
+  "name": "VHSYS - Router de Endpoints da Extensao",
   "nodes": [
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "EP5jvsjGYWMEROje",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/EP5jvsjGYWMEROje",
-          "cachedResultName": "VHSYS-nf_service_info"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7904,
-        6208
-      ],
-      "id": "7908c489-5739-460c-8713-405b1a60a391",
-      "name": "Execute: NF Service"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "vEyfgH4ys8g1pu2E",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/vEyfgH4ys8g1pu2E",
-          "cachedResultName": "VHSYS-nf_service_labels_ids"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7904,
-        6016
-      ],
-      "id": "d55373e1-ec72-4e15-b9d4-3e8ad146367d",
-      "name": "Execute: NF label Id's"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "AKxeodqxnWTSbis3",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/AKxeodqxnWTSbis3",
-          "cachedResultName": "VHSYS-nf_service_labels"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7904,
-        5824
-      ],
-      "id": "26690060-ca34-4112-a17e-83ddf5aa8bbd",
-      "name": "Execute: NF label"
-    },
     {
       "parameters": {
         "workflowId": {
@@ -92,7 +8,7 @@
           "value": "ti5vujrnafguyYzG",
           "mode": "list",
           "cachedResultUrl": "/workflow/ti5vujrnafguyYzG",
-          "cachedResultName": "VHSYS-sales_nf_report"
+          "cachedResultName": "Extensão VHSYS - Notas de Venda"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -107,11 +23,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        5440
+        -17584,
+        10096
       ],
-      "id": "c51c22db-84ba-405d-8a31-d54355b17500",
-      "name": "Execute: NF Sales"
+      "id": "eb0923d0-bfc2-4478-8fb3-d32e14c13725",
+      "name": "Relatorio NF Venda"
     },
     {
       "parameters": {
@@ -120,7 +36,7 @@
           "value": "21NZxIQ62yae77mQ",
           "mode": "list",
           "cachedResultUrl": "/workflow/21NZxIQ62yae77mQ",
-          "cachedResultName": "VHSYS-service_nf_report"
+          "cachedResultName": "Extensão VHSYS - Notas de Serviço"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -135,11 +51,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        5632
+        -17584,
+        10288
       ],
-      "id": "bca093b2-6e65-460b-8a5a-cf59f46be7f0",
-      "name": "Execute: Service NF"
+      "id": "0f386490-c729-4e9d-b9d7-751c10c600a5",
+      "name": "Relatorio NF Servico"
     },
     {
       "parameters": {
@@ -153,134 +69,40 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "04a2e04b-a9cf-4d1c-a221-63d3b92c2314",
-      "name": "Webhook Router",
+      "id": "42d54413-5229-4413-943c-5dc54d077b42",
+      "name": "Entrada HTTP do Router VHSYS",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -8848,
-        5424
+        -18656,
+        10240
       ],
       "webhookId": "vhsys-router-webhook"
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "FzPagGsvwuKAIHwM",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/FzPagGsvwuKAIHwM",
-          "cachedResultName": "VHSYS-regular_bills"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7904,
-        5248
-      ],
-      "id": "6667d3a2-a9a3-4bad-b7cf-e4b8e3203a0a",
-      "name": "Execute: Regular Bills"
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "ul7KFJNXYYJCida6",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/ul7KFJNXYYJCida6",
-          "cachedResultName": "VHSYS-employers_general_data"
-        },
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "6e74c827-9ea0-4416-9d5f-3ca386755bf0",
-      "name": "Execute: Employers General",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.1,
-      "position": [
-        -7904,
-        6592
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "XyUhAyUZ3Io9Rne4",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/XyUhAyUZ3Io9Rne4",
-          "cachedResultName": "VHSYS-employers_plus"
-        },
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "39df1f94-5e9a-47b6-ab90-e4fed5a9da6f",
-      "name": "Execute: Employers Plus",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.1,
-      "position": [
-        -7904,
-        6784
-      ]
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "Is8AcAK4ePg3oCM2",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
-          "cachedResultName": "VHSYS-employers_plus_info"
-        },
-        "options": {
-          "waitForSubWorkflow": true
-        }
-      },
-      "id": "ffdad0b9-2b17-43d9-97ad-7fe18e313ee8",
-      "name": "Execute: Employers Plus Info",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.1,
-      "position": [
-        -7904,
-        6976
-      ]
-    },
-    {
-      "parameters": {
         "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report','cc_report/reset',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
-      "id": "63781029-aaea-4727-bc05-263380c5237f",
-      "name": "404 Not Found",
+      "id": "82c08787-85f7-4957-b6e4-67ddb4578fb2",
+      "name": "Montar Erro 404 - Rota Inexistente",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7904,
-        6400
+        -17584,
+        11056
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
       },
-      "id": "e8691cca-cc3b-4ef5-812f-a3ee37e44b2b",
-      "name": "Normalize Response",
+      "id": "ef6bab5f-fd20-4ef2-a876-9a83c7ef6560",
+      "name": "Normalizar Retorno HTTP",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7264,
-        5408
+        -16928,
+        10208
       ]
     },
     {
@@ -291,13 +113,13 @@
           "responseCode": "={{ $json.statusCode || 200 }}"
         }
       },
-      "id": "76cc5446-7e9a-4cdc-b81d-1afb994a09d2",
-      "name": "Respond to Webhook",
+      "id": "4dda3f60-9ad6-42ca-85be-6af6840ae93c",
+      "name": "Responder Webhook HTTP",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -7056,
-        5408
+        -16672,
+        10208
       ]
     },
     {
@@ -322,11 +144,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        4672
+        -17584,
+        9136
       ],
-      "id": "a6c47abf-0bae-4c74-b8a2-7d5d2e559048",
-      "name": "Execute: CC Status"
+      "id": "7a33238b-a633-42b3-8830-1c321ceefa2f",
+      "name": "Status CC Report"
     },
     {
       "parameters": {
@@ -350,11 +172,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        4288
+        -17584,
+        8752
       ],
-      "id": "8327ca83-2f42-4781-bd10-5cbd8ae45937",
-      "name": "Execute: Update Services"
+      "id": "8e21ccf8-3b86-4060-ba8c-cd5e4048dbf8",
+      "name": "Atualizar Servicos"
     },
     {
       "parameters": {
@@ -378,11 +200,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        4096
+        -17584,
+        8560
       ],
-      "id": "6494e473-3ce4-4083-862c-4ea80f88b119",
-      "name": "Execute: Health"
+      "id": "280cd644-93ba-4b06-b795-245b7f159005",
+      "name": "Health Check"
     },
     {
       "parameters": {
@@ -406,11 +228,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        4864
+        -17584,
+        9328
       ],
-      "id": "9038f8a2-dccb-4bfa-b84d-3a727c7e2eb0",
-      "name": "Execute: CC Next URL"
+      "id": "bde4e36f-a955-4c1e-9f30-eb8f94c106fb",
+      "name": "Proxima URL CC Report"
     },
     {
       "parameters": {
@@ -434,20 +256,20 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        5056
+        -17584,
+        9520
       ],
-      "id": "a7163a82-5660-406f-bfa5-aabd263cb8e5",
-      "name": "Execute: CC Report"
+      "id": "7281aea0-8656-4591-9854-fa24eab1ff63",
+      "name": "Gerar CC Report"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "a4r9wFc4B2QmL2Z1",
+          "value": "FqR4ELOJHENehiJO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/a4r9wFc4B2QmL2Z1",
-          "cachedResultName": "VHSYS-cc_reset"
+          "cachedResultUrl": "/workflow/FqR4ELOJHENehiJO",
+          "cachedResultName": "Extensao VHSYS - CC Reset"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -462,11 +284,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        5248
+        -17584,
+        9712
       ],
-      "id": "79ca188d-f3f7-4099-a9d6-49a2455ce7cf",
-      "name": "Execute: CC Reset"
+      "id": "3e7adc66-cce5-4580-9539-2c43071ebcc8",
+      "name": "Reset CC Report"
     },
     {
       "parameters": {
@@ -490,11 +312,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        4480
+        -17584,
+        8944
       ],
-      "id": "10ce6c72-d9c8-4937-b784-2a67da19d9ac",
-      "name": "Call 'VHSYS-get_update_extension_service_data-v1'"
+      "id": "fc0c6f53-24c9-42ba-94ae-d92df48a58ca",
+      "name": "Dados de Atualizacao"
     },
     {
       "parameters": {
@@ -933,11 +755,11 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -8336,
-        5232
+        -18208,
+        10000
       ],
-      "id": "adc8997f-78ff-4320-8f82-bac5e43357d6",
-      "name": "Switch"
+      "id": "c471ad09-0405-4a27-a600-4196b140a3f1",
+      "name": "Rotear Requisicao por Endpoint"
     },
     {
       "parameters": {
@@ -946,11 +768,11 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -7472,
-        6400
+        -17056,
+        11056
       ],
-      "id": "42fb0b19-7542-4e40-abdc-63b0a8761f8e",
-      "name": "Stop and Error"
+      "id": "11415b0f-1cd4-4583-8e89-b79593504db9",
+      "name": "Interromper Fluxo - Erro 404"
     },
     {
       "parameters": {
@@ -980,11 +802,11 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -6832,
-        5408
+        -16448,
+        10208
       ],
-      "id": "c7105927-71a3-4812-bb9a-da6d8cbc7019",
-      "name": "If"
+      "id": "243d8dc2-9d47-4edc-acf2-33c3f09c2c89",
+      "name": "Validar Sucesso da Resposta"
     },
     {
       "parameters": {
@@ -993,49 +815,113 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -6592,
-        5504
+        -16224,
+        10208
       ],
-      "id": "9a9b63e5-259c-40ac-b4d4-4db594a4541c",
-      "name": "Stop and Error1"
+      "id": "f6d210af-7c79-479b-9805-c336a965ed89",
+      "name": "Interromper Fluxo - Erro da API"
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('PUT').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "526d53a9-282c-4eb2-b7d6-1c8ed638e2c8",
-      "name": "Extract Route & Parameters (PUT)",
+      "id": "4be5e124-0f86-4316-afc7-b9b4c83d3869",
+      "name": "Extrair Rota e Parametros (PUT)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8560,
-        5312
+        -18432,
+        10064
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "2aaeb19e-a7e3-46e9-ae14-b04048d727dd",
-      "name": "Extract Route & Parameters (GET)",
+      "id": "c8ca9c85-d160-43cb-a75c-1c0c708d2df0",
+      "name": "Extrair Rota e Parametros (GET)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8560,
-        5472
+        -18432,
+        10256
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('POST').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "ce561645-7eb3-4c3b-aa95-06b133434a0b",
-      "name": "Extract Route & Parameters (POST)",
+      "id": "0516bea8-74e6-4248-8971-99cc0904b7d2",
+      "name": "Extrair Rota e Parametros (POST)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8560,
-        5632
+        -18432,
+        10448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Entrada HTTP e Extracao de Rota\nRecebe requests GET, POST e PUT no endpoint unico.\nCada metodo extrai route, query e body para um envelope padrao.",
+        "height": 220,
+        "width": 430,
+        "color": 6
+      },
+      "id": "4d6b705f-fb64-407b-9a45-bd252c7b39ee",
+      "name": "Guia - Entrada e Extracao",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -19344,
+        10272
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Roteamento por Endpoint\nO switch encaminha cada route para o subfluxo correto.\nCada saida representa uma funcionalidade da extensao VHSYS.",
+        "height": 188,
+        "width": 270,
+        "color": 7
+      },
+      "id": "5c1e7428-9571-4244-8452-1f6188093adf",
+      "name": "Guia - Roteamento",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -18304,
+        9760
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Padrao de Resposta HTTP\nTodos os subfluxos retornam para normalizacao de statusCode e body.\nEm seguida, o router responde ao webhook com JSON padronizado.",
+        "height": 220,
+        "width": 430,
+        "color": 5
+      },
+      "id": "debe21d2-a5be-4a15-af27-8dddb0f575f0",
+      "name": "Guia - Resposta",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16720,
+        9920
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Tratamento de Erros\nSe a route nao existir, retorna erro 404.\nSe o subfluxo falhar, o fluxo interrompe com a mensagem recebida.",
+        "height": 220,
+        "width": 430,
+        "color": 2
+      },
+      "id": "3d46bd25-074c-4573-bba5-310fac954b8e",
+      "name": "Guia - Erros",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16768,
+        10400
       ]
     },
     {
@@ -1045,7 +931,7 @@
           "value": "VQsdVpBigGsHo5Eo",
           "mode": "list",
           "cachedResultUrl": "/workflow/VQsdVpBigGsHo5Eo",
-          "cachedResultName": "VHSYS-clean_up"
+          "cachedResultName": "Extensão VHSYS - Limpeza de Status"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -1060,15 +946,193 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -7904,
-        7168
+        -17584,
+        11824
       ],
-      "id": "d7eaa8a1-6bec-4ff9-9051-d1aded1e6142",
-      "name": "Call 'VHSYS-clean_up'"
+      "id": "e7258f7b-5d69-44c8-ab34-1d36c7dfcc48",
+      "name": "Limpeza das esteiras"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "Is8AcAK4ePg3oCM2",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Is8AcAK4ePg3oCM2",
+          "cachedResultName": "Extensao VHSYS - Detalhes de Funcionarios"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "3fa65354-b40f-4923-bf97-24ccd4fcbfcd",
+      "name": "Detalhes dos Funcionários",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -17584,
+        11632
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "XyUhAyUZ3Io9Rne4",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/XyUhAyUZ3Io9Rne4",
+          "cachedResultName": "Extensao VHSYS - Lista de Funcionarios"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "e52487e9-2b97-4d95-8509-d6895ceb1b51",
+      "name": "Lista dos funcionários",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -17584,
+        11440
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ul7KFJNXYYJCida6",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/ul7KFJNXYYJCida6",
+          "cachedResultName": "Extensao VHSYS - Carga Geral de Funcionarios"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "56b638d0-339b-414e-87b0-75993e5894f0",
+      "name": "Carga geral de Funcionários",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -17584,
+        11248
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "EP5jvsjGYWMEROje",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/EP5jvsjGYWMEROje",
+          "cachedResultName": "Extensão VHSYS - Notas de Serviço de Faturamento"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -17584,
+        10864
+      ],
+      "id": "f094d2e2-762d-4bb8-80a5-db14764f2ad6",
+      "name": "Notas de Serviço de Faturamento"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "vEyfgH4ys8g1pu2E",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/vEyfgH4ys8g1pu2E",
+          "cachedResultName": "Extensão VHSYS - Listar Identificadores de NF de Serviço"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -17584,
+        10672
+      ],
+      "id": "12d937c6-c458-44e5-ac92-dddf9d65fdca",
+      "name": "Listar Identificadores de NF de Serviço"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "AKxeodqxnWTSbis3",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/AKxeodqxnWTSbis3",
+          "cachedResultName": "Extensão VHSYS - Importar Metadados de NF de Serviço"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -17584,
+        10480
+      ],
+      "id": "4e8c7c7e-b974-43c7-89cd-959483991ed2",
+      "name": "Importar Metadados NF Servico"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FzPagGsvwuKAIHwM",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FzPagGsvwuKAIHwM",
+          "cachedResultName": "Extensao VHSYS - Despesas Recorrentes"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -17584,
+        9904
+      ],
+      "id": "c105416a-1c84-4683-b61b-f81ae6d93ef9",
+      "name": "Despesas Recorrentes"
     }
   ],
   "pinData": {
-    "Webhook Router": [
+    "Entrada HTTP do Router VHSYS": [
       {
         "json": {
           "headers": {
@@ -1107,420 +1171,420 @@
     ]
   },
   "connections": {
-    "Webhook Router": {
+    "Entrada HTTP do Router VHSYS": {
       "main": [
         [
           {
-            "node": "Extract Route & Parameters (PUT)",
+            "node": "Extrair Rota e Parametros (PUT)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Extract Route & Parameters (GET)",
+            "node": "Extrair Rota e Parametros (GET)",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Extract Route & Parameters (POST)",
+            "node": "Extrair Rota e Parametros (POST)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: NF Service": {
+    "Relatorio NF Venda": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: NF label Id's": {
+    "Relatorio NF Servico": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: NF label": {
+    "Montar Erro 404 - Rota Inexistente": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Interromper Fluxo - Erro 404",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: NF Sales": {
+    "Normalizar Retorno HTTP": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Responder Webhook HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Service NF": {
+    "Status CC Report": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Regular Bills": {
+    "Atualizar Servicos": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Employers General": {
+    "Health Check": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Employers Plus": {
+    "Proxima URL CC Report": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: Employers Plus Info": {
+    "Gerar CC Report": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "404 Not Found": {
+    "Reset CC Report": {
       "main": [
         [
           {
-            "node": "Stop and Error",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Normalize Response": {
+    "Dados de Atualizacao": {
       "main": [
         [
           {
-            "node": "Respond to Webhook",
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Execute: CC Status": {
+    "Rotear Requisicao por Endpoint": {
       "main": [
         [
           {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Update Services": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: Health": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Next URL": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Report": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute: CC Reset": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Call 'VHSYS-get_update_extension_service_data-v1'": {
-      "main": [
-        [
-          {
-            "node": "Normalize Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Switch": {
-      "main": [
-        [
-          {
-            "node": "Execute: Health",
+            "node": "Health Check",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Update Services",
+            "node": "Atualizar Servicos",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Call 'VHSYS-get_update_extension_service_data-v1'",
+            "node": "Dados de Atualizacao",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: CC Status",
+            "node": "Status CC Report",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: CC Next URL",
+            "node": "Proxima URL CC Report",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: CC Report",
+            "node": "Gerar CC Report",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: CC Reset",
+            "node": "Reset CC Report",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Regular Bills",
+            "node": "Despesas Recorrentes",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: NF Sales",
+            "node": "Relatorio NF Venda",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Service NF",
+            "node": "Relatorio NF Servico",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: NF label",
+            "node": "Importar Metadados NF Servico",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: NF label Id's",
+            "node": "Listar Identificadores de NF de Serviço",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: NF Service",
+            "node": "Notas de Serviço de Faturamento",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Employers General",
+            "node": "Carga geral de Funcionários",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Employers Plus",
+            "node": "Lista dos funcionários",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Execute: Employers Plus Info",
+            "node": "Detalhes dos Funcionários",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Call 'VHSYS-clean_up'",
+            "node": "Limpeza das esteiras",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "404 Not Found",
+            "node": "Montar Erro 404 - Rota Inexistente",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Respond to Webhook": {
+    "Responder Webhook HTTP": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Validar Sucesso da Resposta",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "If": {
+    "Validar Sucesso da Resposta": {
       "main": [
         [],
         [
           {
-            "node": "Stop and Error1",
+            "node": "Interromper Fluxo - Erro da API",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Route & Parameters (PUT)": {
+    "Extrair Rota e Parametros (PUT)": {
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Rotear Requisicao por Endpoint",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Route & Parameters (GET)": {
+    "Extrair Rota e Parametros (GET)": {
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Rotear Requisicao por Endpoint",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Extract Route & Parameters (POST)": {
+    "Extrair Rota e Parametros (POST)": {
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Rotear Requisicao por Endpoint",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Call 'VHSYS-clean_up'": {
+    "Limpeza das esteiras": {
       "main": [
         [
           {
-            "node": "Normalize Response",
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detalhes dos Funcionários": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lista dos funcionários": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Carga geral de Funcionários": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notas de Serviço de Faturamento": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Listar Identificadores de NF de Serviço": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Importar Metadados NF Servico": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Despesas Recorrentes": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Retorno HTTP",
             "type": "main",
             "index": 0
           }
@@ -1534,7 +1598,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "22b87bcb-5de4-4c6a-bb40-62d3f365f26a",
+  "versionId": "1e3a4a83-d76b-4c0a-a7f9-e567c1d7ce0d",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

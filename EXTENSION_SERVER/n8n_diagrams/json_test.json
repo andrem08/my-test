@@ -915,11 +915,6 @@
           "type": "TIMESTAMP"
         }
       ],
-      "checks": [
-        {
-          "constraint": "situacao IN ('Atendido', 'Cancelado', 'Em Aberto')"
-        }
-      ],
       "indexes": [
         {
           "name": "idx_vhx_notas_venda_cnpj",
@@ -1126,11 +1121,6 @@
           "type": "TIMESTAMP"
         }
       ],
-      "checks": [
-        {
-          "constraint": "situacao IN ('Atendido', 'Cancelado', 'Em Aberto')"
-        }
-      ],
       "indexes": [
         {
           "name": "idx_vhx_notas_servico_cnpj",
@@ -1186,6 +1176,213 @@
           "type": "column",
           "column": "situacao",
           "comment": "Status atual da nota (Ex: Atendido, Cancelado, Em Aberto)"
+        }
+      ]
+    },
+    {
+      "schema": "raw_data",
+      "table_name": "vhx_notas_servicos_faturamento",
+      "fields": [
+        {
+          "name": "id_servico",
+          "type": "VARCHAR(50)",
+          "primary_key": true
+        },
+        {
+          "name": "obs_interno_pedido",
+          "type": "TEXT"
+        },
+        {
+          "name": "obs_pedido",
+          "type": "TEXT"
+        },
+        {
+          "name": "numero_processo",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "condicao_pagamento",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "condicao_pagamento_id",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "valor_iss",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliq_iss",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_ir",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliq_ir",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_contribuicao",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliq_contribuicao",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_pis",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliq_pis",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_cofins",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "aliq_cofins",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_material",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_tributos_mun",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_aliq_tributos_mun",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_tributos",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_aliq_tributos",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_imposto",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_aliquota",
+          "type": "DECIMAL(15,4)"
+        },
+        {
+          "name": "valor_base_calculo",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_condicionado",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_incondicionado",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_deducoes",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "itemLista_servico",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "valor_total_nota",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "valor_total_servicos",
+          "type": "DECIMAL(15,2)"
+        },
+        {
+          "name": "desc_servicos",
+          "type": "TEXT"
+        },
+        {
+          "name": "serie_nota",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "id_pedido",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "vendedor_pedido_id",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "vendedor_pedido",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "ultrapassar_limite_credito",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "contas_pedido",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "id_cliente",
+          "type": "VARCHAR(50)"
+        },
+        {
+          "name": "nome_cliente",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP"
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP"
+        }
+      ],
+      "checks": [],
+      "indexes": [
+        {
+          "name": "idx_vhx_notas_servicos_faturamento_pedido",
+          "columns": [
+            "id_pedido"
+          ]
+        },
+        {
+          "name": "idx_vhx_notas_servicos_faturamento_cliente",
+          "columns": [
+            "id_cliente"
+          ]
+        }
+      ],
+      "comments": [
+        {
+          "type": "table",
+          "comment": "Dados internos de faturamento, pedidos e quebra de impostos de Notas de Serviço, extraídos do VHSYS via Extensão Chrome."
+        },
+        {
+          "type": "column",
+          "column": "id_servico",
+          "comment": "Chave primária - ID do faturamento/serviço no VHSYS"
+        },
+        {
+          "type": "column",
+          "column": "id_pedido",
+          "comment": "Chave estrangeira de ligação lógica com o pedido originador"
+        },
+        {
+          "type": "column",
+          "column": "valor_contribuicao",
+          "comment": "Refere-se ao valor de CSLL extraído da nota"
         }
       ]
     }

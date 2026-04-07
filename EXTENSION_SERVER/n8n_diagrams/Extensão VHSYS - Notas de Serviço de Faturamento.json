@@ -1,0 +1,340 @@
+{
+  "name": "Extensão VHSYS - Notas de Serviço de Faturamento",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f7538d62-c01b-45f8-aa4a-ecdb0a49320d",
+      "name": "Iniciar Importacao de Detalhes",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -9920,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS :: nf_service_info\n// Rota   : POST /nf_service_info\n// ─────────────────────────────────────────────\n// Aceita múltiplos formatos de entrada:\n// 1) body: { xml_ref: '<xml...>' }\n// 2) body: '{\"xml_ref\":\"<xml...>\"}'\n// 3) body: '<xml...>'\n// 4) xml_ref direto no root\n// ─────────────────────────────────────────────\n\nconst input = $input.first().json || {};\n\nfunction tryParseJsonString(raw) {\n  if (typeof raw !== 'string') return null;\n  const s = raw.trim();\n  if (!s || (!s.startsWith('{') && !s.startsWith('['))) return null;\n  try {\n    return JSON.parse(s);\n  } catch {\n    return null;\n  }\n}\n\nfunction firstNonEmpty(values) {\n  for (const v of values) {\n    if (v === null || v === undefined) continue;\n    const s = String(v).trim();\n    if (s) return s;\n  }\n  return '';\n}\n\nconst rawBody = (input.body !== undefined) ? input.body : input;\nconst parsedBody = tryParseJsonString(rawBody);\nconst bodyObj = (parsedBody && typeof parsedBody === 'object')\n  ? parsedBody\n  : (rawBody && typeof rawBody === 'object' ? rawBody : null);\n\nconst xml_string = firstNonEmpty([\n  bodyObj?.xml_ref,\n  input.xml_ref,\n  // fallback: quando body já vem como XML puro\n  (typeof rawBody === 'string' && rawBody.includes('<xjx')) ? rawBody : '',\n  (typeof rawBody === 'string' && rawBody.includes('<?xml')) ? rawBody : ''\n]);\n\nif (!xml_string) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'validation_failed',\n    body_type: typeof rawBody,\n    has_body: rawBody !== undefined && rawBody !== null,\n    has_body_xml_ref: Boolean(bodyObj && bodyObj.xml_ref),\n    has_root_xml_ref: Boolean(input.xml_ref),\n    level: 'warn'\n  }));\n\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { ok: false, error: 'No XML data provided' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'input_validated',\n  xml_length: xml_string.length,\n  level: 'info'\n}));\n\nreturn { _valid: true, xml_string };"
+      },
+      "id": "9f17ce80-cd0c-4cee-83f1-37f08e37dee9",
+      "name": "Validar XML de Detalhes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9696,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json._valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "id": "4dfa28c3-4ad9-4825-a29f-ba1df1a90e0f"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "580b7415-fe0f-42eb-9598-65accc107035",
+      "name": "XML de Detalhes Valido?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -9472,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────\n// Parse XML + Transform\n// ─────────────────────────────────────────────\n// Espelha exatamente get_nf_service_info() do Flask:\n//   xmltodict.parse → xml_dict['xjx']['cmd']\n//   @t = nome do campo, #text = valor\n//   clean_cell() em cada valor\n//   del 'no-set', 'estoque_pedido', 'bloquear_edicao_cliente'\n// ─────────────────────────────────────────────\n\nconst ctx = $input.first().json;\nconst xml_string = ctx.xml_string;\n\nconst isEmptyListPayload = /Nenhum registro para exibir/i.test(xml_string || '');\nif (isEmptyListPayload) {\n  return [{ json: { _skip: true, message: 'Empty list payload' } }];\n}\n\n// ── clean_cell() — espelha Flask ──\nfunction cleanCell(value) {\n  if (typeof value !== 'string') return value;\n  let cleaned = value.replace(/\\\\n|\\\\t|\\\\r|\\n|\\t|\\r/g, ' ');\n  cleaned = cleaned.replace(/\\s+/g, ' ').trim();\n  return cleaned;\n}\n\nfunction normalizeNumeric(value) {\n  if (value === null || value === undefined) return null;\n  let s = String(value).trim();\n  if (!s) return null;\n\n  // Se vier no formato pt-BR (1.234,56), converte para formato SQL (1234.56)\n  if (s.includes(',')) {\n    s = s.replace(/\\./g, '').replace(',', '.');\n  }\n\n  return s;\n}\n\n// ── Parse XML (equivale a xmltodict.parse) ──\n// Extrai cada <cmd ... t=\"campo\" ...>valor</cmd>\nfunction parseXjxXml(xml) {\n  const info = {};\n  const cmdRegex = /<cmd[^>]+t=\"([^\"]*?)\"[^>]*>([\\s\\S]*?)<\\/cmd>/g;\n  let match;\n  while ((match = cmdRegex.exec(xml)) !== null) {\n    const fieldName = match[1];\n    let value = match[2].replace(/<\\!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1').trim();\n    info[fieldName] = cleanCell(value);\n  }\n  return info;\n}\n\nlet info_dict_ref;\ntry {\n  info_dict_ref = parseXjxXml(xml_string);\n} catch (e) {\n  return [{ json: { _skip: true, message: 'Failed to parse XML: ' + String(e.message) } }];\n}\n\n// Espelha: del info_dict_ref['no-set'] / 'estoque_pedido' / 'bloquear_edicao_cliente'\ndelete info_dict_ref['no-set'];\ndelete info_dict_ref['estoque_pedido'];\ndelete info_dict_ref['bloquear_edicao_cliente'];\n\n// id_servico é a PK — vem do XML\nconst id_servico = String(info_dict_ref.id_servico || '').trim();\nif (!id_servico) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'nf_service_info',\n    event: 'missing_id_servico',\n    available_keys: Object.keys(info_dict_ref),\n    level: 'warn'\n  }));\n  return [{ json: { _skip: true, message: 'Missing id_servico in XML' } }];\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'xml_parsed',\n  id_servico,\n  fields_count: Object.keys(info_dict_ref).length,\n  level: 'info'\n}));\n\nreturn [{\n  json: {\n    id_servico,\n    obs_interno_pedido:          info_dict_ref.obs_interno_pedido          ?? null,\n    obs_pedido:                  info_dict_ref.obs_pedido                  ?? null,\n    numero_processo:             info_dict_ref.numero_processo             ?? null,\n    condicao_pagamento:          info_dict_ref.condicao_pagamento          ?? null,\n    condicao_pagamento_id:       info_dict_ref.condicao_pagamento_id       ?? null,\n    valor_iss:                   normalizeNumeric(info_dict_ref.valor_iss),\n    aliq_iss:                    normalizeNumeric(info_dict_ref.aliq_iss),\n    valor_ir:                    normalizeNumeric(info_dict_ref.valor_ir),\n    aliq_ir:                     normalizeNumeric(info_dict_ref.aliq_ir),\n    valor_contribuicao:          normalizeNumeric(info_dict_ref.valor_contribuicao),\n    aliq_contribuicao:           normalizeNumeric(info_dict_ref.aliq_contribuicao),\n    valor_pis:                   normalizeNumeric(info_dict_ref.valor_pis),\n    aliq_pis:                    normalizeNumeric(info_dict_ref.aliq_pis),\n    valor_cofins:                normalizeNumeric(info_dict_ref.valor_cofins),\n    aliq_cofins:                 normalizeNumeric(info_dict_ref.aliq_cofins),\n    valor_material:              normalizeNumeric(info_dict_ref.valor_material),\n    valor_tributos_mun:          normalizeNumeric(info_dict_ref.valor_tributos_mun),\n    valor_aliq_tributos_mun:     normalizeNumeric(info_dict_ref.valor_aliq_tributos_mun),\n    valor_tributos:              normalizeNumeric(info_dict_ref.valor_tributos),\n    valor_aliq_tributos:         normalizeNumeric(info_dict_ref.valor_aliq_tributos),\n    valor_imposto:               normalizeNumeric(info_dict_ref.valor_imposto),\n    valor_aliquota:              normalizeNumeric(info_dict_ref.valor_aliquota),\n    valor_base_calculo:          normalizeNumeric(info_dict_ref.valor_base_calculo),\n    valor_condicionado:          normalizeNumeric(info_dict_ref.valor_condicionado),\n    valor_incondicionado:        normalizeNumeric(info_dict_ref.valor_incondicionado),\n    valor_deducoes:              normalizeNumeric(info_dict_ref.valor_deducoes),\n    itemLista_servico:           info_dict_ref.itemLista_servico           ?? null,\n    valor_total_nota:            normalizeNumeric(info_dict_ref.valor_total_nota),\n    valor_total_servicos:        normalizeNumeric(info_dict_ref.valor_total_servicos),\n    desc_servicos:               info_dict_ref.desc_servicos               ?? null,\n    serie_nota:                  info_dict_ref.serie_nota                  ?? null,\n    id_pedido:                   info_dict_ref.id_pedido                   ?? null,\n    vendedor_pedido_id:          info_dict_ref.vendedor_pedido_id          ?? null,\n    vendedor_pedido:             info_dict_ref.vendedor_pedido             ?? null,\n    ultrapassar_limite_credito:  info_dict_ref.ultrapassar_limite_credito  ?? null,\n    contas_pedido:               info_dict_ref.contas_pedido               ?? null,\n    id_cliente:                  info_dict_ref.id_cliente                  ?? null,\n    nome_cliente:                info_dict_ref.nome_cliente                ?? null\n  }\n}];"
+      },
+      "id": "79f712c5-19fa-45aa-baa6-9e6e556ffe43",
+      "name": "Extrair Campos do XML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9248,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- ─────────────────────────────────────────────\n-- VHSYS :: nf_service_info — UPSERT\n-- Tabela : vhx_notas_servicos_faturamento\n-- Schema : raw_data\n-- PK     : id_servico (VARCHAR(50))\n-- Todos os campos são mapeados conforme schema\n-- ─────────────────────────────────────────────\nINSERT INTO raw_data.vhx_notas_servicos_faturamento (\n  id_servico,\n  obs_interno_pedido,\n  obs_pedido,\n  numero_processo,\n  condicao_pagamento,\n  condicao_pagamento_id,\n  valor_iss,\n  aliq_iss,\n  valor_ir,\n  aliq_ir,\n  valor_contribuicao,\n  aliq_contribuicao,\n  valor_pis,\n  aliq_pis,\n  valor_cofins,\n  aliq_cofins,\n  valor_material,\n  valor_tributos_mun,\n  valor_aliq_tributos_mun,\n  valor_tributos,\n  valor_aliq_tributos,\n  valor_imposto,\n  valor_aliquota,\n  valor_base_calculo,\n  valor_condicionado,\n  valor_incondicionado,\n  valor_deducoes,\n  \"itemlista_servico\",\n  valor_total_nota,\n  valor_total_servicos,\n  desc_servicos,\n  serie_nota,\n  id_pedido,\n  vendedor_pedido_id,\n  vendedor_pedido,\n  ultrapassar_limite_credito,\n  contas_pedido,\n  id_cliente,\n  nome_cliente,\n  created_at,\n  updated_at\n) VALUES (\n  '{{ $json.id_servico.replace(/'/g, \"''\") }}',\n  {{ $json.obs_interno_pedido         ? \"'\" + $json.obs_interno_pedido.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.obs_pedido                 ? \"'\" + $json.obs_pedido.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.numero_processo            ? \"'\" + $json.numero_processo.replace(/'/g, \"''\") + \"'\"            : 'NULL' }},\n  {{ $json.condicao_pagamento         ? \"'\" + $json.condicao_pagamento.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.condicao_pagamento_id      ? \"'\" + $json.condicao_pagamento_id.replace(/'/g, \"''\") + \"'\"      : 'NULL' }},\n  {{ $json.valor_iss                  ? \"'\" + $json.valor_iss.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.aliq_iss                   ? \"'\" + $json.aliq_iss.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.valor_ir                   ? \"'\" + $json.valor_ir.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.aliq_ir                    ? \"'\" + $json.aliq_ir.replace(/'/g, \"''\") + \"'\"                    : 'NULL' }},\n  {{ $json.valor_contribuicao         ? \"'\" + $json.valor_contribuicao.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.aliq_contribuicao          ? \"'\" + $json.aliq_contribuicao.replace(/'/g, \"''\") + \"'\"          : 'NULL' }},\n  {{ $json.valor_pis                  ? \"'\" + $json.valor_pis.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.aliq_pis                   ? \"'\" + $json.aliq_pis.replace(/'/g, \"''\") + \"'\"                   : 'NULL' }},\n  {{ $json.valor_cofins               ? \"'\" + $json.valor_cofins.replace(/'/g, \"''\") + \"'\"               : 'NULL' }},\n  {{ $json.aliq_cofins                ? \"'\" + $json.aliq_cofins.replace(/'/g, \"''\") + \"'\"                : 'NULL' }},\n  {{ $json.valor_material             ? \"'\" + $json.valor_material.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_tributos_mun         ? \"'\" + $json.valor_tributos_mun.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_aliq_tributos_mun    ? \"'\" + $json.valor_aliq_tributos_mun.replace(/'/g, \"''\") + \"'\"    : 'NULL' }},\n  {{ $json.valor_tributos             ? \"'\" + $json.valor_tributos.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_aliq_tributos        ? \"'\" + $json.valor_aliq_tributos.replace(/'/g, \"''\") + \"'\"        : 'NULL' }},\n  {{ $json.valor_imposto              ? \"'\" + $json.valor_imposto.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.valor_aliquota             ? \"'\" + $json.valor_aliquota.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.valor_base_calculo         ? \"'\" + $json.valor_base_calculo.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_condicionado         ? \"'\" + $json.valor_condicionado.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.valor_incondicionado       ? \"'\" + $json.valor_incondicionado.replace(/'/g, \"''\") + \"'\"       : 'NULL' }},\n  {{ $json.valor_deducoes             ? \"'\" + $json.valor_deducoes.replace(/'/g, \"''\") + \"'\"             : 'NULL' }},\n  {{ $json.itemlista_servico          ? \"'\" + $json.itemlista_servico.replace(/'/g, \"''\") + \"'\"          : 'NULL' }},\n  {{ $json.valor_total_nota           ? \"'\" + $json.valor_total_nota.replace(/'/g, \"''\") + \"'\"           : 'NULL' }},\n  {{ $json.valor_total_servicos       ? \"'\" + $json.valor_total_servicos.replace(/'/g, \"''\") + \"'\"       : 'NULL' }},\n  {{ $json.desc_servicos              ? \"'\" + $json.desc_servicos.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.serie_nota                 ? \"'\" + $json.serie_nota.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.id_pedido                  ? \"'\" + $json.id_pedido.replace(/'/g, \"''\") + \"'\"                  : 'NULL' }},\n  {{ $json.vendedor_pedido_id         ? \"'\" + $json.vendedor_pedido_id.replace(/'/g, \"''\") + \"'\"         : 'NULL' }},\n  {{ $json.vendedor_pedido            ? \"'\" + $json.vendedor_pedido.replace(/'/g, \"''\") + \"'\"            : 'NULL' }},\n  {{ $json.ultrapassar_limite_credito ? \"'\" + $json.ultrapassar_limite_credito.replace(/'/g, \"''\") + \"'\" : 'NULL' }},\n  {{ $json.contas_pedido              ? \"'\" + $json.contas_pedido.replace(/'/g, \"''\") + \"'\"              : 'NULL' }},\n  {{ $json.id_cliente                 ? \"'\" + $json.id_cliente.replace(/'/g, \"''\") + \"'\"                 : 'NULL' }},\n  {{ $json.nome_cliente               ? \"'\" + $json.nome_cliente.replace(/'/g, \"''\") + \"'\"               : 'NULL' }},\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)\nON CONFLICT (id_servico) DO UPDATE SET\n  obs_interno_pedido          = EXCLUDED.obs_interno_pedido,\n  obs_pedido                  = EXCLUDED.obs_pedido,\n  numero_processo             = EXCLUDED.numero_processo,\n  condicao_pagamento          = EXCLUDED.condicao_pagamento,\n  condicao_pagamento_id       = EXCLUDED.condicao_pagamento_id,\n  valor_iss                   = EXCLUDED.valor_iss,\n  aliq_iss                    = EXCLUDED.aliq_iss,\n  valor_ir                    = EXCLUDED.valor_ir,\n  aliq_ir                     = EXCLUDED.aliq_ir,\n  valor_contribuicao          = EXCLUDED.valor_contribuicao,\n  aliq_contribuicao           = EXCLUDED.aliq_contribuicao,\n  valor_pis                   = EXCLUDED.valor_pis,\n  aliq_pis                    = EXCLUDED.aliq_pis,\n  valor_cofins                = EXCLUDED.valor_cofins,\n  aliq_cofins                 = EXCLUDED.aliq_cofins,\n  valor_material              = EXCLUDED.valor_material,\n  valor_tributos_mun          = EXCLUDED.valor_tributos_mun,\n  valor_aliq_tributos_mun     = EXCLUDED.valor_aliq_tributos_mun,\n  valor_tributos              = EXCLUDED.valor_tributos,\n  valor_aliq_tributos         = EXCLUDED.valor_aliq_tributos,\n  valor_imposto               = EXCLUDED.valor_imposto,\n  valor_aliquota              = EXCLUDED.valor_aliquota,\n  valor_base_calculo          = EXCLUDED.valor_base_calculo,\n  valor_condicionado          = EXCLUDED.valor_condicionado,\n  valor_incondicionado        = EXCLUDED.valor_incondicionado,\n  valor_deducoes              = EXCLUDED.valor_deducoes,\n  \"itemlista_servico\"         = EXCLUDED.\"itemlista_servico\",\n  valor_total_nota            = EXCLUDED.valor_total_nota,\n  valor_total_servicos        = EXCLUDED.valor_total_servicos,\n  desc_servicos               = EXCLUDED.desc_servicos,\n  serie_nota                  = EXCLUDED.serie_nota,\n  id_pedido                   = EXCLUDED.id_pedido,\n  vendedor_pedido_id          = EXCLUDED.vendedor_pedido_id,\n  vendedor_pedido             = EXCLUDED.vendedor_pedido,\n  ultrapassar_limite_credito  = EXCLUDED.ultrapassar_limite_credito,\n  contas_pedido               = EXCLUDED.contas_pedido,\n  id_cliente                  = EXCLUDED.id_cliente,\n  nome_cliente                = EXCLUDED.nome_cliente,\n  updated_at                  = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING id_servico;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single"
+        }
+      },
+      "id": "ed38e633-386a-4bf6-ad66-ef93bf5b3dda",
+      "name": "Salvar Detalhes na NF_Service",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -9024,
+        -208
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Sucesso ──\n// Flask retorna HTTP 200 (não 201)\nconst row = $input.first().json;\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'upsert_complete',\n  id_servico: row.id_servico,\n  level: 'info'\n}));\nreturn {\n  statusCode: 200,\n  body: { message: 'Data extracted, cleaned, and converted to DataFrame successfully' }\n};"
+      },
+      "id": "41e4ecc8-d1e3-42f4-ad01-790a160f014d",
+      "name": "Montar Retorno de Sucesso",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8800,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro de validação (sem xml_ref) ──\nconst input = $input.first().json;\nreturn {\n  statusCode: input.statusCode || 400,\n  body: input.body || { ok: false, error: 'Validation failed' }\n};"
+      },
+      "id": "874e962c-cb1c-4b8c-84f0-83bbd741614d",
+      "name": "Montar Retorno de Erro de Validacao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9248,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Erro de banco durante o UPSERT ──\nconst errData = $input.first().json;\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_info',\n  event: 'db_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database error', message: 'Could not update service info' }\n};"
+      },
+      "id": "4963110d-9b0d-42bc-b074-42edc1311e1e",
+      "name": "Montar Retorno de Erro de Banco",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8800,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Entrada e Validacao do XML\nNF = Nota Fiscal de Servico.\nRecebe o XML de detalhes da nota e busca o campo xml_ref em diferentes formatos de entrada.\nQuando nao encontra XML valido, encerra com erro de validacao (HTTP 400).",
+        "height": 216,
+        "width": 420,
+        "color": 6
+      },
+      "id": "85f68e3b-b088-487d-8617-96bf1bcfeef9",
+      "name": "Entrada de Dados",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -10464,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Extracao dos Campos da Nota Fiscal\nLe o XML XJX campo a campo e monta o payload tecnico da NF.\nRegras aplicadas: limpeza de texto, remocao de campos auxiliares e derivacao de cc_ref via obs_interno_pedido.",
+        "height": 232,
+        "width": 420,
+        "color": 7
+      },
+      "id": "90f9aa53-9276-423d-9c95-77b698565e18",
+      "name": "Transformacao do XML",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -10016,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Persistencia da NF no Banco\nGrava os dados da Nota Fiscal com UPSERT na tabela nf_service.\nChave de negocio: id_servico.\nSe a NF ja existir, atualiza; se nao existir, insere.",
+        "height": 216,
+        "width": 420,
+        "color": 2
+      },
+      "id": "1777f223-7320-4e1e-ae1c-7366108d0f43",
+      "name": "Persistencia no Banco",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9728,
+        -384
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Saida e Tratamento de Erros\nRetorno final da importacao da NF em 3 caminhos:\n- sucesso de gravacao/atualizacao (HTTP 200)\n- erro de validacao de entrada/XML (HTTP 400)\n- erro de persistencia no banco (HTTP 500)",
+        "height": 232,
+        "width": 420,
+        "color": 5
+      },
+      "id": "da6cfe72-06a4-4237-90ac-81f9d8f8d41b",
+      "name": "Retorno do Fluxo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8592,
+        -160
+      ]
+    }
+  ],
+  "pinData": {
+    "Iniciar Importacao de Detalhes": [
+      {
+        "json": {
+          "route": "nf_service_info",
+          "method": "POST",
+          "body": {
+            "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"js\">$('#salvar').removeClass('hide')</cmd><cmd n=\"as\" t=\"nome_cliente\" p=\"value\">GENERAL MILLS BRASIL ALIMENTOS LTDA.(Paranavai)</cmd><cmd n=\"as\" t=\"id_cliente\" p=\"value\">3966009</cmd><cmd n=\"as\" t=\"contas_pedido\" p=\"value\">1</cmd><cmd n=\"as\" t=\"estoque_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"ultrapassar_limite_credito\" p=\"value\">1</cmd><cmd n=\"as\" t=\"vendedor_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"vendedor_pedido_id\" p=\"value\">0</cmd><cmd n=\"as\" t=\"id_pedido\" p=\"value\">280</cmd><cmd n=\"as\" t=\"serie_nota\" p=\"value\">1</cmd><cmd n=\"js\"><![CDATA[$(\"#LayerDadosCliente_Info\").removeClass(\"hide\");VerificaCliente();]]></cmd><cmd n=\"as\" t=\"desc_servicos\" p=\"value\">HH Engenheiro - R$ 176,00\nDespesas - R$ 24.394,00\n</cmd><cmd n=\"as\" t=\"valor_total_servicos\" p=\"value\">24.570,00</cmd><cmd n=\"as\" t=\"valor_total_nota\" p=\"value\">23.058,94</cmd><cmd n=\"as\" t=\"valor_deducoes\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"reter_outros\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_incondicionado\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_condicionado\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_base_calculo\" p=\"value\">24.570,00</cmd><cmd n=\"as\" t=\"valor_aliquota\" p=\"value\">4,0000</cmd><cmd n=\"as\" t=\"valor_imposto\" p=\"value\">982,80</cmd><cmd n=\"as\" t=\"valor_aliq_tributos\" p=\"value\">0.00</cmd><cmd n=\"as\" t=\"valor_tributos\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_aliq_tributos_mun\" p=\"value\">0.00</cmd><cmd n=\"as\" t=\"valor_tributos_mun\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_inicial_cobrado\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_final_cobrado\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_multa\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_juros\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_ipi\" p=\"value\"></cmd><cmd n=\"as\" t=\"exigibilidade_suspensa\" p=\"value\">0</cmd><cmd n=\"as\" t=\"pagamento_parcelado_antecipado\" p=\"value\">0</cmd><cmd n=\"as\" t=\"valor_material\" p=\"value\">0,00</cmd><cmd n=\"js\"><![CDATA[$(\"#reter_iss\").removeAttr(\"checked\");]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_cofins\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_pis\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_csll\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_ir\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_inss\").removeAttr(\"checked\");]]></cmd><cmd n=\"js\">ControlarPisCofins();</cmd><cmd n=\"as\" t=\"aliq_cofins\" p=\"value\">3,00</cmd><cmd n=\"as\" t=\"valor_cofins\" p=\"value\">737,10</cmd><cmd n=\"as\" t=\"aliq_pis\" p=\"value\">0,65</cmd><cmd n=\"as\" t=\"valor_pis\" p=\"value\">159,71</cmd><cmd n=\"as\" t=\"aliq_contribuicao\" p=\"value\">1,00</cmd><cmd n=\"as\" t=\"valor_contribuicao\" p=\"value\">245,70</cmd><cmd n=\"as\" t=\"aliq_ir\" p=\"value\">1,50</cmd><cmd n=\"as\" t=\"valor_ir\" p=\"value\">368,55</cmd><cmd n=\"as\" t=\"aliq_iss\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_iss\" p=\"value\">0,00</cmd><cmd n=\"js\">toggleCamposValorFinalCobrado();</cmd><cmd n=\"as\" t=\"condicao_pagamento_id\" p=\"value\">41835</cmd><cmd n=\"as\" t=\"condicao_pagamento\" p=\"value\">1</cmd><cmd n=\"js\">CalculoParcelas(891941)</cmd><cmd n=\"js\">xajax_NaturezaPedido(1, 0);</cmd><cmd n=\"as\" t=\"numero_processo\" p=\"value\"></cmd><cmd n=\"as\" t=\"modo_prestacao\" p=\"value\"></cmd><cmd n=\"as\" t=\"obs_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"obs_interno_pedido\" p=\"value\"><![CDATA[Referência: ordem de serviço #200509\nPedido do Cliente 200269354\nProposta -  P200512\nPedido Interno - 322\nGMI-PVI /Farofa - Upgrade CPU/ CC-190207 / OS-200509]]></cmd><cmd n=\"as\" t=\"id_servico\" p=\"value\">891941</cmd><cmd n=\"js\"><![CDATA[$(\"#nome_cliente\").focus();]]></cmd><cmd n=\"js\"><![CDATA[DesabilitarCamposOp(\"conta\");]]></cmd><cmd n=\"js\">$('#LayerLocalSelecionarEntrega').addClass('hide')</cmd><cmd n=\"js\">$('#LayerLocalSelecionarRetirada').addClass('hide')</cmd><cmd n=\"js\">$('#LayerLocalSelecionarCobranca').addClass('hide')</cmd><cmd n=\"as\" t=\"bloquear_edicao_cliente\" p=\"value\">1</cmd></xjx>"
+          },
+          "query": {},
+          "parameters": {
+            "rt_token": "YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+              "content-length": "4265",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "content-type": "application/json",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX19w4KSILLzQvAFAJGVK7x9tiRMyMMu6QtjLF03UqBMsE%2BYSWW6vKYYrnGJXf2I8z9qWgYSLN5x2gg%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2FPCYx9vmduXsNohRXP1uECMF4QUnX0VbfHxYY2kC5RUL8KibQYNR8E1bIGzHiQEoL2HgIEZ8UTIADT7C%2B7dNjw%2B72lcQdmB4wErl98pzQaYxpHv2W3m8mCpqSpbydy61TJiuxx5WjNRqzJkFTKw309uYihD%2F4Zrh8%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX18tGnYwqBGRm3YWrXIFRmzzDm2qmJrDlNdUmz0oBHc1pcEiTajiTOAZnsxwYoQnLDgummwgmXRzmbkC1yAwLO1OW6IfmZEJafoDsjJseJKgZwM67sikpjVONvMdGKhjN3V%2BWOHXJ1FWmYVmC1nvULLS23LqdptlkvQ%3D; rl_session=RudderEncrypt%3AU2FsdGVkX19OhXVeS7KAaU6M32sa5XpRIv672rlOIw1%2Fu4OX9ctTL%2BzhMQWrEmIHsgg16e7LTlrEGDN2ziBtvMoi1KLev9REilXtxGoDV16zb5ZQMrXE%2BDk7rAhPQILEm8UYwJLN6dI4eD50iCCc0A%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774739959164%2C%22019d36bc-6abe-7c4c-b6a2-ce12a2fd19f1%22%2C1774739811006%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+              "origin": "chrome-extension://hpiaaochclhppoichfmfpecghflmflil",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "none",
+              "sec-fetch-storage-access": "active",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "9a525f8a2855",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "nf_service_info"
+            },
+            "body": {
+              "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"js\">$('#salvar').removeClass('hide')</cmd><cmd n=\"as\" t=\"nome_cliente\" p=\"value\">GENERAL MILLS BRASIL ALIMENTOS LTDA.(Paranavai)</cmd><cmd n=\"as\" t=\"id_cliente\" p=\"value\">3966009</cmd><cmd n=\"as\" t=\"contas_pedido\" p=\"value\">1</cmd><cmd n=\"as\" t=\"estoque_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"ultrapassar_limite_credito\" p=\"value\">1</cmd><cmd n=\"as\" t=\"vendedor_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"vendedor_pedido_id\" p=\"value\">0</cmd><cmd n=\"as\" t=\"id_pedido\" p=\"value\">280</cmd><cmd n=\"as\" t=\"serie_nota\" p=\"value\">1</cmd><cmd n=\"js\"><![CDATA[$(\"#LayerDadosCliente_Info\").removeClass(\"hide\");VerificaCliente();]]></cmd><cmd n=\"as\" t=\"desc_servicos\" p=\"value\">HH Engenheiro - R$ 176,00\nDespesas - R$ 24.394,00\n</cmd><cmd n=\"as\" t=\"valor_total_servicos\" p=\"value\">24.570,00</cmd><cmd n=\"as\" t=\"valor_total_nota\" p=\"value\">23.058,94</cmd><cmd n=\"as\" t=\"valor_deducoes\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"reter_outros\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_incondicionado\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_condicionado\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_base_calculo\" p=\"value\">24.570,00</cmd><cmd n=\"as\" t=\"valor_aliquota\" p=\"value\">4,0000</cmd><cmd n=\"as\" t=\"valor_imposto\" p=\"value\">982,80</cmd><cmd n=\"as\" t=\"valor_aliq_tributos\" p=\"value\">0.00</cmd><cmd n=\"as\" t=\"valor_tributos\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_aliq_tributos_mun\" p=\"value\">0.00</cmd><cmd n=\"as\" t=\"valor_tributos_mun\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_inicial_cobrado\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_final_cobrado\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_multa\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_juros\" p=\"value\"></cmd><cmd n=\"as\" t=\"valor_ipi\" p=\"value\"></cmd><cmd n=\"as\" t=\"exigibilidade_suspensa\" p=\"value\">0</cmd><cmd n=\"as\" t=\"pagamento_parcelado_antecipado\" p=\"value\">0</cmd><cmd n=\"as\" t=\"valor_material\" p=\"value\">0,00</cmd><cmd n=\"js\"><![CDATA[$(\"#reter_iss\").removeAttr(\"checked\");]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_cofins\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_pis\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_csll\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_ir\").attr(\"checked\", true);]]></cmd><cmd n=\"js\"><![CDATA[$(\"#reter_inss\").removeAttr(\"checked\");]]></cmd><cmd n=\"js\">ControlarPisCofins();</cmd><cmd n=\"as\" t=\"aliq_cofins\" p=\"value\">3,00</cmd><cmd n=\"as\" t=\"valor_cofins\" p=\"value\">737,10</cmd><cmd n=\"as\" t=\"aliq_pis\" p=\"value\">0,65</cmd><cmd n=\"as\" t=\"valor_pis\" p=\"value\">159,71</cmd><cmd n=\"as\" t=\"aliq_contribuicao\" p=\"value\">1,00</cmd><cmd n=\"as\" t=\"valor_contribuicao\" p=\"value\">245,70</cmd><cmd n=\"as\" t=\"aliq_ir\" p=\"value\">1,50</cmd><cmd n=\"as\" t=\"valor_ir\" p=\"value\">368,55</cmd><cmd n=\"as\" t=\"aliq_iss\" p=\"value\">0,00</cmd><cmd n=\"as\" t=\"valor_iss\" p=\"value\">0,00</cmd><cmd n=\"js\">toggleCamposValorFinalCobrado();</cmd><cmd n=\"as\" t=\"condicao_pagamento_id\" p=\"value\">41835</cmd><cmd n=\"as\" t=\"condicao_pagamento\" p=\"value\">1</cmd><cmd n=\"js\">CalculoParcelas(891941)</cmd><cmd n=\"js\">xajax_NaturezaPedido(1, 0);</cmd><cmd n=\"as\" t=\"numero_processo\" p=\"value\"></cmd><cmd n=\"as\" t=\"modo_prestacao\" p=\"value\"></cmd><cmd n=\"as\" t=\"obs_pedido\" p=\"value\"></cmd><cmd n=\"as\" t=\"obs_interno_pedido\" p=\"value\"><![CDATA[Referência: ordem de serviço #200509\nPedido do Cliente 200269354\nProposta -  P200512\nPedido Interno - 322\nGMI-PVI /Farofa - Upgrade CPU/ CC-190207 / OS-200509]]></cmd><cmd n=\"as\" t=\"id_servico\" p=\"value\">891941</cmd><cmd n=\"js\"><![CDATA[$(\"#nome_cliente\").focus();]]></cmd><cmd n=\"js\"><![CDATA[DesabilitarCamposOp(\"conta\");]]></cmd><cmd n=\"js\">$('#LayerLocalSelecionarEntrega').addClass('hide')</cmd><cmd n=\"js\">$('#LayerLocalSelecionarRetirada').addClass('hide')</cmd><cmd n=\"js\">$('#LayerLocalSelecionarCobranca').addClass('hide')</cmd><cmd n=\"as\" t=\"bloquear_edicao_cliente\" p=\"value\">1</cmd></xjx>"
+            },
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Iniciar Importacao de Detalhes": {
+      "main": [
+        [
+          {
+            "node": "Validar XML de Detalhes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar XML de Detalhes": {
+      "main": [
+        [
+          {
+            "node": "XML de Detalhes Valido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML de Detalhes Valido?": {
+      "main": [
+        [
+          {
+            "node": "Extrair Campos do XML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Retorno de Erro de Validacao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Campos do XML": {
+      "main": [
+        [
+          {
+            "node": "Salvar Detalhes na NF_Service",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Detalhes na NF_Service": {
+      "main": [
+        [
+          {
+            "node": "Montar Retorno de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar Retorno de Erro de Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "0498957b-1f07-4575-89fd-8c0d6912dc13",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "EP5jvsjGYWMEROje",
+  "tags": []
+}
