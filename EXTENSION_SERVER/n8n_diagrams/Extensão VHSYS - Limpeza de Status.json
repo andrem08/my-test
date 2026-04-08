@@ -66,7 +66,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "\nUPDATE auxiliary.update_cc_report_status\nSET\n  \"entries_runned\"  = 0,\n  \"outputs_runned\" = 0,\n  \"updated_at\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \n\t\"entries_runned\" != 0 OR \"outputs_runned\" != 0\nRETURNING \"entries_runned\", \"outputs_runned\";",
+        "query": "\nUPDATE auxiliary.status_processamento_cc\nSET\n  \"status_entradas\"  = 0,\n  \"status_saidas\" = 0\nWHERE \n\t\"status_entradas\" != 0 OR \"status_saidas\" != 0\nRETURNING \"cc_id\", \"status_entradas\", \"status_saidas\";",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -122,7 +122,7 @@
     },
     {
       "parameters": {
-        "content": "## Limpeza do Relatorio CC\n\nZera os contadores de processamento em auxiliary.update_cc_report_status.\n\nCampos resetados:\n- entries_runned\n- outputs_runned",
+        "content": "## Limpeza do Relatorio CC\n\nZera os contadores de processamento em auxiliary.status_processamento_cc.\n\nCampos resetados:\n- status_entradas\n- status_saidas",
         "height": 216,
         "width": 420,
         "color": 2

@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Conta o status de processamento dos centros de custo\nSELECT \n  COUNT(*) as total_lines,\n  SUM(CASE WHEN entries_runned = 1 THEN 1 ELSE 0 END) as number_of_entries,\n  SUM(CASE WHEN outputs_runned = 1 THEN 1 ELSE 0 END) as number_of_outputs\nFROM auxiliary.update_cc_report_status;",
+        "query": "-- Conta o status de processamento dos centros de custo\nSELECT \n  COUNT(*) as total_lines,\n  SUM(CASE WHEN status_entradas = 1 THEN 1 ELSE 0 END) as number_of_entries,\n  SUM(CASE WHEN status_saidas = 1 THEN 1 ELSE 0 END) as number_of_outputs\nFROM auxiliary.status_processamento_cc;",
         "options": {}
       },
       "id": "a44b9969-55cc-4ba9-b8c1-1cd83775f9a9",
@@ -64,7 +64,7 @@
     },
     {
       "parameters": {
-        "content": "## Agregacao no Banco\n\nConsulta update_cc_report_status e calcula totais:\n- linhas\n- entries_runned\n- outputs_runned",
+        "content": "## Agregacao no Banco\n\nConsulta status_processamento_cc e calcula totais:\n- linhas\n- status_entradas\n- status_saidas",
         "height": 194,
         "width": 324,
         "color": 6

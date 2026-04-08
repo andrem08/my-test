@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Consolidacao e Fechamento\n\nConverge os ramos de insert e delete.\n\nAtualiza status por tipo:\n- entrada -> entries_runned\n- saida -> outputs_runned\n\nRetorna resposta 201 de conclusao.",
+        "content": "## Consolidacao e Fechamento\n\nConverge os ramos de insert e delete.\n\nAtualiza status por tipo:\n- entrada -> status_entradas\n- saida -> status_saidas\n\nRetorna resposta 201 de conclusao.",
         "height": 234,
         "width": 440,
         "color": 7
@@ -164,7 +164,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $json.cc_id }}';",
+        "query": "UPDATE auxiliary.status_processamento_cc\nSET \n  status_entradas = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE status_entradas END,\n  status_saidas = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE status_saidas END\nWHERE cc_id = '{{ $json.cc_id }}';",
         "options": {}
       },
       "id": "68907450-7ec9-4877-831f-23bfd521951a",
@@ -224,7 +224,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET \n  entries_runned = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'entrada' THEN 1 ELSE entries_runned END,\n  outputs_runned = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'saida' THEN 1 ELSE outputs_runned END,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE cc_id = '{{ $('Ha Alteracoes?').item.json.cc_id }}';",
+        "query": "UPDATE auxiliary.status_processamento_cc\nSET \n  status_entradas = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'entrada' THEN 1 ELSE status_entradas END,\n  status_saidas = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'saida' THEN 1 ELSE status_saidas END\nWHERE cc_id = '{{ $('Ha Alteracoes?').item.json.cc_id }}';",
         "options": {}
       },
       "id": "28c8b239-47d9-45f7-bc11-7ddcef464761",

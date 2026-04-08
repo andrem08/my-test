@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_cc_report_status\nSET\n  entries_runned = 0,\n  outputs_runned = 0,\n  updated_at = (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\nRETURNING cc_id, entries_runned, outputs_runned, updated_at;",
+        "query": "UPDATE auxiliary.status_processamento_cc\nSET\n  status_entradas = 0,\n  status_saidas = 0\nRETURNING cc_id, status_entradas, status_saidas;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -81,7 +81,7 @@
     },
     {
       "parameters": {
-        "content": "## Reset de Flags\n\nExecuta UPDATE em update_cc_report_status:\n- entries_runned = 0\n- outputs_runned = 0\n- updated_at = agora",
+        "content": "## Reset de Flags\n\nExecuta UPDATE em status_processamento_cc:\n- status_entradas = 0\n- status_saidas = 0",
         "height": 204,
         "color": 6
       },
