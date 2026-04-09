@@ -6,11 +6,9 @@ import CCReportProgressBarEntry from "./CCReportProgressBarEntry"
 const ProgressBarContainer = styled.div`
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  gap: 0.2rem;
   width: 100%;
-  padding: 1.4rem;
-    font-family: Poppins;
+  padding: 0.25rem 0;
 `
 
 const CCReportProgressBar = () => {
@@ -25,13 +23,8 @@ const CCReportProgressBar = () => {
 
   return (
     <ProgressBarContainer>
-      <div>    <CCReportProgressBarEntry progress={entries} total={total} label="Entradas" />  </div>
-  <div>   <CCReportProgressBarEntry progress={outputs} total={total} label="Saídas" />  </div>
-  <div>
-{/* <CCReportProgressBarTotal/> */}
-
-  </div>
-   
+      <CCReportProgressBarEntry progress={entries} total={total} label="Entradas" />
+      <CCReportProgressBarEntry progress={outputs} total={total} label="Saídas" />
     </ProgressBarContainer>
   )
 }

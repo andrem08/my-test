@@ -1,111 +1,36 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { FaCircle } from "react-icons/fa";
-import styled, { css } from "styled-components";
-const IconStatusBlock = styled.div `
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: gray;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px gray;
+import React from "react"
+import { FaCircle } from "react-icons/fa"
+import styled from "styled-components"
 
-  i {
-    color: gray;
-    font-size: 2rem;
-    text-shadow: 0 0 10px gray;
-    background-color: gray;
-  }
-`;
-const IconStatusFrezze = styled.div `
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  /* trunk-ignore(git-diff-check/error) */
-  color: #17dcff;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px #17dcff;
+const STATUS_COLOR_BY_CODE: Record<number, string> = {
+  [-1]: "#d04545",
+  0: "#6f6f6f",
+  1: "#f4a13c",
+  2: "#2f9b55",
+  3: "#17dcff"
+}
 
-  i {
-    color: #17dcff;
-    font-size: 2rem;
-    text-shadow: 0 0 10px #17dcff;
-    background-color: #17dcff;
-  }
-`;
-const IconStatusError = styled.div `
-  display: flex;
-  flex-direction: column;
+const StatusIconWrap = styled.div<{ $color: string }>`
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  color: #ec4646;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px #ec4646;
+  color: ${({ $color }) => $color};
 
-  i {
-    color: #ec4646;
-    font-size: 2rem;
-    text-shadow: 0 0 10px gray;
-    background-color: #ec4646;
+  svg {
+    font-size: 1.05rem;
+    filter: drop-shadow(0 0 8px ${({ $color }) => $color});
   }
-`;
-const IconStatusRunning = styled.div `
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: #ffa726;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px #f57c00;
+`
 
-  i {
-    color: #ffa726;
-    font-size: 2rem;
-    text-shadow: 0 0 10px #f57c00;
-    background-color: #ffa726;
-  }
-`;
-const IconStatusRunned = styled.div `
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: #388e3c;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px #2b692e;
+export default function StatusIcon({ status }: { status: number }) {
+  const color = STATUS_COLOR_BY_CODE[status] ?? STATUS_COLOR_BY_CODE[-1]
 
-  i {
-    color: #388e3c;
-    font-size: 2rem;
-    text-shadow: 0 0 10px #2b692e;
-    background-color: #388e3c;
-  }
-`;
-export default function StatusIcon({ status }: {
-    status: number;
-}) {
-    if (status === 1) {
-        return (<IconStatusRunning>
-        <FaCircle />
-      </IconStatusRunning>);
-    }
-    if (status === 2) {
-        return (<IconStatusRunned>
-        <FaCircle />
-      </IconStatusRunned>);
-    }
-    if (status === 0) {
-        return (<IconStatusBlock>
-        <FaCircle />
-      </IconStatusBlock>);
-    }
-    if (status === 3) {
-        return (<IconStatusFrezze>
-        <FaCircle />
-      </IconStatusFrezze>);
-    }
-    if (status === -1) {
-        return (<IconStatusError>
-        <FaCircle />
-      </IconStatusError>);
-    }
-    return (<IconStatusError>
+  return (
+    <StatusIconWrap
+      $color={color}
+      aria-label={`Status ${status}`}
+      title={`Status ${status}`}>
       <FaCircle />
-    </IconStatusError>);
+    </StatusIconWrap>
+  )
 }

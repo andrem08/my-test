@@ -2,27 +2,30 @@ import React, { useContext } from "react"
 import styled from "styled-components"
 
 import { DataContext } from "../context/DataContext"
+import { cardStyles, primaryButtonStyles } from "./shared/styles"
 
 const ServiceStatusInfoBox = styled.div`
+  ${cardStyles};
   display: flex;
   flex-direction: column;
-  border-radius: 1rem;
-  transition: 0.9s;
-  padding: 1rem;
+  gap: 0.85rem;
+  transition: box-shadow 0.2s ease;
+  padding: 1rem 1rem 1.15rem;
   text-align: left;
+
+  h2 {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: #312117;
+    font-family: "Sora", "Manrope", sans-serif;
+  }
 `
+
 const CustomButton = styled.button`
-  border: 1px solid transparent;
-
-  font-family: Poppins;
-  font-size: 14px;
-  font-weight: 700;
-  background-color: rgb(140, 4, 4);
-
-  padding: 4px 4px;
-  text-transform: uppercase;
-  border-radius: 0px;
-  color: white;
+  ${primaryButtonStyles};
+  align-self: flex-start;
+  padding: 10px 14px;
 `
 
 function ServiceStatus({
@@ -41,7 +44,9 @@ function ServiceStatus({
   const handleRunService = () => {
     runService(service_ref)
   }
+
   if (firstLoad) return <p>Loading...</p>
+
   const ItemsStatus = data.find(
     (serviceItem: { ACTION: string }) =>
       serviceItem.ACTION.trim() === service_ref.trim()
@@ -52,11 +57,11 @@ function ServiceStatus({
   }
   return (
     <ServiceStatusInfoBox>
-      <h2>{service} </h2>
-      <h4></h4>
+      <h2>{service}</h2>
       <div>{children}</div>
-
-      <CustomButton onClick={handleRunService}>Atualizar</CustomButton>
+      <CustomButton onClick={handleRunService} aria-label={`Atualizar ${service}`}>
+        Atualizar
+      </CustomButton>
     </ServiceStatusInfoBox>
   )
 }
