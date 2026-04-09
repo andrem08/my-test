@@ -59,14 +59,18 @@ const CommandGroupHeaderDisabled = styled.div`
 const CommandGroupList = styled.div`
   display: flex;
   flex-direction: column;
-  border-radius: 1rem;
-  transition: 0.9s;
-  padding: 1rem;
+  border-radius: 0 0 14px 14px;
+  border: 1px solid rgba(115, 86, 58, 0.16);
+  border-top: none;
+  background: linear-gradient(180deg, rgba(244, 235, 225, 0.68) 0%, rgba(236, 226, 215, 0.78) 100%);
+  transition: 0.25s ease;
+  padding: 0.75rem;
 `
 const Container = styled.div`
   text-align: center;
-  padding: 1rem 0;
-  width: 600px;
+  padding: 0.85rem;
+  width: 430px;
+  max-width: 100%;
 `
 
 const StatusBar = styled.div`
@@ -80,15 +84,15 @@ padding-right: 0.5rem;
 const ContainerHeader = styled.div`
   display: flex;
   flex-direction: column;
-  padding-top: 2rem;
+  padding-top: 1.2rem;
   text-align: center;
-  padding-bottom: 2rem;
+  padding-bottom: 1.2rem;
 
   h1 {
     font-size: 1.5rem;
   }
   img {
-    width: 180px;
+    width: 148px;
     margin: 0 auto;
   }
 `

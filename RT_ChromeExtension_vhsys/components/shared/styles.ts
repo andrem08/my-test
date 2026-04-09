@@ -1,10 +1,10 @@
 import { css } from "styled-components"
 
 export const cardStyles = css`
-  background: linear-gradient(155deg, rgba(255, 255, 255, 0.98) 0%, rgba(249, 245, 239, 0.96) 100%);
+  background: linear-gradient(155deg, rgba(248, 240, 231, 0.94) 0%, rgba(239, 229, 216, 0.94) 100%);
   border: 1px solid rgba(106, 76, 51, 0.15);
   border-radius: 16px;
-  box-shadow: 0 12px 30px rgba(36, 25, 18, 0.12);
+  box-shadow: 0 10px 22px rgba(36, 25, 18, 0.08);
 `
 
 export const primaryButtonStyles = css`
