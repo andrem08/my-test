@@ -14,6 +14,10 @@
           "type": "TEXT"
         },
         {
+          "name": "type",
+          "type": "TEXT"
+        },
+        {
           "name": "id_cc",
           "type": "VARCHAR(255)"
         },
@@ -42,40 +46,19 @@
           "type": "VARCHAR(255)"
         },
         {
-          "name": "data_pagamento",
-          "type": "TIMESTAMP"
-        },
-        {
           "name": "categoria",
           "type": "VARCHAR(255)"
         },
         {
           "name": "valor",
           "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "type",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "created_at",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "updated_at",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "checks": [
-        {
-          "constraint": "type IN ('entrada', 'saida')"
         }
       ],
       "indexes": [
         {
-          "name": "idx_vhx_relatorio_cc_cc",
+          "name": "idx_vhx_relatorio_cc_id_cc",
           "columns": [
-            "cc"
+            "id_cc"
           ]
         },
         {

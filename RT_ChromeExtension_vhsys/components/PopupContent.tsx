@@ -5,6 +5,7 @@ import LoadingAnimation from "~components/Loading"
 import { updated_version } from "~/version"
 import RegularBillsProgressBar from "~components/ProgressBar/RegularBillsProgressBar"
 import EmployerProgressBar from "~components/ProgressBar/EmployerProgressBar"
+import ApiPopulateWorkflows from "~components/ApiPopulateWorkflows"
 import ResetButton from "~components/ResetButton"
 import RegularBills from "~components/ServicesContent/RegularBills"
 import RelatorioManagerCC from "~components/ServicesContent/ReportManagerCC"
@@ -19,7 +20,14 @@ import ServicesNoteReport from "./ServicesContent/ServiceNoteReport"
 const CommandGroupHeader = styled.div`
   padding: 0.9rem;
   display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
+  width: 100%;
+
+  @media (min-width: 900px) {
+    padding: 1rem 1.1rem;
+  }
 
   h3 {
     margin: auto 0;
@@ -38,9 +46,16 @@ const CommandGroupHeader = styled.div`
 const CommandGroupHeaderDisabled = styled.div`
   padding: 0.9rem;
   display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
   box-shadow: rgba(17, 12, 46, 0.15) 0px 48px 100px 0px;
   background-color: aliceblue;
   opacity: 0.5;
+  width: 100%;
+
+  @media (min-width: 900px) {
+    padding: 1rem 1.1rem;
+  }
 
   h3 {
     margin: auto 0;
@@ -65,21 +80,32 @@ const CommandGroupList = styled.div`
   background: linear-gradient(180deg, rgba(244, 235, 225, 0.68) 0%, rgba(236, 226, 215, 0.78) 100%);
   transition: 0.25s ease;
   padding: 0.75rem;
+  width: 100%;
 `
 const Container = styled.div`
   text-align: center;
   padding: 0.85rem;
-  width: 430px;
-  max-width: 100%;
+  width: min(100%, 980px);
+  min-width: 320px;
+  margin: 0 auto;
+
+  @media (min-width: 900px) {
+    padding: 1rem 1.15rem 1.25rem;
+  }
 `
 
 const StatusBar = styled.div`
-
-display: flex;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 `
 const ProgressBarAlign = styled.div`
-
 padding-right: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding-right: 0.5rem;
 `
 const ContainerHeader = styled.div`
   display: flex;
@@ -92,15 +118,35 @@ const ContainerHeader = styled.div`
     font-size: 1.5rem;
   }
   img {
-    width: 148px;
+    width: min(148px, 50vw);
     margin: 0 auto;
+  }
+
+  @media (min-width: 900px) {
+    padding-top: 1.5rem;
+    padding-bottom: 1.4rem;
+
+    h1 {
+      font-size: 1.65rem;
+    }
   }
 `
 const ItemHeader = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
   width: 100%;
   padding: 0rem 1rem;
+
+  h3 {
+    min-width: 0;
+  }
+
+  @media (max-width: 520px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `
 function isAnyJobRunning(jobs: any[]): boolean {
   return jobs.some((job) => job.RUN_STATUS === 1)
@@ -160,9 +206,12 @@ const AccordionItem: React.FC<AccordionItemProps> = ({
       <CommandGroupHeader>
         <ItemHeader>
           <h3>{name} </h3>
-          <StatusBar>          <ProgressBarAlign>{isCompleted ? <CompletedProgressBar /> : progressBar}</ProgressBarAlign>
-
-          <StatusIcon status={currentStatus} /></StatusBar>
+          <StatusBar>
+            <ProgressBarAlign>
+              {isCompleted ? <CompletedProgressBar /> : progressBar}
+            </ProgressBarAlign>
+            <StatusIcon status={currentStatus} />
+          </StatusBar>
 
         </ItemHeader>
         <button onClick={() => setHidden(!hidden)}>
@@ -223,6 +272,8 @@ function IndexPopup() {
         <h3>V{updated_version}</h3>
         <ResetButton />
       </ContainerHeader>
+
+      <ApiPopulateWorkflows />
 
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
 

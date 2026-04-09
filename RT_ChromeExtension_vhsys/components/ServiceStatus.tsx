@@ -12,6 +12,7 @@ const ServiceStatusInfoBox = styled.div`
   transition: box-shadow 0.2s ease;
   padding: 1rem 1rem 1.15rem;
   text-align: left;
+  width: 100%;
 
   h2 {
     margin: 0;
@@ -27,20 +28,33 @@ const CustomButton = styled.button`
   align-self: flex-start;
   padding: 10px 14px;
 `
+const ButtonsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+
+  @media (min-width: 720px) {
+    flex-wrap: nowrap;
+  }
+`
 
 function ServiceStatus({
   service,
   service_ref,
-  children
+  children,
+  actionSlot
 }: {
   service: string
   service_ref: string
   children?: React.ReactNode
-  progressBar?: React.ReactNode
+  actionSlot?: React.ReactNode
 }) {
   const context = useContext(DataContext)
   if (!context) return <p>Context not available</p>
+
   const { data, firstLoad, runService } = context
+
   const handleRunService = () => {
     runService(service_ref)
   }
@@ -51,17 +65,24 @@ function ServiceStatus({
     (serviceItem: { ACTION: string }) =>
       serviceItem.ACTION.trim() === service_ref.trim()
   )
+
   if (!ItemsStatus) {
     console.warn("No matching service found for:", service_ref)
     return <p>No matching service found</p>
   }
+
   return (
     <ServiceStatusInfoBox>
       <h2>{service}</h2>
       <div>{children}</div>
-      <CustomButton onClick={handleRunService} aria-label={`Atualizar ${service}`}>
-        Atualizar
-      </CustomButton>
+      <ButtonsRow>
+        <CustomButton
+          onClick={handleRunService}
+          aria-label={`Atualizar ${service}`}>
+          Atualizar
+        </CustomButton>
+        {actionSlot}
+      </ButtonsRow>
     </ServiceStatusInfoBox>
   )
 }

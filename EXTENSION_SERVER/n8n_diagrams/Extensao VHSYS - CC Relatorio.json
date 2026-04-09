@@ -331,7 +331,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO raw_data.\"vhx_relatorio_cc\" (\n  \"id\", \"id_seed\", \"cc\", \"id_cc\", \"cc_label\",\n  \"vencimento\", \"fornecedor\", \"nome_despesa\", \"situacao\",\n  \"data_pagamento\", \"categoria\", \"valor\", \"type\",\n  \"created_at\", \"updated_at\"\n) VALUES\n{{ $json.values_sql }};",
+        "query": "INSERT INTO raw_data.\"vhx_relatorio_cc\" (\n  \"id\", \"id_seed\", \"cc\", \"id_cc\", \"cc_label\",\n  \"vencimento\", \"fornecedor\", \"nome_despesa\", \"situacao\",\n  \"categoria\", \"valor\", \"type\"\n) VALUES\n{{ $json.values_sql }};",
         "options": {
           "queryBatching": "single"
         }
@@ -388,7 +388,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Prepara insert em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toInsert = diff.to_insert || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { _skip_insert: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst num = (v, fallback = 0) => {\n  const n = Number(String(v ?? '').replace(',', '.'));\n  return Number.isFinite(n) ? n : fallback;\n};\n\nconst values_sql = toInsert.map((rec) => {\n  const venc = num(rec.VENCIMENTO, 0);\n  const valor = num(rec.VALOR, 0);\n  return `(\n  '${esc(rec.ID)}',\n  '${esc(rec.ID_SEED)}',\n  '${esc(rec.CC)}',\n  '${esc(rec.ID_CC)}',\n  '${esc(rec.CC_LABEL)}',\n  to_timestamp(${venc})::timestamp,\n  '${esc(rec.FORNECEDOR)}',\n  '${esc(rec.NOME_DESPESA)}',\n  '${esc(rec.SITUACAO)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  '${esc(rec.CATEGORIA)}',\n  ${valor},\n  '${esc(rec.TYPE)}',\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp,\n  (NOW() AT TIME ZONE 'America/Sao_Paulo')::timestamp\n)`;\n}).join(',\\n');\n\nreturn [{\n  json: {\n    _skip_insert: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    insert_count: toInsert.length,\n    values_sql\n  }\n}];"
+        "jsCode": "// Prepara insert em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toInsert = diff.to_insert || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { _skip_insert: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst num = (v, fallback = 0) => {\n  const n = Number(String(v ?? '').replace(',', '.'));\n  return Number.isFinite(n) ? n : fallback;\n};\n\nconst values_sql = toInsert.map((rec) => {\n  const venc = num(rec.VENCIMENTO, 0);\n  const valor = num(rec.VALOR, 0);\n  return `(\n  '${esc(rec.ID)}',\n  '${esc(rec.ID_SEED)}',\n  '${esc(rec.CC)}',\n  '${esc(rec.ID_CC)}',\n  '${esc(rec.CC_LABEL)}',\n  to_timestamp(${venc})::timestamp,\n  '${esc(rec.FORNECEDOR)}',\n  '${esc(rec.NOME_DESPESA)}',\n  '${esc(rec.SITUACAO)}',\n  '${esc(rec.CATEGORIA)}',\n  ${valor},\n  '${esc(rec.TYPE)}'\n)`;\n}).join(',\\n');\n\nreturn [{\n  json: {\n    _skip_insert: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    insert_count: toInsert.length,\n    values_sql\n  }\n}];"
       },
       "id": "80c4abff-b147-48a9-9dc3-0d1950b2e862",
       "name": "Preparar Insercoes",

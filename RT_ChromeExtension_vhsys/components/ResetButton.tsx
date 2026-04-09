@@ -5,8 +5,9 @@ import { primaryButtonStyles } from "./shared/styles"
 
 const CustomButton = styled.button`
     ${primaryButtonStyles};
-    margin-top: 0.9rem;
-    min-width: 128px;
+    margin: 0;
+    min-width: 102px;
+    padding: 8px 12px;
 `
 
 export default function RelatorioManagerCC() {

@@ -11,16 +11,17 @@ console.log = (...args) => {
   originalLog(...args)
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     if (tabs[0]) {
-      chrome.tabs.sendMessage(tabs[0].id, { type: "log", args: args })
+      chrome.tabs.sendMessage(tabs[0].id, { type: "log", args })
     }
   })
 }
 
-function Popup() {
+function SidePanel() {
   return (
     <DataProvider>
       <IndexPopup />
     </DataProvider>
   )
 }
-export default Popup
+
+export default SidePanel

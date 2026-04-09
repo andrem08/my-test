@@ -1,7 +1,7 @@
 {
   "name": "RT_ENGENHARIA_VHSYS",
   "displayName": "RT ENGENHARIA - VHSYS",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Extensão do google chrome para aquisição de dados do VHSYS",
   "author": "RT Engenharia. <rtadmin@rtengenharia.ind.br>",
   "scripts": {
@@ -38,17 +38,24 @@
     "typescript": "5.3.3"
   },
   "manifest": {
+    "action": {
+      "default_title": "RT ENGENHARIA - VHSYS"
+    },
     "permissions": [
       "scripting",
       "tabs",
       "activeTab",
       "cookies",
-      "storage"
+      "storage",
+      "sidePanel"
     ],
     "host_permissions": [
       "https://*/*",
       "http://*/*"
     ],
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    },
     "background": {
       "persistent": false
     }
