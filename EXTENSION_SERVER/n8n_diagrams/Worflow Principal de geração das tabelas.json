@@ -1,0 +1,183 @@
+{
+  "name": "Worflow Principal de geração das tabelas",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3f6e9ab8-2720-44c0-8402-491a27df7c14",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "path": "681fc287-d331-49c8-acdb-3b504e298db5",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        176
+      ],
+      "id": "855565d3-40a0-4e1e-9f37-fd7b33394283",
+      "name": "Webhook",
+      "webhookId": "681fc287-d331-49c8-acdb-3b504e298db5"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */30 5-21 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        368
+      ],
+      "id": "2440b6f4-2325-4135-940f-58167b43c5b1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## Agendamento\n\nExecuta a cada 30 minutos apenas entre 05:00 e 21:59.\n\nCron usado no Schedule Trigger:\n`0 */30 5-21 * * *`\n\nFora da janela 22:00-05:00, o fluxo nao dispara.",
+        "height": 160,
+        "width": 360,
+        "color": 5
+      },
+      "id": "b7f5c28e-7f59-4f8f-a8c2-4c7fbc4e6d1f",
+      "name": "Sticky Note - Agendamento",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "_ewM98crypcdZyn5w39uG",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/_ewM98crypcdZyn5w39uG",
+          "cachedResultName": "Fluxo para Popular Tabelas das API's"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        544,
+        192
+      ],
+      "id": "cb5648bb-5d7a-4b99-ac82-047a67a34c47",
+      "name": "Chamada do Flow para popular APIs",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "2s9N17teDWbnshqZ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/2s9N17teDWbnshqZ",
+          "cachedResultName": "Processamento de tabelas auxiliares"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        192
+      ],
+      "id": "2dcc1327-4ac5-4113-b060-b9a4e39a7e8d",
+      "name": "Chamada do Flow para popular tabelas auxiliares",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Chamada do Flow para popular APIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Chamada do Flow para popular APIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Chamada do Flow para popular APIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chamada do Flow para popular APIs": {
+      "main": [
+        [
+          {
+            "node": "Chamada do Flow para popular tabelas auxiliares",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "274925e3-8d15-49c4-94f1-396faa02739e",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "2ABqc9MYYLJruG46",
+  "tags": []
+}

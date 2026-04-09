@@ -12,8 +12,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -58864,
-        19664
+        -58384,
+        19616
       ]
     },
     {
@@ -27,8 +27,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -59376,
-        19824
+        -58976,
+        19808
       ]
     },
     {
@@ -42,7 +42,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -56144,
+        -55728,
         19296
       ]
     },
@@ -57,7 +57,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -57936,
+        -57520,
         20080
       ]
     },
@@ -72,7 +72,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -58320,
+        -57904,
         19568
       ]
     },
@@ -87,7 +87,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -58672,
+        -58256,
         20064
       ]
     },
@@ -216,7 +216,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -57424,
+        -57008,
         19872
       ],
       "id": "3234048a-8209-441b-8d8a-5c1b74dce941",
@@ -238,7 +238,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56928,
+        -56512,
         19696
       ],
       "alwaysOutputData": false,
@@ -293,7 +293,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56992,
+        -56576,
         20064
       ],
       "alwaysOutputData": false,
@@ -333,7 +333,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -58768,
+        -58352,
         19904
       ],
       "id": "1574d0eb-47d6-45a0-ba9c-6fc08396e7ee",
@@ -359,7 +359,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.3,
       "position": [
-        -58480,
+        -58064,
         19904
       ]
     },
@@ -373,7 +373,7 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        -58176,
+        -57760,
         19904
       ]
     },
@@ -386,7 +386,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -56688,
+        -56272,
         19568
       ],
       "alwaysOutputData": true
@@ -400,7 +400,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -56832,
+        -56416,
         19472
       ],
       "alwaysOutputData": true
@@ -458,7 +458,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -57136,
+        -56720,
         19264
       ],
       "retryOnFail": true,
@@ -483,7 +483,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -56832,
+        -56416,
         19248
       ],
       "alwaysOutputData": true
@@ -531,7 +531,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -57136,
+        -56720,
         19488
       ],
       "alwaysOutputData": false,
@@ -559,7 +559,7 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -56000,
+        -55584,
         19648
       ],
       "credentials": {
@@ -576,7 +576,7 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -57744,
+        -57328,
         19904
       ],
       "id": "b0fc72fd-46ec-47b9-90d1-c8c122987bf1",
@@ -617,7 +617,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -56576,
+        -56160,
         20048
       ],
       "alwaysOutputData": false,
@@ -662,7 +662,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -56720,
+        -56304,
         19776
       ],
       "id": "3d2d1b21-e768-47df-9d0a-83c1b0962fde",
@@ -685,7 +685,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -57168,
+        -56752,
         19696
       ],
       "id": "e892db85-bee5-42d6-a179-4c2fd4878da0",
@@ -708,7 +708,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -56496,
+        -56080,
         19760
       ],
       "id": "b1e8d516-9a19-4b51-b99d-c84720ab2016",
@@ -723,7 +723,7 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        -57936,
+        -57520,
         19744
       ],
       "id": "51f424e1-6529-4946-ac6d-75f3320063c8",
@@ -757,7 +757,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -56480,
+        -56064,
         19584
       ],
       "id": "636ce5bc-311f-4205-adfe-84312abbcfe8",
@@ -765,18 +765,16 @@
     },
     {
       "parameters": {
-        "path": "9278833d-3687-4571-b1cd-54aacc667f07",
-        "options": {}
+        "inputSource": "passthrough"
       },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
       "position": [
-        -59008,
+        -58624,
         19904
       ],
-      "id": "f2a59201-9e2b-4387-ba1a-7efc82496453",
-      "name": "Webhook",
-      "webhookId": "9278833d-3687-4571-b1cd-54aacc667f07"
+      "id": "797539f1-8cf9-4c6b-892c-b6abc783b50e",
+      "name": "When Executed by Another Workflow"
     }
   ],
   "pinData": {},
@@ -804,7 +802,13 @@
             "index": 0
           }
         ],
-        [],
+        [
+          {
+            "node": "GLPI Iniciar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "UPSERT no Banco",
@@ -1045,7 +1049,7 @@
         ]
       ]
     },
-    "Webhook": {
+    "When Executed by Another Workflow": {
       "main": [
         [
           {
@@ -1061,9 +1065,11 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "6b043647-e8f5-44ca-8021-dc3f3b27a53c",
+  "versionId": "3a92a253-080d-4c5f-8f41-a19630ec55a8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

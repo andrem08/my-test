@@ -231,14 +231,14 @@
       "typeVersion": 3,
       "position": [
         -1248,
-        -736
+        -640
       ],
       "onError": "continueRegularOutput",
       "notes": "⏱️ TABELAS CLOCKIFY (raw_data)\n\nContém 4 tabelas do sistema de rastreamento de horas Clockify:\n- Projetos (clk_projetos) - projetos com estimativas e orçamentos\n- Clientes (clk_clientes) - dados dos clientes\n- Usuários (clk_usuarios) - configurações e preferências\n- Tags (clk_tags) - etiquetas para categorização\n\nCada tabela inclui: campos, constraints, índices, comentários e schema"
     },
     {
       "parameters": {
-        "numberInputs": 3
+        "numberInputs": 4
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
@@ -365,7 +365,7 @@
       "typeVersion": 3,
       "position": [
         -1248,
-        -544
+        -432
       ],
       "onError": "continueRegularOutput",
       "notes": "📦 TABELAS VHSYS (raw_data)\n\nContém 12 tabelas do sistema financeiro VHSYS:\n- Produtos, Categorias Financeiras, Bancos\n- Contas a Pagar/Receber, Extratos\n- Centro de Custos, Pedidos, Notas Fiscais\n- Ordens de Compra, Entradas de Mercadoria\n- Ordens de Serviço, Clientes\n\nCada tabela inclui: campos, constraints, índices, comentários e schema"
@@ -373,7 +373,7 @@
     {
       "parameters": {
         "mode": "raw",
-        "jsonOutput": "{\n  \"tables\": [\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_relatorio_cc\",\n      \"fields\": [\n        {\n          \"name\": \"id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_seed\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"id_cc\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cc\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cc_label\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"vencimento\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"fornecedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_despesa\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"situacao\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"data_pagamento\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"categoria\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"type\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"type IN ('entrada', 'saida')\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_relatorio_cc_cc\",\n          \"columns\": [\n            \"cc\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_relatorio_cc_categoria\",\n          \"columns\": [\n            \"categoria\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_relatorio_cc_situacao\",\n          \"columns\": [\n            \"situacao\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_relatorio_cc_type\",\n          \"columns\": [\n            \"type\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Relatório de Centro de Custos extraído do VHSYS via Extensão do Chrome\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id\",\n          \"comment\": \"Identificador único deterministico (hash) do registro\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_seed\",\n          \"comment\": \"Semente para geração do hash\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"valor\",\n          \"comment\": \"Valor numérico normalizado (sem vírgula)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"type\",\n          \"comment\": \"Tipo: 'entrada' ou 'saida'\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_despesas_recorrentes\",\n      \"fields\": [\n        {\n          \"name\": \"id_custo\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_empresa\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_conta\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"id_categoria\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"categoria_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"id_banco\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"id_fornecedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_fornecedor\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"vencimento_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor_custo\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"observacoes_custo\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"id_centro_custos\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"status_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"forma_pagamento\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"periodicidade\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"dia_semana_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"dia_mes_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_dias_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_inicio_ocorrencia\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_fim_ocorrencia\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_cad_custo\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"lixeira\",\n          \"type\": \"VARCHAR(16)\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"lixeira IN ('Sim', 'Nao')\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_desp_rec_empresa\",\n          \"columns\": [\n            \"id_empresa\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_categoria\",\n          \"columns\": [\n            \"id_categoria\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_fornecedor\",\n          \"columns\": [\n            \"id_fornecedor\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_centro_custos\",\n          \"columns\": [\n            \"id_centro_custos\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_status\",\n          \"columns\": [\n            \"status_custo\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Tabela principal de despesas recorrentes extraídas do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_custo\",\n          \"comment\": \"Chave primária - Identificador da despesa recorrente\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"observacoes_custo\",\n          \"comment\": \"HTML decoded, armazena observações detalhadas (pode ser NULL)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_inicio_ocorrencia\",\n          \"comment\": \"Data de início convertida de string para TIMESTAMP\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_fim_ocorrencia\",\n          \"comment\": \"Data de término convertida de string para TIMESTAMP\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"lixeira\",\n          \"comment\": \"Flag de exclusão lógica (geralmente 'Sim' ou 'Nao')\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_funcionarios\",\n      \"fields\": [\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"rg_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cpf_funcionario\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"matricula_funcionario\",\n          \"type\": \"VARCHAR(50)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"sexo_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"local_nascimento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"orgao_emissor_rg\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"serie_ctps_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cep_funcionario\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"endereco_funcionario\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"numero_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"bairro_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cidade_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"uf_funcionario\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"complemento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"celular_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"fone_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"email_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_pai_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_mae_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"observacoes_funcionario\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"pis_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"ctps_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"uf_ctps_funcionario\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"banco_funcionario\",\n          \"type\": \"VARCHAR(100)\"\n        },\n        {\n          \"name\": \"agencia_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"conta_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cargo_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_cargo_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cbo_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"departamento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"trabalho_inicio\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"trabalho_termino\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_inicio\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_termino\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"salario_funcionario\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"status_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_admissao_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_demissao_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_nascimento_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_cadastro\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_modificacao\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"sexo_funcionario IN ('Masculino', 'Feminino', 'Outro')\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_funcionarios_matricula\",\n          \"columns\": [\n            \"matricula_funcionario\"\n          ],\n          \"unique\": true\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_cpf\",\n          \"columns\": [\n            \"cpf_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_status\",\n          \"columns\": [\n            \"status_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_cargo\",\n          \"columns\": [\n            \"cargo_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_departamento\",\n          \"columns\": [\n            \"departamento_funcionario\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Cadastro principal de funcionários extraído do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave primária - Identificador do funcionário\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"matricula_funcionario\",\n          \"comment\": \"Matrícula única do funcionário (usada para upsert no N8N)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"salario_funcionario\",\n          \"comment\": \"Salário convertido para formato numérico DECIMAL(15,2)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_funcionario\",\n          \"comment\": \"Status atual do funcionário (ex: Ativo, Desligado)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_demissao_funcionario\",\n          \"comment\": \"Data de desligamento do funcionário (pode ser NULL)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_beneficios_funcionarios\",\n      \"fields\": [\n        {\n          \"name\": \"benefit_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_beneficios_funcionario\",\n          \"columns\": [\n            \"id_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_beneficios_nome\",\n          \"columns\": [\n            \"nome\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Benefícios vinculados aos funcionários extraídos do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"benefit_id\",\n          \"comment\": \"Chave primária - Identificador único do registro de benefício (geralmente um hash)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave estrangeira lógica para a tabela vhx_funcionarios\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"nome\",\n          \"comment\": \"Nome ou tipo do benefício (Ex: Transporte, Plano de Saúde, Refeição)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"valor\",\n          \"comment\": \"Valor monetário do benefício (numérico)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_dependentes\",\n      \"fields\": [\n        {\n          \"name\": \"dependents_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_dependente\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"tipo_dependente\",\n          \"type\": \"VARCHAR(100)\"\n        },\n        {\n          \"name\": \"fone_dependente\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"rg\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cpf\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"data_nascimento\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_dependentes_funcionario\",\n          \"columns\": [\n            \"id_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_dependentes_tipo\",\n          \"columns\": [\n            \"tipo_dependente\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_dependentes_cpf\",\n          \"columns\": [\n            \"cpf\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Cadastro de dependentes dos funcionários extraído do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"dependents_id\",\n          \"comment\": \"Chave primária - Identificador único do registro de dependente (hash)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave estrangeira lógica para a tabela vhx_funcionarios\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"tipo_dependente\",\n          \"comment\": \"Grau de parentesco ou tipo de dependência (Ex: Conjuge, Filho)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_nascimento\",\n          \"comment\": \"Data de nascimento do dependente convertida para TIMESTAMP\"\n        }\n      ]\n    }\n  ]\n}",
+        "jsonOutput": "{\n  \"tables\": [\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_relatorio_cc\",\n      \"fields\": [\n        {\n          \"name\": \"id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_seed\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"id_cc\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"centro_custo\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"vencimento\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"fornecedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_despesa\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"situacao\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"categoria\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor\",\n          \"type\": \"DECIMAL(15,2)\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_relatorio_cc_id_cc\",\n          \"columns\": [\n            \"id_cc\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_relatorio_cc_categoria\",\n          \"columns\": [\n            \"categoria\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_relatorio_cc_situacao\",\n          \"columns\": [\n            \"situacao\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Relatório de Centro de Custos extraído do VHSYS via Extensão do Chrome\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id\",\n          \"comment\": \"Identificador único deterministico (hash) do registro\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_seed\",\n          \"comment\": \"Semente para geração do hash\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"valor\",\n          \"comment\": \"Valor numérico normalizado (sem vírgula)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_despesas_recorrentes\",\n      \"fields\": [\n        {\n          \"name\": \"id_custo\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_empresa\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_conta\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"id_categoria\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"categoria_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"id_banco\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"id_fornecedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_fornecedor\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"vencimento_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor_custo\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"observacoes_custo\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"id_centro_custos\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"status_custo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"forma_pagamento\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"periodicidade\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"dia_semana_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"dia_mes_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_dias_ocorrencia\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_inicio_ocorrencia\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_fim_ocorrencia\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_cad_custo\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"lixeira\",\n          \"type\": \"VARCHAR(16)\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"lixeira IN ('Sim', 'Nao')\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_desp_rec_empresa\",\n          \"columns\": [\n            \"id_empresa\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_categoria\",\n          \"columns\": [\n            \"id_categoria\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_fornecedor\",\n          \"columns\": [\n            \"id_fornecedor\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_centro_custos\",\n          \"columns\": [\n            \"id_centro_custos\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_desp_rec_status\",\n          \"columns\": [\n            \"status_custo\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Tabela principal de despesas recorrentes extraídas do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_custo\",\n          \"comment\": \"Chave primária - Identificador da despesa recorrente\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"observacoes_custo\",\n          \"comment\": \"HTML decoded, armazena observações detalhadas (pode ser NULL)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_inicio_ocorrencia\",\n          \"comment\": \"Data de início convertida de string para TIMESTAMP\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_fim_ocorrencia\",\n          \"comment\": \"Data de término convertida de string para TIMESTAMP\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"lixeira\",\n          \"comment\": \"Flag de exclusão lógica (geralmente 'Sim' ou 'Nao')\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_funcionarios\",\n      \"fields\": [\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"rg_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cpf_funcionario\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"matricula_funcionario\",\n          \"type\": \"VARCHAR(50)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"sexo_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"local_nascimento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"orgao_emissor_rg\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"serie_ctps_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cep_funcionario\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"endereco_funcionario\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"numero_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"bairro_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cidade_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"uf_funcionario\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"complemento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"celular_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"fone_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"email_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_pai_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_mae_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"observacoes_funcionario\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"pis_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"ctps_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"uf_ctps_funcionario\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"banco_funcionario\",\n          \"type\": \"VARCHAR(100)\"\n        },\n        {\n          \"name\": \"agencia_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"conta_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cargo_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_cargo_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cbo_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"departamento_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"trabalho_inicio\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"trabalho_termino\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_inicio\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"intervalo_termino\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"salario_funcionario\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"status_funcionario\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_admissao_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_demissao_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_nascimento_funcionario\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_cadastro\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_modificacao\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"sexo_funcionario IN ('Masculino', 'Feminino', 'Outro')\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_funcionarios_matricula\",\n          \"columns\": [\n            \"matricula_funcionario\"\n          ],\n          \"unique\": true\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_cpf\",\n          \"columns\": [\n            \"cpf_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_status\",\n          \"columns\": [\n            \"status_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_cargo\",\n          \"columns\": [\n            \"cargo_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_funcionarios_departamento\",\n          \"columns\": [\n            \"departamento_funcionario\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Cadastro principal de funcionários extraído do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave primária - Identificador do funcionário\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"matricula_funcionario\",\n          \"comment\": \"Matrícula única do funcionário (usada para upsert no N8N)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"salario_funcionario\",\n          \"comment\": \"Salário convertido para formato numérico DECIMAL(15,2)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_funcionario\",\n          \"comment\": \"Status atual do funcionário (ex: Ativo, Desligado)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_demissao_funcionario\",\n          \"comment\": \"Data de desligamento do funcionário (pode ser NULL)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_beneficios_funcionarios\",\n      \"fields\": [\n        {\n          \"name\": \"benefit_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_beneficios_funcionario\",\n          \"columns\": [\n            \"id_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_beneficios_nome\",\n          \"columns\": [\n            \"nome\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Benefícios vinculados aos funcionários extraídos do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"benefit_id\",\n          \"comment\": \"Chave primária - Identificador único do registro de benefício (geralmente um hash)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave estrangeira lógica para a tabela vhx_funcionarios\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"nome\",\n          \"comment\": \"Nome ou tipo do benefício (Ex: Transporte, Plano de Saúde, Refeição)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"valor\",\n          \"comment\": \"Valor monetário do benefício (numérico)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_dependentes\",\n      \"fields\": [\n        {\n          \"name\": \"dependents_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"id_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_funcionario\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"nome_dependente\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"tipo_dependente\",\n          \"type\": \"VARCHAR(100)\"\n        },\n        {\n          \"name\": \"fone_dependente\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"rg\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cpf\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"data_nascimento\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_dependentes_funcionario\",\n          \"columns\": [\n            \"id_funcionario\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_dependentes_tipo\",\n          \"columns\": [\n            \"tipo_dependente\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_dependentes_cpf\",\n          \"columns\": [\n            \"cpf\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Cadastro de dependentes dos funcionários extraído do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"dependents_id\",\n          \"comment\": \"Chave primária - Identificador único do registro de dependente (hash)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_funcionario\",\n          \"comment\": \"Chave estrangeira lógica para a tabela vhx_funcionarios\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"tipo_dependente\",\n          \"comment\": \"Grau de parentesco ou tipo de dependência (Ex: Conjuge, Filho)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_nascimento\",\n          \"comment\": \"Data de nascimento do dependente convertida para TIMESTAMP\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_notas_venda\",\n      \"fields\": [\n        {\n          \"name\": \"id_registro\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"nota\",\n          \"type\": \"VARCHAR(50)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"cliente\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cnpj\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"razao_social\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"endereco\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"numero\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"complemento\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"bairro\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cidade\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"estado\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"cep\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"email\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"telefone\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"vendedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor_produtos\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_desconto\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_frete\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_total\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"total_parcelas\",\n          \"type\": \"INTEGER\"\n        },\n        {\n          \"name\": \"valor_icms\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_ipi\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_st\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"peso_bruto\",\n          \"type\": \"DECIMAL(15,3)\"\n        },\n        {\n          \"name\": \"peso_liquido\",\n          \"type\": \"DECIMAL(15,3)\"\n        },\n        {\n          \"name\": \"transportadora\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"data_pedido\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"qtde_produtos\",\n          \"type\": \"INTEGER\"\n        },\n        {\n          \"name\": \"total_unidades\",\n          \"type\": \"INTEGER\"\n        },\n        {\n          \"name\": \"cfop\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"natureza\",\n          \"type\": \"VARCHAR(500)\"\n        },\n        {\n          \"name\": \"contas\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"estoque\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"comissao\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"chave\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"protocolo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"data_emissao\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_autorizacao\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"situacao\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_cad\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_mod\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"observacoes\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"observacoes_internas\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"categoria_financeira\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"volumes\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"emitido_por\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cancelado_por\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"data_cancelamento\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_notas_venda_cnpj\",\n          \"columns\": [\n            \"cnpj\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_venda_cliente\",\n          \"columns\": [\n            \"cliente\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_venda_situacao\",\n          \"columns\": [\n            \"situacao\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_venda_data_emissao\",\n          \"columns\": [\n            \"data_emissao\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Relatório Completo de Notas Fiscais de Venda extraído do VHSYS via Webhook (n8n).\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"nota\",\n          \"comment\": \"Chave primária - Número da Nota Fiscal\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_emissao\",\n          \"comment\": \"Data em formato Unix Timestamp (Epoch)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_registro\",\n          \"comment\": \"ID interno do registro no VHSYS (Mapeado do campo ID)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_notas_servico\",\n      \"fields\": [\n        {\n          \"name\": \"id_registro\",\n          \"type\": \"VARCHAR(50)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"rps\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"nota\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"cliente\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cnpj\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"endereco\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"numero\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"complemento\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"bairro\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"cidade\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"estado\",\n          \"type\": \"VARCHAR(2)\"\n        },\n        {\n          \"name\": \"cep\",\n          \"type\": \"VARCHAR(20)\"\n        },\n        {\n          \"name\": \"email\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"telefone\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"vendedor\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"valor_servicos\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_total\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"total_parcelas\",\n          \"type\": \"INTEGER\"\n        },\n        {\n          \"name\": \"valor_deducoes\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliquota\",\n          \"type\": \"DECIMAL(5,2)\"\n        },\n        {\n          \"name\": \"valor_iss\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"iss_retido\",\n          \"type\": \"VARCHAR(10)\"\n        },\n        {\n          \"name\": \"valor_cofins\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_pis\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_csll\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_ir\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_inss\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_tributos\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"data_pedido\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"local_prestacao\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"contas\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"chave\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"protocolo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"descricao\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"data_emissao\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"situacao\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"data_cad\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"data_mod\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_notas_servico_cnpj\",\n          \"columns\": [\n            \"cnpj\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_servico_cliente\",\n          \"columns\": [\n            \"cliente\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_servico_situacao\",\n          \"columns\": [\n            \"situacao\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_servico_rps\",\n          \"columns\": [\n            \"rps\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Relatório de Notas Fiscais de Serviço extraído do VHSYS via Webhook (n8n).\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_registro\",\n          \"comment\": \"Chave primária - ID interno único do registro no VHSYS\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"rps\",\n          \"comment\": \"Número do RPS (Recibo Provisório de Serviços)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"nota\",\n          \"comment\": \"Número da Nota Fiscal (pode ser 0 quando a nota ainda não foi emitida)\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"data_emissao\",\n          \"comment\": \"Data em formato Unix Timestamp (Epoch). Pode vir vazio para notas não emitidas.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"situacao\",\n          \"comment\": \"Status atual da nota (Ex: Atendido, Cancelado, Em Aberto)\"\n        }\n      ]\n    },\n    {\n      \"schema\": \"raw_data\",\n      \"table_name\": \"vhx_notas_servicos_faturamento\",\n      \"fields\": [\n        {\n          \"name\": \"id_servico\",\n          \"type\": \"VARCHAR(50)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"obs_interno_pedido\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"obs_pedido\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"numero_processo\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"condicao_pagamento\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"condicao_pagamento_id\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"valor_iss\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliq_iss\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_ir\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliq_ir\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_contribuicao\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliq_contribuicao\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_pis\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliq_pis\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_cofins\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"aliq_cofins\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_material\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_tributos_mun\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_aliq_tributos_mun\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_tributos\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_aliq_tributos\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_imposto\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_aliquota\",\n          \"type\": \"DECIMAL(15,4)\"\n        },\n        {\n          \"name\": \"valor_base_calculo\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_condicionado\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_incondicionado\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_deducoes\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"itemLista_servico\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"valor_total_nota\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"valor_total_servicos\",\n          \"type\": \"DECIMAL(15,2)\"\n        },\n        {\n          \"name\": \"desc_servicos\",\n          \"type\": \"TEXT\"\n        },\n        {\n          \"name\": \"serie_nota\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"id_pedido\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"vendedor_pedido_id\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"vendedor_pedido\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"ultrapassar_limite_credito\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"contas_pedido\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"id_cliente\",\n          \"type\": \"VARCHAR(50)\"\n        },\n        {\n          \"name\": \"nome_cliente\",\n          \"type\": \"VARCHAR(255)\"\n        },\n        {\n          \"name\": \"created_at\",\n          \"type\": \"TIMESTAMP\"\n        },\n        {\n          \"name\": \"updated_at\",\n          \"type\": \"TIMESTAMP\"\n        }\n      ],\n      \"checks\": [],\n      \"indexes\": [\n        {\n          \"name\": \"idx_vhx_notas_servicos_faturamento_pedido\",\n          \"columns\": [\n            \"id_pedido\"\n          ]\n        },\n        {\n          \"name\": \"idx_vhx_notas_servicos_faturamento_cliente\",\n          \"columns\": [\n            \"id_cliente\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Dados internos de faturamento, pedidos e quebra de impostos de Notas de Serviço, extraídos do VHSYS via Extensão Chrome.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_servico\",\n          \"comment\": \"Chave primária - ID do faturamento/serviço no VHSYS\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"id_pedido\",\n          \"comment\": \"Chave estrangeira de ligação lógica com o pedido originador\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"valor_contribuicao\",\n          \"comment\": \"Refere-se ao valor de CSLL extraído da nota\"\n        }\n      ]\n    }\n  ]\n}",
         "options": {}
       },
       "id": "27b5b831-4342-40c0-aa2f-2e3cc4cf7fcc",
@@ -382,10 +382,319 @@
       "typeVersion": 3,
       "position": [
         -1248,
-        -352
+        -224
       ],
       "onError": "continueRegularOutput",
       "notes": "📦 TABELAS VHSYS (raw_data)\n\nContém 12 tabelas do sistema financeiro VHSYS:\n- Produtos, Categorias Financeiras, Bancos\n- Contas a Pagar/Receber, Extratos\n- Centro de Custos, Pedidos, Notas Fiscais\n- Ordens de Compra, Entradas de Mercadoria\n- Ordens de Serviço, Clientes\n\nCada tabela inclui: campos, constraints, índices, comentários e schema"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7d082870-b0a8-44d6-ba8e-874f155d4320",
+              "leftValue": "={{ $('Definir Constantes1').item.json['Deve incluir chaves estranggeiras'] }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        592
+      ],
+      "id": "4160c289-f33f-4847-862f-fb388444a16f",
+      "name": "If - Criar Foreign Keys?1",
+      "notes": "✅ SIM → Cria ALTER TABLE ADD CONSTRAINT FOREIGN KEY\n❌ NÃO → Finaliza processamento e itera para próxima tabela"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7d082870-b0a8-44d6-ba8e-874f155d4320",
+              "leftValue": "={{ $('Definir Constantes1').item.json['Deve incluir comentários'] }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        416
+      ],
+      "id": "185f3da4-dbe5-4a5a-a505-4a0744544395",
+      "name": "If - Adicionar Comentários?1",
+      "notes": "✅ SIM → Adiciona COMMENT ON TABLE/COLUMN para documentação\n❌ NÃO → Pula documentação e vai para próxima etapa"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "tables",
+        "options": {}
+      },
+      "id": "76d41cd9-92af-4f52-827f-48b7112781fd",
+      "name": "Separar Tabelas1",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        400
+      ],
+      "notes": "Separa o array de tabelas em itens individuais para processamento"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0f5a0a36-eb20-4c57-912d-45d59ff9008a",
+      "name": "Iterar Sobre Tabelas1",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -320,
+        400
+      ],
+      "notes": "Itera sobre cada tabela para executar as operações de criação sequencialmente"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DROP TABLE IF EXISTS {{$json.schema}}.{{$json.table_name}} CASCADE",
+        "options": {}
+      },
+      "id": "1a94b020-58cc-4beb-978b-2f2bb0e1ff58",
+      "name": "Excluir Tabela1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        -64,
+        416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "notes": "Remove a tabela existente antes de recriá-la (DROP TABLE IF EXISTS CASCADE)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "CREATE TABLE {{ $('Iterar Sobre Tabelas1').item.json.schema }}.{{ $('Iterar Sobre Tabelas1').item.json.table_name }} (\n  {{ $('Iterar Sobre Tabelas1').item.json.fields.map(f => f.name + ' ' + f.type + (f.not_null ? ' NOT NULL' : '') + (f.default ? ' DEFAULT ' + f.default : '') + (f.unique ? ' UNIQUE' : '') + (f.primary_key ? ' PRIMARY KEY' : '')).join(',\\n  ') }}{{ ($('Iterar Sobre Tabelas1').item.json.checks && $('Iterar Sobre Tabelas1').item.json.checks.length > 0) ? ',\\n  ' + $('Iterar Sobre Tabelas1').item.json.checks.map(c => 'CHECK (' + c.constraint + ')').join(',\\n  ') : '' }}{{ ($('Iterar Sobre Tabelas1').item.json.unique && $('Iterar Sobre Tabelas').item.json.unique.length > 0) ? ',\\n  ' + $('Iterar Sobre Tabelas').item.json.unique.map(u => 'UNIQUE (' + u.columns.join(', ') + ')').join(',\\n  ') : '' }}\n)",
+        "options": {}
+      },
+      "id": "66685412-086c-45d2-88d0-0338c4b74c77",
+      "name": "Criar Tabela1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        192,
+        416
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "notes": "Cria a tabela com todos os campos, tipos de dados, constraints e chaves primárias"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ ($('Iterar Sobre Tabelas1').item.json.indexes && $('Iterar Sobre Tabelas1').item.json.indexes.length > 0) ? $('Iterar Sobre Tabelas1').item.json.indexes.map(idx => 'CREATE INDEX ' + idx.name + ' ON ' + $('Iterar Sobre Tabelas1').item.json.schema + '.' + $('Iterar Sobre Tabelas1').item.json.table_name + ' (' + idx.columns.join(', ') + ')').join(';\\n') : 'SELECT 1' }}",
+        "options": {}
+      },
+      "id": "1851ea43-3275-4851-95ff-957adf0aa7be",
+      "name": "Criar Índices1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        240
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "notes": "Cria todos os índices definidos para otimizar consultas na tabela"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ ($('Iterar Sobre Tabelas1').item.json.comments && $('Iterar Sobre Tabelas1').item.json.comments.length > 0) ? $('Iterar Sobre Tabelas1').item.json.comments.map(c => c.type === 'table' ? 'COMMENT ON TABLE ' + $('Iterar Sobre Tabelas1').item.json.schema + '.' + $('Iterar Sobre Tabelas1').item.json.table_name + \" IS '\" + c.comment.replace(/'/g, \"''\") + \"'\" : 'COMMENT ON COLUMN ' + $('Iterar Sobre Tabelas1').item.json.schema + '.' + $('Iterar Sobre Tabelas1').item.json.table_name + '.' + c.column + \" IS '\" + c.comment.replace(/'/g, \"''\") + \"'\").join(';\\n') : 'SELECT 1' }}",
+        "options": {}
+      },
+      "id": "7b72c863-66e8-4c5e-9267-4db26f199056",
+      "name": "Criar Comentários1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        400
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "notes": "💬 Adiciona comentários de documentação\n\nExecuta COMMENT ON TABLE e COMMENT ON COLUMN para cada comentário definido.\nEscapa aspas simples (') com duplo ('') para compatibilidade PostgreSQL.\n\nRetorna 'SELECT 1' se não houver comentários para evitar erro de query vazia."
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ ($('Iterar Sobre Tabelas1').item.json.relationships && $('Iterar Sobre Tabelas1').item.json.relationships.length > 0) ? $('Iterar Sobre Tabelas1').item.json.relationships.map((rel, idx) => 'ALTER TABLE ' + $('Iterar Sobre Tabelas1').item.json.schema + '.' + $('Iterar Sobre Tabelas1').item.json.table_name + ' ADD CONSTRAINT fk_' + $('Iterar Sobre Tabelas1').item.json.table_name + '_' + rel.from_column + ' FOREIGN KEY (' + rel.from_column + ') REFERENCES ' + rel.to_schema + '.' + rel.to_table + '(' + rel.to_column + ') ON DELETE CASCADE').join(';\\n') : 'SELECT 1' }}",
+        "options": {}
+      },
+      "id": "8b65d0d6-031c-47a5-875a-777235042d2e",
+      "name": "Criar Chaves Estrangeiras1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [
+        672,
+        576
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3f1c0aa5-2a87-4c17-b496-34c940715ca1",
+              "name": "Deve excluir tabela",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "ae04f6c6-cec7-45ca-8840-232025b27287",
+              "name": "Deve incluir comentários",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "22a3c821-d23b-4c7e-9b2b-8c741810bbc5",
+              "name": "Deve incluir tabela relacionada",
+              "value": "true",
+              "type": "string"
+            },
+            {
+              "id": "1802e961-192d-42b4-b9e3-007196e25e4a",
+              "name": "Deve incluir chaves estranggeiras",
+              "value": "true",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -960,
+        400
+      ],
+      "id": "eb79f256-1e23-402c-b225-0e270d4c58eb",
+      "name": "Definir Constantes1",
+      "notes": "⚙️ CONFIGURAÇÕES GLOBAIS\n\nDefine os parâmetros que controlam o comportamento do workflow:\n- Deve excluir tabela? (DROP antes de CREATE)\n- Deve incluir comentários? (COMMENT ON)\n- Deve incluir chaves estrangeiras? (FK)\n- Deve incluir tabelas relacionadas? (Analytics)\n\nEssas configurações são verificadas pelos nós IF ao longo do fluxo."
+    },
+    {
+      "parameters": {
+        "content": "## 📋 Uma única rota\n",
+        "height": 80,
+        "width": 475,
+        "color": 7
+      },
+      "id": "d753e7dc-2fd1-4491-9071-d251388d64a6",
+      "name": "Sticky Note - Início1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        944,
+        416
+      ],
+      "id": "e56dabb9-7141-4f03-beec-a6433642f70c",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"tables\": [\n    {\n      \"schema\": \"auxiliary\",\n      \"table_name\": \"status_processamento_cc\",\n      \"fields\": [\n        {\n          \"name\": \"cc_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"status_entradas\",\n          \"type\": \"SMALLINT\"\n        },\n        {\n          \"name\": \"status_saidas\",\n          \"type\": \"SMALLINT\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"status_entradas IN (0, 1)\"\n        },\n        {\n          \"constraint\": \"status_saidas IN (0, 1)\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_status_processamento_cc_pendentes\",\n          \"columns\": [\n            \"status_entradas\",\n            \"status_saidas\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Tabela auxiliar de controle para verificar quais centros de custo já tiveram seus fluxos de entradas e saídas executados.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"cc_id\",\n          \"comment\": \"Número identificador do centro de custo.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_entradas\",\n          \"comment\": \"Flag que indica se as entradas já foram rodadas (1 = sim, 0 = não).\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_saidas\",\n          \"comment\": \"Flag que indica se as saídas já foram rodadas (1 = sim, 0 = não).\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "67756e1b-80be-4db2-9ebc-c3bcc2787fd6",
+      "name": "Definir Tabelas Extensões1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        -752,
+        400
+      ],
+      "onError": "continueRegularOutput",
+      "notes": "📦 TABELAS VHSYS (raw_data)\n\nContém 12 tabelas do sistema financeiro VHSYS:\n- Produtos, Categorias Financeiras, Bancos\n- Contas a Pagar/Receber, Extratos\n- Centro de Custos, Pedidos, Notas Fiscais\n- Ordens de Compra, Entradas de Mercadoria\n- Ordens de Serviço, Clientes\n\nCada tabela inclui: campos, constraints, índices, comentários e schema"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"tables\": [\n    {\n      \"schema\": \"auxiliary\",\n      \"table_name\": \"status_processamento_cc\",\n      \"fields\": [\n        {\n          \"name\": \"cc_id\",\n          \"type\": \"VARCHAR(255)\",\n          \"primary_key\": true\n        },\n        {\n          \"name\": \"status_entradas\",\n          \"type\": \"SMALLINT\"\n        },\n        {\n          \"name\": \"status_saidas\",\n          \"type\": \"SMALLINT\"\n        }\n      ],\n      \"checks\": [\n        {\n          \"constraint\": \"status_entradas IN (0, 1)\"\n        },\n        {\n          \"constraint\": \"status_saidas IN (0, 1)\"\n        }\n      ],\n      \"indexes\": [\n        {\n          \"name\": \"idx_status_processamento_cc_pendentes\",\n          \"columns\": [\n            \"status_entradas\",\n            \"status_saidas\"\n          ]\n        }\n      ],\n      \"comments\": [\n        {\n          \"type\": \"table\",\n          \"comment\": \"Tabela auxiliar de controle para verificar quais centros de custo já tiveram seus fluxos de entradas e saídas executados.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"cc_id\",\n          \"comment\": \"Número identificador do centro de custo.\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_entradas\",\n          \"comment\": \"Flag que indica se as entradas já foram rodadas (1 = sim, 0 = não).\"\n        },\n        {\n          \"type\": \"column\",\n          \"column\": \"status_saidas\",\n          \"comment\": \"Flag que indica se as saídas já foram rodadas (1 = sim, 0 = não).\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1248,
+        -816
+      ],
+      "id": "aa71bae9-a9c4-4e55-8f8c-ada131b3f338",
+      "name": "Definir Tabelas Auxiliares"
     }
   ],
   "pinData": {},
@@ -394,7 +703,7 @@
       "main": [
         [
           {
-            "node": "Definir Constantes",
+            "node": "Definir Constantes1",
             "type": "main",
             "index": 0
           }
@@ -461,7 +770,7 @@
           {
             "node": "Mesclar",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -481,17 +790,22 @@
       "main": [
         [
           {
-            "node": "Definir Tabelas CLOCKIFY",
-            "type": "main",
-            "index": 0
-          },
-          {
             "node": "Definir Tabelas VHSYS",
             "type": "main",
             "index": 0
           },
           {
             "node": "Definir Tabelas Extensões",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Definir Tabelas Auxiliares",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Definir Tabelas CLOCKIFY",
             "type": "main",
             "index": 0
           }
@@ -585,7 +899,7 @@
           {
             "node": "Mesclar",
             "type": "main",
-            "index": 1
+            "index": 2
           }
         ]
       ]
@@ -596,7 +910,175 @@
           {
             "node": "Mesclar",
             "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "If - Criar Foreign Keys?1": {
+      "main": [
+        [
+          {
+            "node": "Criar Chaves Estrangeiras1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
             "index": 2
+          }
+        ]
+      ]
+    },
+    "If - Adicionar Comentários?1": {
+      "main": [
+        [
+          {
+            "node": "Criar Comentários1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Separar Tabelas1": {
+      "main": [
+        [
+          {
+            "node": "Iterar Sobre Tabelas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iterar Sobre Tabelas1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Excluir Tabela1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Excluir Tabela1": {
+      "main": [
+        [
+          {
+            "node": "Criar Tabela1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Tabela1": {
+      "main": [
+        [
+          {
+            "node": "Criar Índices1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If - Criar Foreign Keys?1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If - Adicionar Comentários?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Índices1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Comentários1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Criar Chaves Estrangeiras1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Definir Constantes1": {
+      "main": [
+        [
+          {
+            "node": "Definir Tabelas Extensões1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Iterar Sobre Tabelas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Tabelas Extensões1": {
+      "main": [
+        [
+          {
+            "node": "Separar Tabelas1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Tabelas Auxiliares": {
+      "main": [
+        [
+          {
+            "node": "Mesclar",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -608,7 +1090,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "c758a79a-d876-4288-9c8e-9464d4cd2e31",
+  "versionId": "d58a9013-63d8-4468-a57b-c65438e90b22",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
