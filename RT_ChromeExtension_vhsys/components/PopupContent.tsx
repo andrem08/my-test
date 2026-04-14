@@ -16,6 +16,7 @@ import Employer from "./ServicesContent/Employer"
 import SalesNF from "./ServicesContent/SalesNF"
 import ServiceNF from "./ServicesContent/ServiceNF"
 import ServicesNoteReport from "./ServicesContent/ServiceNoteReport"
+import { primaryButtonStyles } from "./shared/styles"
 
 const CommandGroupHeader = styled.div`
   padding: 0.9rem;
@@ -131,6 +132,13 @@ const ContainerHeader = styled.div`
     }
   }
 `
+
+const ReloadButton = styled.button`
+  ${primaryButtonStyles}
+  margin: 0.9rem auto 0;
+  min-width: 132px;
+  padding: 10px 14px;
+`
 const ItemHeader = styled.div`
   display: flex;
   justify-content: space-between;
@@ -239,7 +247,21 @@ function IndexPopup() {
   }, [])
 
   if (!context) return <p>Context not available</p>
-  const { data, error, firstLoad, ccDisplayAction } = context
+  const { data, error, hasConnectionIssue, firstLoad, ccDisplayAction } = context
+  const shouldShowBlockedScreen =
+    isOnCorrectPage === false || Boolean(error) || hasConnectionIssue
+
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("rt:network-pause", {
+        detail: { paused: shouldShowBlockedScreen }
+      })
+    )
+  }, [shouldShowBlockedScreen])
+
+  const handleReload = () => {
+    window.location.reload()
+  }
 
   if (firstLoad || isOnCorrectPage === null) return (      <Container>
         <ContainerHeader>
@@ -249,7 +271,7 @@ function IndexPopup() {
         <LoadingAnimation/>
       </Container>)
 
-  if (!isOnCorrectPage) {
+  if (shouldShowBlockedScreen) {
     return (
       <Container>
         <ContainerHeader>
@@ -260,6 +282,9 @@ function IndexPopup() {
           Esta extensão só funciona dentro so site{" "}
           <strong>app.vhsys.com.br</strong>.
         </p>
+        <ReloadButton type="button" onClick={handleReload}>
+          Recarregar
+        </ReloadButton>
       </Container>
     )
   }
@@ -274,8 +299,6 @@ function IndexPopup() {
       </ContainerHeader>
 
       <ApiPopulateWorkflows />
-
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
       <AccordionItem
         serviceRef={ccDisplayAction}

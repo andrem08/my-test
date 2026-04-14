@@ -79,8 +79,20 @@ export default class GetServiceNFLabels {
       return null
     }
   }
+  private extractTotalPages(html: string): number {
+    const pageMatches = [...html.matchAll(/#!pagina\/(\d+)/g)]
+      .map((match) => Number(match[1]))
+      .filter((page) => Number.isFinite(page) && page > 0)
+
+    if (pageMatches.length === 0) {
+      return 1
+    }
+
+    return Math.max(...pageMatches)
+  }
   public async processNFlabes(): Promise<void> {
-    const totalPages = 1
+    const firstPageData = await this.fetchData(1)
+    const totalPages = firstPageData ? this.extractTotalPages(firstPageData) : 1
     console.log(`Starting Service NF Report process for ${totalPages} pages...`)
     try {
       for (let i = 1; i <= totalPages; i++) {
@@ -92,7 +104,7 @@ export default class GetServiceNFLabels {
           }
         })
         this.drawProgressBar(i - 1, totalPages)
-        const fetchedData = await this.fetchData(i)
+        const fetchedData = i === 1 ? firstPageData : await this.fetchData(i)
         if (!fetchedData) {
           console.error(
             `Failed to fetch data for page ${i}. Skipping this page.`

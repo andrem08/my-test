@@ -46,6 +46,7 @@ function resolveCCDisplayAction(
 interface DataContextType {
     data: ServiceStatusItem[] | null;
     error: string | null;
+    hasConnectionIssue: boolean;
     firstLoad: boolean;
     runService: (serviceKey: keyof AvailableServices) => Promise<void>;
     entries: number;
@@ -64,6 +65,8 @@ export const DataContext = createContext<DataContextType | undefined>(undefined)
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [data, setData] = useState<ServiceStatusItem[] | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [hasConnectionIssue, setHasConnectionIssue] = useState<boolean>(false);
+    const [isNetworkPausedByUi, setIsNetworkPausedByUi] = useState<boolean>(false);
     const [firstLoad, setFirstLoad] = useState<boolean>(true);
     const [serviceRunner, setServiceRunner] = useState<ServiceRunner | null>(null);
     const [entries, setEntries] = useState<number>(0);
@@ -89,20 +92,48 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
         void runner.resumeRunningServices();
     }, []);
 
+    useEffect(() => {
+        const onConnectionIssue = () => {
+            setHasConnectionIssue(true);
+        };
+
+        window.addEventListener("rt:connection-issue", onConnectionIssue as EventListener);
+        return () => {
+            window.removeEventListener("rt:connection-issue", onConnectionIssue as EventListener);
+        };
+    }, []);
+
+    useEffect(() => {
+        const onPauseNetwork = (event: Event) => {
+            const customEvent = event as CustomEvent<{ paused?: boolean }>;
+            setIsNetworkPausedByUi(Boolean(customEvent.detail?.paused));
+        };
+
+        window.addEventListener("rt:network-pause", onPauseNetwork as EventListener);
+        return () => {
+            window.removeEventListener("rt:network-pause", onPauseNetwork as EventListener);
+        };
+    }, []);
+
     const fetchData = useCallback(async () => {
+        if (isNetworkPausedByUi) return;
+
         try {
             const response = await fetch(buildServerRoute("get_update_extension_service_data"));
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
             const result = await response.json();
             const parsedResult = Array.isArray(result) ? (result as ServiceStatusItem[]) : [];
             setData((prevData) => JSON.stringify(prevData) !== JSON.stringify(parsedResult) ? parsedResult : prevData);
+            setError(null);
             setFirstLoad(false);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Unknown error");
         }
-    }, []);
+    }, [isNetworkPausedByUi]);
 
     const fetchCCReportData = useCallback(async () => {
+        if (isNetworkPausedByUi) return;
+
         try {
             const statusUrl = buildCCStatusRoute(ccReportScope);
             const response = await fetch(statusUrl);
@@ -140,7 +171,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setCCTotalsAll(EMPTY_CC_TOTALS);
             }
         }
-    }, [buildCCStatusRoute, ccReportScope]);
+    }, [buildCCStatusRoute, ccReportScope, isNetworkPausedByUi]);
 
     useEffect(() => {
         if (!data || data.length === 0) return;
@@ -169,6 +200,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [serviceRunner]);
 
     useEffect(() => {
+        if (isNetworkPausedByUi) return;
+
         fetchData();
         fetchCCReportData();
         const interval = setInterval(() => {
@@ -176,7 +209,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
             fetchCCReportData();
         }, 3000);
         return () => clearInterval(interval);
-    }, [fetchData, fetchCCReportData]);
+    }, [fetchData, fetchCCReportData, isNetworkPausedByUi]);
 
     const ccSummaryTotals = useMemo<CCStatusTotals>(() => {
         return ccReportScope === "last_3_months"
@@ -191,6 +224,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const contextValue = useMemo(() => ({
         data,
         error,
+        hasConnectionIssue,
         firstLoad,
         runService,
         entries,
@@ -205,6 +239,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }), [
         data,
         error,
+        hasConnectionIssue,
         firstLoad,
         runService,
         entries,

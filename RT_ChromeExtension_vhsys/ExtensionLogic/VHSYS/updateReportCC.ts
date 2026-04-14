@@ -3,6 +3,16 @@ import { buildServerRoute } from "../env"
 
 export type CCActionKey = "CC_REPORT" | "CC_REPORT_3_MONTHS"
 
+function signalConnectionIssue(source: string, detail?: unknown): void {
+  if (typeof window === "undefined") return
+
+  window.dispatchEvent(
+    new CustomEvent("rt:connection-issue", {
+      detail: { source, detail }
+    })
+  )
+}
+
 async function safeExecution<T>(
   fn: (...args: unknown[]) => Promise<T>,
   ...args: unknown[]
@@ -30,6 +40,7 @@ async function getData<T>(url: string): Promise<T | null> {
     }
     return data
   } catch (error) {
+    signalConnectionIssue("getData", { url, error })
     console.error("Error in getData:", { url, error })
     return null
   }
@@ -86,9 +97,11 @@ async function updateNextUrl(url: string): Promise<void> {
       const postResponse = await postData(buildServerRoute("cc_report"), ref)
       console.log("Data posted successfully:", postResponse)
     } else {
+      signalConnectionIssue("updateNextUrl-empty-report", { url: dataUrl?.url })
       console.warn("dataReport is empty or null, skipping postData")
     }
   } catch (error) {
+    signalConnectionIssue("updateNextUrl", { url, error })
     console.error("Error in updateNextUrl:", error)
   }
 }

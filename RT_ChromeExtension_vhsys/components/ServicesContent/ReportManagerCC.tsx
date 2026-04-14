@@ -148,7 +148,7 @@ export default function RelatorioManagerCC() {
                         disabled={ccIsRunning || putLoading}>
                         {ccIsRunning ? "Atualizando..." : "Atualizar"}
                     </RecentUpdateButton>
-                    <ResetButton onClick={handlePutReset} disabled={putLoading || ccIsRunning}>
+                    <ResetButton onClick={handlePutReset} disabled={putLoading}>
                         {putLoading ? "Resetando..." : "Resetar"}
                     </ResetButton>
                 </>
