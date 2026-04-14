@@ -35,9 +35,7 @@ export default class ServiceRunner {
         this.service_data_url = `${baseUrl}/get_update_extension_service_data`;
         this.fetched_data = null;
         this.run_reference_data = { ...AVALIABLE_SERVICES };
-        this.init().then(() => {
-            this.run_data();
-        });
+        this.init();
     }
 
     private async init(): Promise<void> {
@@ -119,21 +117,5 @@ export default class ServiceRunner {
 
     public delay(ms: number) {
         return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    public async run_data(): Promise<void> {
-        await this.refreshData(); 
-
-        if (!this.fetched_data) {
-            console.error("ServiceRunner: No data fetched for initial check.");
-            return;
-        }
-
-        for (const service of this.fetched_data) {
-            if (service.RUN_STATUS === 1) {
-                console.log(`Service ${service.ACTION} is running. Attempting to re-run.`);
-                await this.run_services(service.ACTION as keyof AvailableServices);
-            }
-        }
     }
 }

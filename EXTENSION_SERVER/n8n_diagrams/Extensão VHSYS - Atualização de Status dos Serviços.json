@@ -43,7 +43,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.update_extension_services\nSET\n  \"RUN_STATUS\"  = {{ $json.RUNNING_STATUS }}::integer,\n  \"LAST_UPDATE\" = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp\nWHERE \"ACTION\" = '{{ $json.ACTION }}'\nRETURNING \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\";",
+        "query": "WITH input_data AS (\n  SELECT\n    '{{ $json.ACTION }}'::text AS action,\n    {{ $json.RUNNING_STATUS }}::integer AS run_status,\n    (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')::timestamp AS ts\n), updated_target AS (\n  UPDATE auxiliary.update_extension_services s\n  SET\n    \"RUN_STATUS\" = i.run_status,\n    \"LAST_UPDATE\" = i.ts\n  FROM input_data i\n  WHERE s.\"ACTION\" = i.action\n  RETURNING s.\"ACTION\", s.\"RUN_STATUS\", s.\"LAST_UPDATE\"\n), reset_sibling AS (\n  UPDATE auxiliary.update_extension_services s\n  SET\n    \"RUN_STATUS\" = 0,\n    \"LAST_UPDATE\" = i.ts\n  FROM input_data i\n  WHERE i.run_status = 1\n    AND (\n      (i.action = 'CC_REPORT' AND s.\"ACTION\" = 'CC_REPORT_3_MONTHS')\n      OR\n      (i.action = 'CC_REPORT_3_MONTHS' AND s.\"ACTION\" = 'CC_REPORT')\n    )\n  RETURNING s.\"ACTION\"\n)\nSELECT \"ACTION\", \"RUN_STATUS\", \"LAST_UPDATE\"\nFROM updated_target;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"

@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "-- Busca o próximo centro de custo que precisa ser processado\n-- Filtra onde status_entradas=0 OU status_saidas=0\nSELECT cc_id, status_entradas, status_saidas\nFROM auxiliary.status_processamento_cc\nWHERE status_entradas = 0 OR status_saidas = 0\nORDER BY RANDOM()\nLIMIT 1;",
+        "query": "-- Busca o próximo centro de custo que precisa ser processado\n-- Opcional: filtra por centros modificados nos últimos N meses (months_back)\nWITH params AS (\n  SELECT {{ $json.months_back_sql }}::int AS months_back\n)\nSELECT\n  s.cc_id,\n  s.status_entradas,\n  s.status_saidas\nFROM auxiliary.status_processamento_cc s\nCROSS JOIN params p\nWHERE (s.status_entradas = 0 OR s.status_saidas = 0)\n  AND (\n    p.months_back IS NULL\n    OR COALESCE(s.data_modificacao, s.data_cadastro) >= NOW() - (p.months_back || ' months')::interval\n  )\nORDER BY RANDOM()\nLIMIT 1;",
         "options": {}
       },
       "id": "861185d6-742c-4668-8fe6-2cba88f7863f",
@@ -32,6 +32,19 @@
           "name": "Dev Database"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst query = input.query || {};\nconst body = input.body || {};\n\nconst rawMonthsBack = query.months_back ?? body.months_back ?? null;\nlet monthsBack = null;\n\nif (rawMonthsBack !== null && rawMonthsBack !== undefined && rawMonthsBack !== '') {\n  const parsed = parseInt(String(rawMonthsBack), 10);\n  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 24) {\n    monthsBack = parsed;\n  }\n}\n\nreturn {\n  months_back: monthsBack,\n  months_back_sql: monthsBack === null ? 'NULL' : String(monthsBack)\n};"
+      },
+      "id": "14bc9d42-0d76-4707-9f53-4b4b242d6d40",
+      "name": "Extrair Filtro de Meses",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3200,
+        -240
+      ]
     },
     {
       "parameters": {
@@ -98,6 +111,17 @@
   "pinData": {},
   "connections": {
     "Quando Chamado por Outro Workflow": {
+      "main": [
+        [
+          {
+            "node": "Extrair Filtro de Meses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Filtro de Meses": {
       "main": [
         [
           {

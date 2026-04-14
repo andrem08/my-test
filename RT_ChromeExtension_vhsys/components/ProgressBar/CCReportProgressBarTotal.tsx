@@ -7,17 +7,17 @@ const CCReportProgressBarTotal = () => {
   const context = useContext(DataContext)
   if (!context) return <p>Context not available</p>
 
-  const { entries, outputs, total } = context
+  const { ccSummaryEntries, ccSummaryOutputs, ccSummaryTotal } = context
 
-  if (total === 0) {
+  if (ccSummaryTotal === 0) {
     return null
   }
 
   return (
     <ProgressInline
       label="Total"
-      progress={entries + outputs}
-      total={total * 2}
+      progress={ccSummaryEntries + ccSummaryOutputs}
+      total={ccSummaryTotal * 2}
       compact
     />
   )

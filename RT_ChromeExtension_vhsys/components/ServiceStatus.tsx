@@ -2,6 +2,7 @@ import React, { useContext } from "react"
 import styled from "styled-components"
 
 import { DataContext } from "../context/DataContext"
+import type { AvailableServices } from "../ExtensionLogic/env"
 import { cardStyles, primaryButtonStyles } from "./shared/styles"
 
 const ServiceStatusInfoBox = styled.div`
@@ -43,12 +44,14 @@ function ServiceStatus({
   service,
   service_ref,
   children,
-  actionSlot
+  actionSlot,
+  showDefaultAction = true
 }: {
   service: string
-  service_ref: string
+  service_ref: keyof AvailableServices
   children?: React.ReactNode
   actionSlot?: React.ReactNode
+  showDefaultAction?: boolean
 }) {
   const context = useContext(DataContext)
   if (!context) return <p>Context not available</p>
@@ -76,11 +79,13 @@ function ServiceStatus({
       <h2>{service}</h2>
       <div>{children}</div>
       <ButtonsRow>
-        <CustomButton
-          onClick={handleRunService}
-          aria-label={`Atualizar ${service}`}>
-          Atualizar
-        </CustomButton>
+        {showDefaultAction && (
+          <CustomButton
+            onClick={handleRunService}
+            aria-label={`Atualizar ${service}`}>
+            Atualizar
+          </CustomButton>
+        )}
         {actionSlot}
       </ButtonsRow>
     </ServiceStatusInfoBox>

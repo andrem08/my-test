@@ -12,7 +12,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -133,7 +139,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -217,7 +229,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,

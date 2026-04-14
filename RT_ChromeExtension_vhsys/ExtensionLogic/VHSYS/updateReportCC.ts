@@ -1,15 +1,16 @@
 import { update_action_state } from "../actionStateManager"
 import { buildServerRoute } from "../env"
 
+export type CCActionKey = "CC_REPORT" | "CC_REPORT_3_MONTHS"
+
 async function safeExecution<T>(
-  fn: (...args: any[]) => Promise<T>,
-  ...args: any[]
+  fn: (...args: unknown[]) => Promise<T>,
+  ...args: unknown[]
 ): Promise<T | null> {
   try {
     return await fn(...args)
   } catch (error) {
     console.error("Error in safeExecution:", error)
-    update_action_state("CC_REPORT", -1)
     return null
   }
 }
@@ -53,10 +54,19 @@ async function postData<T>(url: string, bodyData: unknown): Promise<T | null> {
     return null
   }
 }
+
+type NextUrlResponse = {
+  url: {
+    url: string
+    cc_id: string
+    type: string
+  }
+}
+
 async function updateNextUrl(url: string): Promise<void> {
   try {
     console.log("Processing next URL:", url)
-    const data = await getData<any>(url)
+    const data = await getData<NextUrlResponse>(url)
     if (!data) {
       throw new Error(`Invalid data or missing URL: ${JSON.stringify(data)}`)
     }
@@ -65,15 +75,13 @@ async function updateNextUrl(url: string): Promise<void> {
     console.log("Data without destruct", data)
     console.log("url here", dataUrl)
     console.log("Next URL extracted:", dataUrl)
-    const dataReport: {
-      data: any
-    } | null = await getData(dataUrl.url)
+    const dataReport: { data?: unknown } | null = await getData(dataUrl.url)
     console.log("Data report:", dataReport)
     if (dataReport && Object.keys(dataReport).length > 0) {
       const ref = {
         data: dataReport.data,
-        cc_id: data.url.cc_id,
-        type: data.url.type
+        cc_id: dataUrl.cc_id,
+        type: dataUrl.type
       }
       const postResponse = await postData(buildServerRoute("cc_report"), ref)
       console.log("Data posted successfully:", postResponse)
@@ -87,40 +95,92 @@ async function updateNextUrl(url: string): Promise<void> {
 async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
-export async function updateReportCC(): Promise<void> {
-  const statusUrl = buildServerRoute("cc_report_manage/status")
-  const nextUrl = buildServerRoute("cc_report_manage/next_url")
+
+function buildRouteWithQuery(
+  route: string,
+  query: Record<string, string | number | boolean | undefined>
+): string {
+  const url = new URL(buildServerRoute(route))
+
+  Object.entries(query).forEach(([key, value]) => {
+    if (value === undefined) return
+    url.searchParams.set(key, String(value))
+  })
+
+  return url.toString()
+}
+
+async function runUpdateReportCCLoop(
+  statusUrl: string,
+  nextUrl: string
+): Promise<boolean> {
   let running = true
   let success = true
   while (running) {
     try {
       const statusData = await safeExecution(getData, statusUrl)
+      if (!statusData) {
+        success = false
+        break
+      }
       running =
         (
           statusData as {
-            running: any
+            running: boolean
           }
         )?.running || false
       console.log("Loop running status:", running)
       if (running) {
-        await safeExecution(updateNextUrl, nextUrl)
+        const updateResult = await safeExecution(updateNextUrl, nextUrl)
+        if (updateResult === null) {
+          success = false
+          break
+        }
         await delay(10000)
       }
-    } catch (error) {
+    } catch {
       success = false
       break
     }
   }
-  if (success) {
-    console.log("Loop completed successfully, executing final logic...")
-    await update_action_state("CC_REPORT", 2)
-  } else {
-    await update_action_state("CC_REPORT", -1)
-  }
+
+  return success
 }
+
+export async function updateReportCC(): Promise<boolean> {
+  const statusUrl = buildServerRoute("cc_report_manage/status")
+  const nextUrl = buildServerRoute("cc_report_manage/next_url")
+  return await runUpdateReportCCLoop(statusUrl, nextUrl)
+}
+
+export async function updateReportCCLastSixMonths(): Promise<boolean> {
+  const statusUrl = buildRouteWithQuery("cc_report_manage/status", {
+    months_back: 3
+  })
+  const nextUrl = buildRouteWithQuery("cc_report_manage/next_url", {
+    months_back: 3
+  })
+  return await runUpdateReportCCLoop(statusUrl, nextUrl)
+}
+
 export async function updateReportCCMultiThread(
-  instances: number
+  instances: number,
+  actionKey: CCActionKey = "CC_REPORT"
 ): Promise<void> {
-  await update_action_state("CC_REPORT", 1)
-  await Promise.all(Array.from({ length: instances }, () => updateReportCC()))
+  await update_action_state(actionKey, 1)
+  const results = await Promise.all(Array.from({ length: instances }, () => updateReportCC()))
+  const allSucceeded = results.every(Boolean)
+  await update_action_state(actionKey, allSucceeded ? 2 : -1)
+}
+
+export async function updateReportCCLastSixMonthsMultiThread(
+  instances: number,
+  actionKey: CCActionKey = "CC_REPORT_3_MONTHS"
+): Promise<void> {
+  await update_action_state(actionKey, 1)
+  const results = await Promise.all(
+    Array.from({ length: instances }, () => updateReportCCLastSixMonths())
+  )
+  const allSucceeded = results.every(Boolean)
+  await update_action_state(actionKey, allSucceeded ? 2 : -1)
 }

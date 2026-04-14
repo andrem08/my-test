@@ -15,7 +15,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "UPDATE auxiliary.status_processamento_cc\nSET\n  status_entradas = 0,\n  status_saidas = 0\nRETURNING cc_id, status_entradas, status_saidas;",
+        "query": "WITH params AS (\n  SELECT {{ $json.months_back_sql }}::int AS months_back\n), updated AS (\n  UPDATE auxiliary.status_processamento_cc s\n  SET\n    status_entradas = 0,\n    status_saidas = 0\n  FROM params p\n  WHERE (\n    p.months_back IS NULL\n    OR COALESCE(s.data_modificacao, s.data_cadastro) >= NOW() - (p.months_back || ' months')::interval\n  )\n  RETURNING s.cc_id, s.status_entradas, s.status_saidas\n)\nSELECT * FROM updated;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single"
@@ -36,6 +36,19 @@
         }
       },
       "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json || {};\nconst query = input.query || {};\nconst body = input.body || {};\n\nconst rawMonthsBack = query.months_back ?? body.months_back ?? null;\nlet monthsBack = null;\n\nif (rawMonthsBack !== null && rawMonthsBack !== undefined && rawMonthsBack !== '') {\n  const parsed = parseInt(String(rawMonthsBack), 10);\n  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 24) {\n    monthsBack = parsed;\n  }\n}\n\nreturn {\n  months_back: monthsBack,\n  months_back_sql: monthsBack === null ? 'NULL' : String(monthsBack)\n};"
+      },
+      "id": "1e3f5aa9-c2f7-4e4e-b0c5-f2f6d4c8f65d",
+      "name": "Extrair Filtro de Meses",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2144,
+        -176
+      ]
     },
     {
       "parameters": {
@@ -65,7 +78,7 @@
     },
     {
       "parameters": {
-        "content": "## Arquitetura do Fluxo\n\nReinicia o status de processamento de todos os CC.\n\nFluxo:\n1) update global\n2) resposta 201 no sucesso\n3) resposta 500 em erro",
+        "content": "## Arquitetura do Fluxo\n\nReinicia o status de processamento dos CC.\n\nFluxo:\n1) extrai months_back (opcional)\n2) update total (sem months_back) ou filtrado (com months_back)\n3) resposta 201 no sucesso\n4) resposta 500 em erro",
         "height": 236,
         "width": 360,
         "color": 7
@@ -81,7 +94,7 @@
     },
     {
       "parameters": {
-        "content": "## Reset de Flags\n\nExecuta UPDATE em status_processamento_cc:\n- status_entradas = 0\n- status_saidas = 0",
+        "content": "## Reset de Flags\n\nExecuta UPDATE em status_processamento_cc:\n- sem months_back: zera tudo\n- com months_back: zera ultimos N meses\n- status_entradas = 0\n- status_saidas = 0",
         "height": 204,
         "color": 6
       },
@@ -130,6 +143,17 @@
   "pinData": {},
   "connections": {
     "Quando Chamado por Outro Workflow": {
+      "main": [
+        [
+          {
+            "node": "Extrair Filtro de Meses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Filtro de Meses": {
       "main": [
         [
           {

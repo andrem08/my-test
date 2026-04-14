@@ -21,6 +21,7 @@ export interface AvailableServices {
     EMPLOYERS: boolean;
     EMPLOYERS_BENEFITS: boolean;
     CC_REPORT: boolean;
+    CC_REPORT_3_MONTHS: boolean;
     EMPLOYER_DEPENDENTS: boolean;
     SALES_NF: boolean;
     SERVICE_NF: boolean;
@@ -32,6 +33,7 @@ export const AVALIABLE_SERVICES: AvailableServices = {
     EMPLOYERS: true,
     EMPLOYERS_BENEFITS: true,
     CC_REPORT: true,
+    CC_REPORT_3_MONTHS: true,
     EMPLOYER_DEPENDENTS: true,
     SALES_NF: true,
     SERVICE_NF: true,

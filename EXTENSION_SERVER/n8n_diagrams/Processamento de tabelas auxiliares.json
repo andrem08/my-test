@@ -1,15 +1,15 @@
 {
-  "name": "Extensao VHSYS - Status Processamento CC Seed",
+  "name": "Processamento de tabelas auxiliares",
   "nodes": [
     {
       "parameters": {},
-      "id": "2fbc8f9a-26a1-4b55-91c7-7a91ce98c51a",
+      "id": "a6206ed9-b439-413d-9f9d-4c02a3e9d421",
       "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -2320,
-        320
+        -880,
+        352
       ]
     },
     {
@@ -21,13 +21,13 @@
           "queryBatching": "single"
         }
       },
-      "id": "f8a5eb64-8a8d-4306-98e6-67f6f1e59f8d",
+      "id": "da5144de-2656-459f-86c3-f06fe1afd8ec",
       "name": "Popular Status Processamento CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -2080,
-        320
+        -640,
+        352
       ],
       "credentials": {
         "postgres": {
@@ -40,13 +40,13 @@
       "parameters": {
         "jsCode": "const row = $input.first().json || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'status_processamento_cc/seed',\n  event: 'seed_completed',\n  total_ccs: Number(row.total_ccs || 0),\n  inserted_ccs: Number(row.inserted_ccs || 0),\n  updated_ccs: Number(row.updated_ccs || 0),\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Status de processamento dos centros de custo inicializado com sucesso',\n    table: 'auxiliary.status_processamento_cc',\n    total_ccs: Number(row.total_ccs || 0),\n    inserted_ccs: Number(row.inserted_ccs || 0),\n    updated_ccs: Number(row.updated_ccs || 0)\n  }\n};"
       },
-      "id": "1bd8ae45-2f43-43ad-a5d2-09436d5c3a3b",
+      "id": "5a8da214-de5e-421e-8446-529a4b473ea4",
       "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1840,
-        320
+        -400,
+        352
       ]
     },
     {
@@ -56,13 +56,13 @@
         "width": 392,
         "color": 6
       },
-      "id": "f7c2fbcf-4b72-4d83-9b9a-e5f46e2b8d08",
+      "id": "0c2ebc11-1992-4a34-b014-4abd3e84adc4",
       "name": "Seed da Tabela",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2144,
-        32
+        -704,
+        64
       ]
     },
     {
@@ -72,13 +72,13 @@
         "width": 404,
         "color": 7
       },
-      "id": "7c44a8e3-6c0d-4d6f-b01c-9aef4f31fb41",
+      "id": "0fe75315-105b-46a6-a5c6-f542f50431b3",
       "name": "Fluxo Base",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2640,
-        64
+        -1200,
+        96
       ]
     }
   ],
@@ -110,14 +110,12 @@
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate",
-    "availableInMCP": false
+    "binaryMode": "separate"
   },
-  "versionId": "4fa1a3fe-2cb6-4e0b-84fb-2be4b43ff8c7",
+  "versionId": "f0b1c5d2-36c1-4f74-aabb-a8fd74d858ac",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
-  "id": "3fL0h4tN1xCc9bQk",
+  "id": "2s9N17teDWbnshqZ",
   "tags": []
 }

@@ -4,11 +4,11 @@ import GetServiceNFInfo from "./VHSYS/getServiceNFInfo";
 import GetServiceNFLabels from "./VHSYS/getServiceNFlabels";
 import { updateEmployerInfo } from "./VHSYS/updateEmployersInfo";
 import { updateFrequentBills } from "./VHSYS/updateFrequestBills";
-import { updateReportCC, updateReportCCMultiThread } from "./VHSYS/updateReportCC";
+import { updateReportCCMultiThread, updateReportCCLastSixMonthsMultiThread } from "./VHSYS/updateReportCC";
 import NFReportSalesProcessor from "./VHSYS/updateSalesReportNF";
 import NFReportServiceProcessor from "./VHSYS/updateServiceReportNF";
 
-async function fetchData(url: string): Promise<any> {
+async function fetchData(url: string): Promise<unknown> {
     try {
         const response = await fetch(url, { method: "GET" });
         if (!response.ok) {
@@ -32,6 +32,14 @@ type UpdateExtensionValue = {
     RUN_STATUS: number;
 };
 
+function isUpdateExtensionValueArray(data: unknown): data is UpdateExtensionValue[] {
+    return Array.isArray(data);
+}
+
+function isAvailableServiceKey(value: string): value is keyof AvailableServices {
+    return value in AVALIABLE_SERVICES;
+}
+
 export default class ServiceRunner {
     private service_data_url: string;
     private fetched_data: UpdateExtensionValue[] | null;
@@ -41,9 +49,7 @@ export default class ServiceRunner {
         this.service_data_url = buildServerRoute("get_update_extension_service_data");
         this.fetched_data = null;
         this.run_reference_data = { ...AVALIABLE_SERVICES };
-        this.init().then(() => {
-            this.run_data();
-        });
+        this.init();
     }
 
     private async init(): Promise<void> {
@@ -52,7 +58,7 @@ export default class ServiceRunner {
 
     private async loadData(): Promise<void> {
         const data = await fetchData(this.service_data_url);
-        if (data) {
+        if (isUpdateExtensionValueArray(data)) {
             this.fetched_data = data;
         }
         else {
@@ -62,7 +68,7 @@ export default class ServiceRunner {
 
     public async refreshData(): Promise<void> {
         const data = await fetchData(this.service_data_url);
-        if (data) {
+        if (isUpdateExtensionValueArray(data)) {
             this.fetched_data = data;
 
         }
@@ -83,7 +89,10 @@ export default class ServiceRunner {
                 await updateFrequentBills();
             }
             else if (serviceKey === "CC_REPORT") {
-                await updateReportCCMultiThread(5);
+                await updateReportCCMultiThread(5, "CC_REPORT");
+            }
+            else if (serviceKey === "CC_REPORT_3_MONTHS") {
+                await updateReportCCLastSixMonthsMultiThread(5, "CC_REPORT_3_MONTHS");
             }
             else if (serviceKey === "EMPLOYERS") {
                 update_action_state("EMPLOYERS", 1);
@@ -118,10 +127,15 @@ export default class ServiceRunner {
         }
     }
 
-    public find_by_run_status = (data, runStatus) => {
-        return (data.find((obj: {
-            [x: string]: any;
-        }) => obj["RUN_STATUS"] === runStatus) || false);
+    public find_by_run_status = (
+        data: Array<Record<string, unknown>>,
+        runStatus: number
+    ) => {
+        return (
+            data.find(
+                (obj) => Number(obj["RUN_STATUS"] ?? -999) === runStatus
+            ) || false
+        );
     };
 
     public isRunningService = (data) => {
@@ -165,19 +179,22 @@ export default class ServiceRunner {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
-    public async run_data(): Promise<void> {
-        await this.refreshData(); 
+    public async resumeRunningServices(): Promise<void> {
+        await this.refreshData();
 
         if (!this.fetched_data) {
-            console.error("ServiceRunner: No data fetched for initial check.");
+            console.error("ServiceRunner: No data fetched for resume check.");
             return;
         }
 
-        for (const service of this.fetched_data) {
-            if (service.RUN_STATUS === 1) {
-                console.log(`Service ${service.ACTION} is running. Attempting to re-run.`);
-                await this.run_services(service.ACTION as keyof AvailableServices);
-            }
+        const runningServices = this.fetched_data
+            .filter((service) => service.RUN_STATUS === 1)
+            .map((service) => service.ACTION)
+            .filter(isAvailableServiceKey);
+
+        for (const serviceKey of runningServices) {
+            console.log(`Service ${serviceKey} is marked running. Resuming execution.`);
+            await this.run_services(serviceKey);
         }
     }
 }

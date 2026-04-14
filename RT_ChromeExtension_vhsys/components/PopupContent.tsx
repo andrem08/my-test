@@ -239,7 +239,7 @@ function IndexPopup() {
   }, [])
 
   if (!context) return <p>Context not available</p>
-  const { data, error, firstLoad } = context
+  const { data, error, firstLoad, ccDisplayAction } = context
 
   if (firstLoad || isOnCorrectPage === null) return (      <Container>
         <ContainerHeader>
@@ -278,7 +278,7 @@ function IndexPopup() {
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
       <AccordionItem
-        serviceRef="CC_REPORT"
+        serviceRef={ccDisplayAction}
         data={data}
         name="Relatorio de centro de custo "
         content={<RelatorioManagerCC />}
