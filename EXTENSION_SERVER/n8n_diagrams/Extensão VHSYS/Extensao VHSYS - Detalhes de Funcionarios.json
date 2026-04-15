@@ -1,0 +1,634 @@
+{
+  "name": "Extensao VHSYS - Detalhes de Funcionarios",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8ad8df3f-5aad-474a-956a-6f203e83060d",
+      "name": "Quando chamado por outro workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -12656,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "dataPropertyName": "=data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -12208,
+        1424
+      ],
+      "id": "2b41c713-9d7a-492b-a34d-1f899711aacb",
+      "name": "Ler XML Nativo"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO raw_data.vhx_funcionarios (\n  id_funcionario, nome_funcionario, rg_funcionario, cpf_funcionario, matricula_funcionario, sexo_funcionario,\n  local_nascimento_funcionario, orgao_emissor_rg, serie_ctps_funcionario, cep_funcionario, endereco_funcionario, numero_funcionario,\n  bairro_funcionario, cidade_funcionario, uf_funcionario, complemento_funcionario, celular_funcionario, fone_funcionario, email_funcionario,\n  nome_pai_funcionario, nome_mae_funcionario, observacoes_funcionario, pis_funcionario, ctps_funcionario, uf_ctps_funcionario,\n  banco_funcionario, agencia_funcionario, conta_funcionario, cargo_funcionario, nome_cargo_funcionario, cbo_funcionario, departamento_funcionario,\n  trabalho_inicio, trabalho_termino, intervalo_inicio, intervalo_termino,\n  salario_funcionario, status_funcionario, data_admissao_funcionario, data_nascimento_funcionario, data_demissao_funcionario\n) VALUES (\n  '{{ $json.employeeData.id_funcionario }}',\n  '{{ $json.employeeData.nome_funcionario }}',\n  '{{ $json.employeeData.rg_funcionario }}',\n  '{{ $json.employeeData.cpf_funcionario }}',\n  '{{ $json.employeeData.matricula_funcionario }}',\n  '{{ $json.employeeData.sexo_funcionario }}',\n  '{{ $json.employeeData.local_nascimento_funcionario }}',\n  '{{ $json.employeeData.orgao_emissor_rg }}',\n  '{{ $json.employeeData.serie_ctps_funcionario }}',\n  '{{ $json.employeeData.cep_funcionario }}',\n  '{{ $json.employeeData.endereco_funcionario }}',\n  '{{ $json.employeeData.numero_funcionario }}',\n  '{{ $json.employeeData.bairro_funcionario }}',\n  '{{ $json.employeeData.cidade_funcionario }}',\n  '{{ $json.employeeData.uf_funcionario }}',\n  '{{ $json.employeeData.complemento_funcionario }}',\n  '{{ $json.employeeData.celular_funcionario }}',\n  '{{ $json.employeeData.fone_funcionario }}',\n  '{{ $json.employeeData.email_funcionario }}',\n  '{{ $json.employeeData.nome_pai_funcionario }}',\n  '{{ $json.employeeData.nome_mae_funcionario }}',\n  '{{ $json.employeeData.observacoes_funcionario }}',\n  '{{ $json.employeeData.pis_funcionario }}',\n  '{{ $json.employeeData.ctps_funcionario }}',\n  '{{ $json.employeeData.uf_ctps_funcionario }}',\n  '{{ $json.employeeData.banco_funcionario }}',\n  '{{ $json.employeeData.agencia_funcionario }}',\n  '{{ $json.employeeData.conta_funcionario }}',\n  '{{ $json.employeeData.cargo_funcionario }}',\n  '{{ $json.employeeData.cargo_funcionario }}',\n  '{{ $json.employeeData.cbo_funcionario }}',\n  '{{ $json.employeeData.departamento_funcionario }}',\n  '{{ $json.employeeData.trabalho_inicio }}',\n  '{{ $json.employeeData.trabalho_termino }}',\n  '{{ $json.employeeData.intervalo_inicio }}',\n  '{{ $json.employeeData.intervalo_termino }}',\n  {{ ($json.employeeData.salario_funcionario || \"0\").replace(',', '.') }},\n  '{{ $json.employeeData.status_funcionario }}',\n  {{ $json.employeeData.data_admissao_funcionario ? \"'\" + $json.employeeData.data_admissao_funcionario.split('/').reverse().join('-') + \"'\" : \"NULL\" }},\n  {{ $json.employeeData.data_nascimento_funcionario ? \"'\" + $json.employeeData.data_nascimento_funcionario.split('/').reverse().join('-') + \"'\" : \"NULL\" }},\n  {{ $json.employeeData.data_demissao_funcionario ? \"'\" + $json.employeeData.data_demissao_funcionario.split('/').reverse().join('-') + \"'\" : \"NULL\" }}\n)\nON CONFLICT (matricula_funcionario) DO UPDATE SET\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  rg_funcionario = EXCLUDED.rg_funcionario,\n  cpf_funcionario = EXCLUDED.cpf_funcionario,\n  id_funcionario = EXCLUDED.id_funcionario,\n  sexo_funcionario = EXCLUDED.sexo_funcionario,\n  local_nascimento_funcionario = EXCLUDED.local_nascimento_funcionario,\n  orgao_emissor_rg = EXCLUDED.orgao_emissor_rg,\n  serie_ctps_funcionario = EXCLUDED.serie_ctps_funcionario,\n  cep_funcionario = EXCLUDED.cep_funcionario,\n  endereco_funcionario = EXCLUDED.endereco_funcionario,\n  numero_funcionario = EXCLUDED.numero_funcionario,\n  bairro_funcionario = EXCLUDED.bairro_funcionario,\n  cidade_funcionario = EXCLUDED.cidade_funcionario,\n  uf_funcionario = EXCLUDED.uf_funcionario,\n  complemento_funcionario = EXCLUDED.complemento_funcionario,\n  celular_funcionario = EXCLUDED.celular_funcionario,\n  fone_funcionario = EXCLUDED.fone_funcionario,\n  email_funcionario = EXCLUDED.email_funcionario,\n  nome_pai_funcionario = EXCLUDED.nome_pai_funcionario,\n  nome_mae_funcionario = EXCLUDED.nome_mae_funcionario,\n  observacoes_funcionario = EXCLUDED.observacoes_funcionario,\n  pis_funcionario = EXCLUDED.pis_funcionario,\n  ctps_funcionario = EXCLUDED.ctps_funcionario,\n  uf_ctps_funcionario = EXCLUDED.uf_ctps_funcionario,\n  banco_funcionario = EXCLUDED.banco_funcionario,\n  agencia_funcionario = EXCLUDED.agencia_funcionario,\n  conta_funcionario = EXCLUDED.conta_funcionario,\n  cargo_funcionario = EXCLUDED.cargo_funcionario,\n  nome_cargo_funcionario = EXCLUDED.nome_cargo_funcionario,\n  cbo_funcionario = EXCLUDED.cbo_funcionario,\n  departamento_funcionario = EXCLUDED.departamento_funcionario,\n  trabalho_inicio = EXCLUDED.trabalho_inicio,\n  trabalho_termino = EXCLUDED.trabalho_termino,\n  intervalo_inicio = EXCLUDED.intervalo_inicio,\n  intervalo_termino = EXCLUDED.intervalo_termino,\n  salario_funcionario = EXCLUDED.salario_funcionario,\n  status_funcionario = EXCLUDED.status_funcionario,\n  data_admissao_funcionario = EXCLUDED.data_admissao_funcionario,\n  data_nascimento_funcionario = EXCLUDED.data_nascimento_funcionario,\n  data_demissao_funcionario = EXCLUDED.data_demissao_funcionario\nRETURNING id_funcionario, nome_funcionario, matricula_funcionario, status_funcionario, salario_funcionario;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -10864,
+        1152
+      ],
+      "id": "50190f65-78e2-4ed3-bf20-e6c92d2859c6",
+      "name": "DB: Funcionario",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- UPSERT dependent: Inserir novo ou atualizar existente\nINSERT INTO raw_data.vhx_dependentes (\n  id_funcionario, nome_funcionario, nome_dependente,\n  tipo_dependente, fone_dependente, rg, cpf, data_nascimento\n) VALUES (\n  '{{ $('Processador Central (Cérebro)').item.json.employeeData.id_funcionario }}',\n  '{{ $('Processador Central (Cérebro)').item.json.employeeData.nome_funcionario }}',\n  '{{ $json.nome_dependente }}',\n  '{{ $json.tipo_dependente }}',\n  '{{ $json.fone_dependente }}',\n  '{{ $json.rg_dependente }}',\n  '{{ $json.cpf_dependente }}',\n  {{ $json.data_nascimento_dependente ? \"'\" + $json.data_nascimento_dependente.split('/').reverse().join('-') + \"'\" : \"NULL\" }}\n)\nON CONFLICT (id_funcionario, nome_dependente) DO UPDATE SET\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  nome_dependente = EXCLUDED.nome_dependente,\n  tipo_dependente = EXCLUDED.tipo_dependente,\n  fone_dependente = EXCLUDED.fone_dependente,\n  rg = EXCLUDED.rg,\n  cpf = EXCLUDED.cpf,\n  data_nascimento = EXCLUDED.data_nascimento\nRETURNING nome_dependente, tipo_dependente;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -11088,
+        1344
+      ],
+      "id": "078780ff-34e7-4d14-9626-17f05df9c0f4",
+      "name": "DB: Dependentes",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO raw_data.vhx_beneficios_funcionarios (\n  id_funcionario, \n  nome_funcionario, \n  nome, \n  valor\n) VALUES (\n  '{{ $('Processador Central (Cérebro)').item.json.employeeData.id_funcionario }}',\n  '{{ $('Processador Central (Cérebro)').item.json.employeeData.nome_funcionario }}',\n  '{{ $json.nome_beneficio }}',\n  {{ ($json.valor_beneficio || \"0\").replace(/\\./g, '').replace(',', '.') }}\n)\nON CONFLICT (id_funcionario, nome) DO UPDATE SET\n  nome_funcionario = EXCLUDED.nome_funcionario,\n  nome = EXCLUDED.nome,\n  valor = EXCLUDED.valor\nRETURNING nome, valor;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -11088,
+        1728
+      ],
+      "id": "6390a2d4-614b-4896-9a59-f55ae67304c7",
+      "name": "DB: Beneficios",
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d09b62a4-b0cf-4db0-bb65-5389dd888fc1",
+              "name": "statusCode",
+              "value": 201,
+              "type": "number"
+            },
+            {
+              "id": "413e1577-bdcf-454d-b6a4-c36b41221b64",
+              "name": "body",
+              "value": "={{ { message: 'Data processed and saved successfully.', transformed_data: $('Processador Central (Cérebro)').item.json } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -10192,
+        1488
+      ],
+      "id": "02f331ba-ac55-4fdc-b848-85dcf028772a",
+      "name": "Montar Resposta Nativa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "data",
+              "value": "={{ $json.body.xml_ref }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -12432,
+        1424
+      ],
+      "id": "ff56eb4c-fbc4-415e-8e4d-a667cbcb4812",
+      "name": "Set XML"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cmds = $input.first().json.xjx?.cmd || [];\nconst employeeData = {};\nconst dependentesMap = {};\nconst beneficiosMap = {};\n\nfor (const cmd of cmds) {\n  // Verifica se é uma atribuição de variável (n=\"as\" e p=\"value\")\n  if (cmd.n === 'as' && cmd.p === 'value' && cmd.t) {\n    const fieldName = cmd.t;\n    const fieldValue = cmd._ || ''; // Se a tag for vazia, o n8n não cria o '_', então assumimos ''\n\n    // Verifica se a chave termina com underscore e número (ex: _1, _2)\n    const match = fieldName.match(/_([0-9]+)$/);\n    \n    if (match) {\n      const num = match[1];\n      const baseKey = fieldName.replace(/_[0-9]+$/, '');\n      \n      if (fieldName.includes('dependente')) {\n        if (!dependentesMap[num]) dependentesMap[num] = {};\n        dependentesMap[num][baseKey] = fieldValue;\n      } else if (fieldName.includes('beneficio')) {\n        if (!beneficiosMap[num]) beneficiosMap[num] = {};\n        beneficiosMap[num][baseKey] = fieldValue;\n      } else {\n        // Se for numerado mas não for dependente/beneficio, vai pro global\n        employeeData[fieldName] = fieldValue;\n      }\n    } else {\n      // Dados normais do funcionário\n      employeeData[fieldName] = fieldValue;\n    }\n  }\n}\n\nreturn {\n  employeeData: employeeData,\n  dependentes: Object.values(dependentesMap),\n  beneficios: Object.values(beneficiosMap)\n};"
+      },
+      "id": "ea8339f7-b943-423b-9332-d087a42b582e",
+      "name": "Processador Central (Cérebro)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -11984,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Processador Central (Cérebro)').item.json.beneficios }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "id": "dependents-check-001"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "127f6a23-b3e0-43e8-a7b7-97216777ebdd",
+      "name": "Possui Beneficios",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -11760,
+        1664
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $('Processador Central (Cérebro)').item.json.dependentes }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              },
+              "id": "dependents-check-001"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b260ee99-2d6a-490f-84c1-38ce2a80cf93",
+      "name": "Possui Dependentes",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -11760,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=beneficios",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -11312,
+        1728
+      ],
+      "id": "ac58bc49-351f-444d-85cc-d30a5b1c766f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f5f4d8c-6cf2-4c87-89f0-8a2514831725",
+              "name": "beneficios",
+              "value": "={{ $('Processador Central (Cérebro)').item.json.beneficios }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -11536,
+        1728
+      ],
+      "id": "20fee58c-70a4-48a2-93a0-e0f33a353c8a",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=beneficios",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -11312,
+        1344
+      ],
+      "id": "1cb3a78e-5f6c-45f1-851f-775d3c7dbadd",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7f5f4d8c-6cf2-4c87-89f0-8a2514831725",
+              "name": "beneficios",
+              "value": "={{ $('Processador Central (Cérebro)').item.json.dependentes }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -11536,
+        1344
+      ],
+      "id": "040e21cf-f676-448a-bea2-10ec2b2e537d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -10864,
+        1728
+      ],
+      "id": "dceecddd-208b-4677-9746-ef60df602f1d",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -10864,
+        1344
+      ],
+      "id": "f6fa22d7-01ae-41d7-8ecb-9a102b126610",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -10640,
+        1472
+      ],
+      "id": "8d455736-2c4b-4f0b-8220-9e84871754cf",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -10416,
+        1488
+      ],
+      "id": "ed43cb9a-d6f5-488c-96ff-b734b800c584",
+      "name": "Aggregate2"
+    }
+  ],
+  "pinData": {
+    "Quando chamado por outro workflow": [
+      {
+        "json": {
+          "route": "employers_plus_info",
+          "method": "POST",
+          "body": {
+            "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"as\" t=\"nome_funcionario\" p=\"value\">Caio Cesar Campelo</cmd><cmd n=\"as\" t=\"rg_funcionario\" p=\"value\">38.835.545-1</cmd><cmd n=\"as\" t=\"cpf_funcionario\" p=\"value\">356.528.188-08</cmd><cmd n=\"as\" t=\"matricula_funcionario\" p=\"value\">53</cmd><cmd n=\"as\" t=\"sexo_funcionario\" p=\"value\">Masculino</cmd><cmd n=\"as\" t=\"local_nascimento_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"orgao_emissor_rg\" p=\"value\">SSP/SP</cmd><cmd n=\"as\" t=\"serie_ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"cep_funcionario\" p=\"value\">09.760-210</cmd><cmd n=\"as\" t=\"endereco_funcionario\" p=\"value\"><![CDATA[Rua Pirajuí]]></cmd><cmd n=\"as\" t=\"numero_funcionario\" p=\"value\">115</cmd><cmd n=\"as\" t=\"bairro_funcionario\" p=\"value\">Baeta Neves</cmd><cmd n=\"as\" t=\"cidade_funcionario\" p=\"value\"><![CDATA[São Bernardo do Campo]]></cmd><cmd n=\"as\" t=\"uf_funcionario\" p=\"value\">SP</cmd><cmd n=\"as\" t=\"complemento_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"celular_funcionario\" p=\"value\">(11) 96735-2898</cmd><cmd n=\"as\" t=\"fone_funcionario\" p=\"value\">(11)93502-4428</cmd><cmd n=\"as\" t=\"email_funcionario\" p=\"value\">cccampelo@rtengenharia.ind.br</cmd><cmd n=\"as\" t=\"nome_pai_funcionario\" p=\"value\">Jorgemar Goncalves Campelo</cmd><cmd n=\"as\" t=\"nome_mae_funcionario\" p=\"value\">Valeria Aparecida de Moraes Campelo</cmd><cmd n=\"as\" t=\"observacoes_funcionario\" p=\"value\">\n</cmd><cmd n=\"as\" t=\"pis_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"uf_ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"banco_funcionario\" p=\"value\">341</cmd><cmd n=\"as\" t=\"agencia_funcionario\" p=\"value\">6818</cmd><cmd n=\"as\" t=\"conta_funcionario\" p=\"value\">22547-3</cmd><cmd n=\"as\" t=\"cargo_funcionario\" p=\"value\">5159</cmd><cmd n=\"as\" t=\"cbo_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"departamento_funcionario\" p=\"value\">RT-ATT</cmd><cmd n=\"as\" t=\"trabalho_inicio\" p=\"value\"></cmd><cmd n=\"as\" t=\"trabalho_termino\" p=\"value\"></cmd><cmd n=\"as\" t=\"intervalo_inicio\" p=\"value\"></cmd><cmd n=\"as\" t=\"intervalo_termino\" p=\"value\"></cmd><cmd n=\"as\" t=\"salario_funcionario\" p=\"value\">1621,00</cmd><cmd n=\"as\" t=\"status_funcionario\" p=\"value\">Ativo</cmd><cmd n=\"as\" t=\"data_admissao_funcionario\" p=\"value\">02/02/2024</cmd><cmd n=\"as\" t=\"data_nascimento_funcionario\" p=\"value\">08/02/1996</cmd><cmd n=\"as\" t=\"id_funcionario\" p=\"value\">17049</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">1</cmd><cmd n=\"js\">AdicionarLinha(1);</cmd><cmd n=\"as\" t=\"nome_dependente_1\" p=\"value\">Raiden de Carvalho Campelo</cmd><cmd n=\"as\" t=\"tipo_dependente_1\" p=\"value\">Filho</cmd><cmd n=\"as\" t=\"fone_dependente_1\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_1\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_1\" p=\"value\">60122626800</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_1\" p=\"value\">14/03/2022</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">2</cmd><cmd n=\"js\">AdicionarLinha(2);</cmd><cmd n=\"as\" t=\"nome_dependente_2\" p=\"value\">Dante de Carvalho Campelo</cmd><cmd n=\"as\" t=\"tipo_dependente_2\" p=\"value\">Filho</cmd><cmd n=\"as\" t=\"fone_dependente_2\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_2\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_2\" p=\"value\">52354491859</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_2\" p=\"value\">24/01/2017</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">3</cmd><cmd n=\"js\">AdicionarLinha(3);</cmd><cmd n=\"as\" t=\"nome_dependente_3\" p=\"value\">Helhinoa Andrade de Carvalho</cmd><cmd n=\"as\" t=\"tipo_dependente_3\" p=\"value\">Conjuge</cmd><cmd n=\"as\" t=\"fone_dependente_3\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_3\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_3\" p=\"value\">42378992840</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_3\" p=\"value\">25/03/1993</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">1</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(1);</cmd><cmd n=\"as\" t=\"nome_beneficio_1\" p=\"value\"><![CDATA[Plano de Saúde]]></cmd><cmd n=\"as\" t=\"valor_beneficio_1\" p=\"value\">1.816,92</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">2</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(2);</cmd><cmd n=\"as\" t=\"nome_beneficio_2\" p=\"value\"><![CDATA[Refeição]]></cmd><cmd n=\"as\" t=\"valor_beneficio_2\" p=\"value\">770,00</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">3</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(3);</cmd><cmd n=\"as\" t=\"nome_beneficio_3\" p=\"value\">Transporte</cmd><cmd n=\"as\" t=\"valor_beneficio_3\" p=\"value\">512,60</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">4</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(4);</cmd><cmd n=\"as\" t=\"nome_beneficio_4\" p=\"value\">Ajuda de Custo</cmd><cmd n=\"as\" t=\"valor_beneficio_4\" p=\"value\">8.929,25</cmd><cmd n=\"js\">xajax_MostrarAnexos('17049')</cmd><cmd n=\"js\">xajax_MostrarFotos('17049')</cmd><cmd n=\"js\">$('#nome_funcionario').focus();</cmd></xjx>"
+          },
+          "query": {},
+          "parameters": {
+            "rt_token": "YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
+          },
+          "original_request": {
+            "headers": {
+              "host": "n8n.srv1252717.hstgr.cloud",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36",
+              "content-length": "5197",
+              "accept": "*/*",
+              "accept-encoding": "gzip, deflate, br, zstd",
+              "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
+              "content-type": "application/json",
+              "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FQ81WmnJ4ScHUsMXM%2B7lqGApbyjD%2B6B%2BTXxYc7ESSsYxZtcX5xCh7EUzPqz6oGscLJ7w7vYnwLXg%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2B7HAbtlb8n0cjl%2FLbsXGR26rlz0Pjlz7rUzjycqPAZ86powR4soSanNml00Ns9VFSWNwPsQAcQ78N3yR27y3j7EkG2EwXeLa0P10jd2PwAgSA8nJZ99YTONAiFbqTPtenSWuiSntkrH94PK4vAFYE6wsrLUMSnTE0%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19ggK7KYyaeddy7IXySrd92BhDkcCoLJ%2FG1R6oh5f8AVllJok4DbNK41n7d%2F1TxC41SNeWwhx8NWXIwgHqcMght3zPwf0V%2BDsUXK1VmX16%2BKTSlzO8h2QfqQeA0aYqx%2BU%2FWnF80rNw7YjqqJ%2FANoI%2FLf0KYBsWClVg%3D; rl_session=RudderEncrypt%3AU2FsdGVkX19uaV%2F6l5%2F1JWQII6byzGmpRQP15cs5ZGPwQyKzngY%2BSbKOgt2qCWaW%2FYQ%2BUE9u5DGltQ2IFWLgdtyCJg9TRVj9%2FioyInea2F30Kv%2F8BjFhBXBsC%2Fd9WGfb9JNvTpCj7YevfK8VVFPaOw%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1776217516551%2C%22019d8e39-d797-74ff-9101-aa22ceea66da%22%2C1776207648661%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
+              "origin": "chrome-extension://hpiaaochclhppoichfmfpecghflmflil",
+              "priority": "u=1, i",
+              "sec-ch-ua": "\"Google Chrome\";v=\"147\", \"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"147\"",
+              "sec-ch-ua-mobile": "?0",
+              "sec-ch-ua-platform": "\"Windows\"",
+              "sec-fetch-dest": "empty",
+              "sec-fetch-mode": "cors",
+              "sec-fetch-site": "none",
+              "sec-fetch-storage-access": "active",
+              "x-forwarded-for": "201.81.90.19",
+              "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
+              "x-forwarded-port": "443",
+              "x-forwarded-proto": "https",
+              "x-forwarded-server": "b07aa6beef55",
+              "x-real-ip": "201.81.90.19"
+            },
+            "params": {},
+            "query": {
+              "route": "employers_plus_info?rt_token=YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl"
+            },
+            "body": {
+              "xml_ref": "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?><xjx><cmd n=\"as\" t=\"nome_funcionario\" p=\"value\">Caio Cesar Campelo</cmd><cmd n=\"as\" t=\"rg_funcionario\" p=\"value\">38.835.545-1</cmd><cmd n=\"as\" t=\"cpf_funcionario\" p=\"value\">356.528.188-08</cmd><cmd n=\"as\" t=\"matricula_funcionario\" p=\"value\">53</cmd><cmd n=\"as\" t=\"sexo_funcionario\" p=\"value\">Masculino</cmd><cmd n=\"as\" t=\"local_nascimento_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"orgao_emissor_rg\" p=\"value\">SSP/SP</cmd><cmd n=\"as\" t=\"serie_ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"cep_funcionario\" p=\"value\">09.760-210</cmd><cmd n=\"as\" t=\"endereco_funcionario\" p=\"value\"><![CDATA[Rua Pirajuí]]></cmd><cmd n=\"as\" t=\"numero_funcionario\" p=\"value\">115</cmd><cmd n=\"as\" t=\"bairro_funcionario\" p=\"value\">Baeta Neves</cmd><cmd n=\"as\" t=\"cidade_funcionario\" p=\"value\"><![CDATA[São Bernardo do Campo]]></cmd><cmd n=\"as\" t=\"uf_funcionario\" p=\"value\">SP</cmd><cmd n=\"as\" t=\"complemento_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"celular_funcionario\" p=\"value\">(11) 96735-2898</cmd><cmd n=\"as\" t=\"fone_funcionario\" p=\"value\">(11)93502-4428</cmd><cmd n=\"as\" t=\"email_funcionario\" p=\"value\">cccampelo@rtengenharia.ind.br</cmd><cmd n=\"as\" t=\"nome_pai_funcionario\" p=\"value\">Jorgemar Goncalves Campelo</cmd><cmd n=\"as\" t=\"nome_mae_funcionario\" p=\"value\">Valeria Aparecida de Moraes Campelo</cmd><cmd n=\"as\" t=\"observacoes_funcionario\" p=\"value\">\n</cmd><cmd n=\"as\" t=\"pis_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"uf_ctps_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"banco_funcionario\" p=\"value\">341</cmd><cmd n=\"as\" t=\"agencia_funcionario\" p=\"value\">6818</cmd><cmd n=\"as\" t=\"conta_funcionario\" p=\"value\">22547-3</cmd><cmd n=\"as\" t=\"cargo_funcionario\" p=\"value\">5159</cmd><cmd n=\"as\" t=\"cbo_funcionario\" p=\"value\"></cmd><cmd n=\"as\" t=\"departamento_funcionario\" p=\"value\">RT-ATT</cmd><cmd n=\"as\" t=\"trabalho_inicio\" p=\"value\"></cmd><cmd n=\"as\" t=\"trabalho_termino\" p=\"value\"></cmd><cmd n=\"as\" t=\"intervalo_inicio\" p=\"value\"></cmd><cmd n=\"as\" t=\"intervalo_termino\" p=\"value\"></cmd><cmd n=\"as\" t=\"salario_funcionario\" p=\"value\">1621,00</cmd><cmd n=\"as\" t=\"status_funcionario\" p=\"value\">Ativo</cmd><cmd n=\"as\" t=\"data_admissao_funcionario\" p=\"value\">02/02/2024</cmd><cmd n=\"as\" t=\"data_nascimento_funcionario\" p=\"value\">08/02/1996</cmd><cmd n=\"as\" t=\"id_funcionario\" p=\"value\">17049</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">1</cmd><cmd n=\"js\">AdicionarLinha(1);</cmd><cmd n=\"as\" t=\"nome_dependente_1\" p=\"value\">Raiden de Carvalho Campelo</cmd><cmd n=\"as\" t=\"tipo_dependente_1\" p=\"value\">Filho</cmd><cmd n=\"as\" t=\"fone_dependente_1\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_1\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_1\" p=\"value\">60122626800</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_1\" p=\"value\">14/03/2022</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">2</cmd><cmd n=\"js\">AdicionarLinha(2);</cmd><cmd n=\"as\" t=\"nome_dependente_2\" p=\"value\">Dante de Carvalho Campelo</cmd><cmd n=\"as\" t=\"tipo_dependente_2\" p=\"value\">Filho</cmd><cmd n=\"as\" t=\"fone_dependente_2\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_2\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_2\" p=\"value\">52354491859</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_2\" p=\"value\">24/01/2017</cmd><cmd n=\"as\" t=\"QtdeDependentes\" p=\"value\">3</cmd><cmd n=\"js\">AdicionarLinha(3);</cmd><cmd n=\"as\" t=\"nome_dependente_3\" p=\"value\">Helhinoa Andrade de Carvalho</cmd><cmd n=\"as\" t=\"tipo_dependente_3\" p=\"value\">Conjuge</cmd><cmd n=\"as\" t=\"fone_dependente_3\" p=\"value\"></cmd><cmd n=\"as\" t=\"rg_dependente_3\" p=\"value\"></cmd><cmd n=\"as\" t=\"cpf_dependente_3\" p=\"value\">42378992840</cmd><cmd n=\"as\" t=\"data_nascimento_dependente_3\" p=\"value\">25/03/1993</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">1</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(1);</cmd><cmd n=\"as\" t=\"nome_beneficio_1\" p=\"value\"><![CDATA[Plano de Saúde]]></cmd><cmd n=\"as\" t=\"valor_beneficio_1\" p=\"value\">1.816,92</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">2</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(2);</cmd><cmd n=\"as\" t=\"nome_beneficio_2\" p=\"value\"><![CDATA[Refeição]]></cmd><cmd n=\"as\" t=\"valor_beneficio_2\" p=\"value\">770,00</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">3</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(3);</cmd><cmd n=\"as\" t=\"nome_beneficio_3\" p=\"value\">Transporte</cmd><cmd n=\"as\" t=\"valor_beneficio_3\" p=\"value\">512,60</cmd><cmd n=\"as\" t=\"QtdeBeneficio\" p=\"value\">4</cmd><cmd n=\"js\">AdicionarLinhaBeneficio(4);</cmd><cmd n=\"as\" t=\"nome_beneficio_4\" p=\"value\">Ajuda de Custo</cmd><cmd n=\"as\" t=\"valor_beneficio_4\" p=\"value\">8.929,25</cmd><cmd n=\"js\">xajax_MostrarAnexos('17049')</cmd><cmd n=\"js\">xajax_MostrarFotos('17049')</cmd><cmd n=\"js\">$('#nome_funcionario').focus();</cmd></xjx>"
+            },
+            "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
+            "executionMode": "production"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Quando chamado por outro workflow": {
+      "main": [
+        [
+          {
+            "node": "Set XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler XML Nativo": {
+      "main": [
+        [
+          {
+            "node": "Processador Central (Cérebro)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Funcionario": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Dependentes": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB: Beneficios": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set XML": {
+      "main": [
+        [
+          {
+            "node": "Ler XML Nativo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processador Central (Cérebro)": {
+      "main": [
+        [
+          {
+            "node": "DB: Funcionario",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Possui Dependentes",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Possui Beneficios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Possui Beneficios": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Possui Dependentes": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "DB: Beneficios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "DB: Dependentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Montar Resposta Nativa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "92a75ccd-7256-447f-95a3-b73d5543f6d5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "Is8AcAK4ePg3oCM2",
+  "tags": []
+}

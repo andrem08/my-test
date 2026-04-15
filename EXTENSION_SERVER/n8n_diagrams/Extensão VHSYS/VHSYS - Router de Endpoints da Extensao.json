@@ -29,10 +29,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        10096
+        -22464,
+        8672
       ],
-      "id": "eb0923d0-bfc2-4478-8fb3-d32e14c13725",
+      "id": "191dbc24-fc26-4c7c-aace-fd8fb34ac094",
       "name": "Relatorio NF Venda"
     },
     {
@@ -57,10 +57,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        10288
+        -22464,
+        8864
       ],
-      "id": "0f386490-c729-4e9d-b9d7-751c10c600a5",
+      "id": "bf56f08b-0937-4bd2-b8d3-cc5b97ece7c3",
       "name": "Relatorio NF Servico"
     },
     {
@@ -75,13 +75,13 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "42d54413-5229-4413-943c-5dc54d077b42",
+      "id": "38ec87ac-6569-494c-b9c4-7fd3aba8acf1",
       "name": "Entrada HTTP do Router VHSYS",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1.1,
       "position": [
-        -18656,
-        10240
+        -23536,
+        8816
       ],
       "webhookId": "vhsys-router-webhook"
     },
@@ -89,26 +89,26 @@
       "parameters": {
         "jsCode": "// ── 404 Not Found ──\nconst route = $input.item.json.route || 'unknown';\nconsole.log(JSON.stringify({ timestamp: new Date().toISOString(), event: 'route_not_found', route, level: 'error' }));\nreturn {\n  statusCode: 404,\n  body: {\n    error: 'Route not found',\n    route,\n    available_routes: [\n      'health','update_services','get_update_extension_service_data',\n      'cc_report_manage/status','cc_report_manage/next_url','cc_report','cc_report/reset',\n      'regular_bills','sales_nf_report','service_nf_report',\n      'nf_service_labels','nf_service_labels_ids','nf_service_info',\n      'employers_general_data','employers_plus','employers_plus_info'\n    ]\n  }\n};"
       },
-      "id": "82c08787-85f7-4957-b6e4-67ddb4578fb2",
+      "id": "31ee690d-706d-42e1-853e-d90002ecf880",
       "name": "Montar Erro 404 - Rota Inexistente",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -17584,
-        11056
+        -22464,
+        9632
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// Respond to Webhook — Serializador universal\n// Suporta:\n//   body = array  → serializa como JSON array direto\n//   body = object → serializa como JSON object\n//   body = string → serializa como string\n// Preserva statusCode de cada sub-workflow.\n// ─────────────────────────────────────────────\nconst result = $input.first().json;\nconst statusCode = result.statusCode || 200;\nconst body = result.body !== undefined ? result.body : result;\n\nreturn {\n  statusCode,\n  body\n};"
       },
-      "id": "ef6bab5f-fd20-4ef2-a876-9a83c7ef6560",
+      "id": "7aa88998-23d5-4be1-8f4c-0f49f6618e3c",
       "name": "Normalizar Retorno HTTP",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -16928,
-        10208
+        -21808,
+        8784
       ]
     },
     {
@@ -119,13 +119,13 @@
           "responseCode": "={{ $json.statusCode || 200 }}"
         }
       },
-      "id": "4dda3f60-9ad6-42ca-85be-6af6840ae93c",
+      "id": "195451b7-d4e8-4c98-8bb5-b61fbc365a20",
       "name": "Responder Webhook HTTP",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        -16672,
-        10208
+        -21552,
+        8784
       ]
     },
     {
@@ -156,10 +156,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        9136
+        -22464,
+        7712
       ],
-      "id": "7a33238b-a633-42b3-8830-1c321ceefa2f",
+      "id": "c6ac75f7-9370-4471-b703-896324cd92e8",
       "name": "Status CC Report"
     },
     {
@@ -184,10 +184,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        8752
+        -22464,
+        7328
       ],
-      "id": "8e21ccf8-3b86-4060-ba8c-cd5e4048dbf8",
+      "id": "d338e4a8-46a1-4cc7-843c-2ee9b5b56149",
       "name": "Atualizar Servicos"
     },
     {
@@ -212,10 +212,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        8560
+        -22464,
+        7136
       ],
-      "id": "280cd644-93ba-4b06-b795-245b7f159005",
+      "id": "35d28d24-e9a0-434d-9d4b-7ae4ef5e2b2e",
       "name": "Health Check"
     },
     {
@@ -246,10 +246,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        9328
+        -22464,
+        7904
       ],
-      "id": "bde4e36f-a955-4c1e-9f30-eb8f94c106fb",
+      "id": "39a304ae-b456-48e8-a537-9979d6ba61f7",
       "name": "Proxima URL CC Report"
     },
     {
@@ -274,10 +274,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        9520
+        -22464,
+        8096
       ],
-      "id": "7281aea0-8656-4591-9854-fa24eab1ff63",
+      "id": "f330b55f-8fb8-4709-a2d0-21a975ac8ba2",
       "name": "Gerar CC Report"
     },
     {
@@ -302,10 +302,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        9712
+        -22464,
+        8288
       ],
-      "id": "3e7adc66-cce5-4580-9539-2c43071ebcc8",
+      "id": "9d730b94-b15e-49d2-ba73-8ac1dbf48cf6",
       "name": "Reset CC Report"
     },
     {
@@ -330,10 +330,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        8944
+        -22464,
+        7520
       ],
-      "id": "fc0c6f53-24c9-42ba-94ae-d92df48a58ca",
+      "id": "f38e7cfb-e11d-4238-a3a4-2edcf3bdbae5",
       "name": "Dados de Atualizacao"
     },
     {
@@ -773,10 +773,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        -18208,
-        10000
+        -23088,
+        8576
       ],
-      "id": "c471ad09-0405-4a27-a600-4196b140a3f1",
+      "id": "4fa168ef-fc03-4a0b-be60-ce6cfaa4f83b",
       "name": "Rotear Requisicao por Endpoint"
     },
     {
@@ -786,10 +786,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -17056,
-        11056
+        -21936,
+        9632
       ],
-      "id": "11415b0f-1cd4-4583-8e89-b79593504db9",
+      "id": "858452b1-69bf-40fb-b1d3-16f25d20fd8a",
       "name": "Interromper Fluxo - Erro 404"
     },
     {
@@ -820,10 +820,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -16448,
-        10208
+        -21328,
+        8784
       ],
-      "id": "243d8dc2-9d47-4edc-acf2-33c3f09c2c89",
+      "id": "61cf2067-0073-4818-af21-8d41a852e76d",
       "name": "Validar Sucesso da Resposta"
     },
     {
@@ -833,49 +833,49 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        -16224,
-        10208
+        -21104,
+        8784
       ],
-      "id": "f6d210af-7c79-479b-9805-c336a965ed89",
+      "id": "3aa87653-301b-40a7-b9b7-7594b21f46ee",
       "name": "Interromper Fluxo - Erro da API"
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('PUT').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "4be5e124-0f86-4316-afc7-b9b4c83d3869",
+      "id": "8f79b050-fa41-4cb3-acb5-92dea7960f98",
       "name": "Extrair Rota e Parametros (PUT)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -18432,
-        10064
+        -23312,
+        8640
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "c8ca9c85-d160-43cb-a75c-1c0c708d2df0",
+      "id": "05b96f03-d074-484f-be74-75cf25bab9e9",
       "name": "Extrair Rota e Parametros (GET)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -18432,
-        10256
+        -23312,
+        8832
       ]
     },
     {
       "parameters": {
         "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('POST').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
-      "id": "0516bea8-74e6-4248-8971-99cc0904b7d2",
+      "id": "566672db-b37a-4aff-bcfb-dfe852d21ba5",
       "name": "Extrair Rota e Parametros (POST)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -18432,
-        10448
+        -23312,
+        9024
       ]
     },
     {
@@ -885,13 +885,13 @@
         "width": 430,
         "color": 6
       },
-      "id": "4d6b705f-fb64-407b-9a45-bd252c7b39ee",
+      "id": "38c5524d-c380-40d4-9c67-ce2bc1c8626e",
       "name": "Guia - Entrada e Extracao",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -19344,
-        10272
+        -24224,
+        8848
       ]
     },
     {
@@ -901,13 +901,13 @@
         "width": 270,
         "color": 7
       },
-      "id": "5c1e7428-9571-4244-8452-1f6188093adf",
+      "id": "fcdace98-d505-4d7c-8c0f-932ae6fa707e",
       "name": "Guia - Roteamento",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -18304,
-        9760
+        -23184,
+        8336
       ]
     },
     {
@@ -917,13 +917,13 @@
         "width": 430,
         "color": 5
       },
-      "id": "debe21d2-a5be-4a15-af27-8dddb0f575f0",
+      "id": "52ab3731-8b65-4adf-88a9-bb8093eac28e",
       "name": "Guia - Resposta",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -16720,
-        9920
+        -21600,
+        8496
       ]
     },
     {
@@ -933,13 +933,13 @@
         "width": 430,
         "color": 2
       },
-      "id": "3d46bd25-074c-4573-bba5-310fac954b8e",
+      "id": "048280fb-c72f-402b-b926-36ce382a9bd4",
       "name": "Guia - Erros",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -16768,
-        10400
+        -21648,
+        8976
       ]
     },
     {
@@ -964,10 +964,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        11824
+        -22464,
+        10400
       ],
-      "id": "e7258f7b-5d69-44c8-ab34-1d36c7dfcc48",
+      "id": "6a909d6e-dc73-4d7a-ac2c-2f22dc70316d",
       "name": "Limpeza das esteiras"
     },
     {
@@ -983,13 +983,13 @@
           "waitForSubWorkflow": true
         }
       },
-      "id": "3fa65354-b40f-4923-bf97-24ccd4fcbfcd",
+      "id": "54ddf318-2c12-4b4d-b612-67bb99dbae88",
       "name": "Detalhes dos Funcionários",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -17584,
-        11632
+        -22464,
+        10208
       ]
     },
     {
@@ -1005,13 +1005,13 @@
           "waitForSubWorkflow": true
         }
       },
-      "id": "e52487e9-2b97-4d95-8509-d6895ceb1b51",
+      "id": "ba521bb1-558f-421a-81e3-91c3371f7744",
       "name": "Lista dos funcionários",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -17584,
-        11440
+        -22464,
+        10016
       ]
     },
     {
@@ -1027,13 +1027,13 @@
           "waitForSubWorkflow": true
         }
       },
-      "id": "56b638d0-339b-414e-87b0-75993e5894f0",
+      "id": "9f68a4da-c9c4-4788-b5ef-dbc289ae4637",
       "name": "Carga geral de Funcionários",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
       "position": [
-        -17584,
-        11248
+        -22464,
+        9824
       ]
     },
     {
@@ -1058,10 +1058,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        10864
+        -22464,
+        9440
       ],
-      "id": "f094d2e2-762d-4bb8-80a5-db14764f2ad6",
+      "id": "ad85400b-a523-4af8-ab98-fbb7a43c1415",
       "name": "Notas de Serviço de Faturamento"
     },
     {
@@ -1086,10 +1086,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        10672
+        -22464,
+        9248
       ],
-      "id": "12d937c6-c458-44e5-ac92-dddf9d65fdca",
+      "id": "8e7d31e4-4966-4dac-ba32-ed33071bb9a6",
       "name": "Listar Identificadores de NF de Serviço"
     },
     {
@@ -1114,10 +1114,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        10480
+        -22464,
+        9056
       ],
-      "id": "4e8c7c7e-b974-43c7-89cd-959483991ed2",
+      "id": "22509e16-175a-4f62-b291-e7f7d120c8f2",
       "name": "Importar Metadados NF Servico"
     },
     {
@@ -1142,52 +1142,14 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        -17584,
-        9904
+        -22464,
+        8480
       ],
-      "id": "c105416a-1c84-4683-b61b-f81ae6d93ef9",
+      "id": "ba92b6bc-6885-4e9a-b4c3-af4201daa523",
       "name": "Despesas Recorrentes"
     }
   ],
-  "pinData": {
-    "Entrada HTTP do Router VHSYS": [
-      {
-        "json": {
-          "headers": {
-            "host": "n8n.srv1252717.hstgr.cloud",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
-            "content-length": "4",
-            "accept": "*/*",
-            "accept-encoding": "gzip, deflate, br, zstd",
-            "accept-language": "en-US,en-GB;q=0.9,en;q=0.8,pt-BR;q=0.7,pt;q=0.6",
-            "content-type": "application/json",
-            "cookie": "rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX186CoFlNALGW5xLKha89a9b0jl8sl0uuOc%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Tgc37yYdgQHcHM3JH5d6N0WF0ZArVUH4%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FGj%2BUwwuo3%2B3kG87vp4Zk2DqclMS3KurC1X98MaeemG45LutQK67hj4wyMpgLDg8a%2B%2Be5R9RbjAw%3D%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BbBS9yxclpyVh3hkJld4cJtu9TbeMT8jxoBw0Ovm8t519cQtn%2B52ZlbIknwdUa4fmOmTXZZQZSOTVpAwCHkr6tRLaXWSAYlI8hYIr6igYQvmfs5KKnJFl%2BhPMB5%2Fctltv2CmBW2of0lpRvjCXGDCdUA88io0zYj14%3D; rl_trait=RudderEncrypt%3AU2FsdGVkX19DiW4WMrOQ%2BLGstGFa1j5gXx0TiTnfyQ1nt%2FebmkWnTWbNljeVEycDtrfwoMq8J5R0Z0vl3YsJqpjYPrfmlgCxtSloR%2B166IDjED2wSXeQYbqjJWvXKOt%2Bomm8fcxIQhVrv4fqnderdH3%2FkWyUzFBDd2J%2FqOnEuZ0%3D; rl_session=RudderEncrypt%3AU2FsdGVkX1%2B%2BpyRzuOjZOpwhwAWWRvXInXxoIOjXR5d37RpTh%2BqDGYjmb0RygH%2BkjlCGxQSmhoWSkKjGgzsIRX2iq44eRd6qx63wq4VP4zCHcMtu0Ps7IUpeyV7qai4ScYmkKto%2FmEC7XwSVfPA2yA%3D%3D; ph_phc_4URIAm1uYfJO7j8kWSe0J8lc8IqnstRLS7Jx8NcakHo_posthog=%7B%22%24device_id%22%3A%22019c3304-50e2-76c3-84db-36119f648c39%22%2C%22distinct_id%22%3A%22175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c%2381f34a05-d25b-47ef-a17b-3ead2bccf5e2%22%2C%22%24sesid%22%3A%5B1774260152718%2C%22019d1a23-ccd1-7bf7-8ebe-459eb5454e7e%22%2C1774260047057%5D%2C%22%24epp%22%3Atrue%2C%22%24initial_person_info%22%3A%7B%22r%22%3A%22%24direct%22%2C%22u%22%3A%22https%3A%2F%2Fn8n.srv1252717.hstgr.cloud%2Fworkflow%2F-sHYewtSFxMznnvdHtAc8%22%7D%2C%22%24user_state%22%3A%22identified%22%7D",
-            "origin": "https://n8n.srv1252717.hstgr.cloud",
-            "priority": "u=1, i",
-            "sec-ch-ua": "\"Chromium\";v=\"146\", \"Not-A.Brand\";v=\"24\", \"Google Chrome\";v=\"146\"",
-            "sec-ch-ua-mobile": "?0",
-            "sec-ch-ua-platform": "\"Windows\"",
-            "sec-fetch-dest": "empty",
-            "sec-fetch-mode": "cors",
-            "sec-fetch-site": "same-origin",
-            "x-forwarded-for": "201.81.90.19",
-            "x-forwarded-host": "n8n.srv1252717.hstgr.cloud",
-            "x-forwarded-port": "443",
-            "x-forwarded-proto": "https",
-            "x-forwarded-server": "fda5ae5afd08",
-            "x-real-ip": "201.81.90.19"
-          },
-          "params": {},
-          "query": {
-            "route": "service_nf_report"
-          },
-          "body": {},
-          "webhookUrl": "https://n8n.srv1252717.hstgr.cloud/webhook/vhsys-router",
-          "executionMode": "production"
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Entrada HTTP do Router VHSYS": {
       "main": [
@@ -1616,7 +1578,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1e3a4a83-d76b-4c0a-a7f9-e567c1d7ce0d",
+  "versionId": "abe20216-099e-454b-90e2-3dbab9cd71d6",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

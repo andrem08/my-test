@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "f1d54ab0-7490-4edf-8344-3ffd8cb7ca2e",
+      "id": "c2f7d019-3d85-4216-8045-14147a39a970",
       "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -2256,
-        -176
+        -5504,
+        -944
       ]
     },
     {
@@ -21,13 +21,13 @@
           "queryBatching": "single"
         }
       },
-      "id": "ecbf9a3c-9db5-4aab-a72f-182c4b5df32d",
+      "id": "45ef0a1b-2d9d-4493-bca0-b169bc5f950d",
       "name": "Resetar Status do CC Report",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -2032,
-        -176
+        -5056,
+        -944
       ],
       "credentials": {
         "postgres": {
@@ -41,39 +41,39 @@
       "parameters": {
         "jsCode": "const input = $input.first().json || {};\nconst query = input.query || {};\nconst body = input.body || {};\n\nconst rawMonthsBack = query.months_back ?? body.months_back ?? null;\nlet monthsBack = null;\n\nif (rawMonthsBack !== null && rawMonthsBack !== undefined && rawMonthsBack !== '') {\n  const parsed = parseInt(String(rawMonthsBack), 10);\n  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 24) {\n    monthsBack = parsed;\n  }\n}\n\nreturn {\n  months_back: monthsBack,\n  months_back_sql: monthsBack === null ? 'NULL' : String(monthsBack)\n};"
       },
-      "id": "1e3f5aa9-c2f7-4e4e-b0c5-f2f6d4c8f65d",
+      "id": "7efdbbeb-bc87-41e9-8d80-ba4d95517a51",
       "name": "Extrair Filtro de Meses",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2144,
-        -176
+        -5280,
+        -944
       ]
     },
     {
       "parameters": {
         "jsCode": "const rows = $input.all().map(item => item.json);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'cc_report_reset',\n  total_rows: rows.length,\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'Status do CC Report resetado com sucesso' }\n};"
       },
-      "id": "cb4ce876-3837-4eba-8185-4ff3848135e8",
+      "id": "a766c884-424d-43b9-a3df-43297b3f370b",
       "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1760,
-        -272
+        -4832,
+        -1040
       ]
     },
     {
       "parameters": {
         "jsCode": "const errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report/reset',\n  event: 'db_error',\n  message: errData.message || 'Erro desconhecido no banco',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Erro de banco', message: 'Nao foi possivel resetar o status do cc report' }\n};"
       },
-      "id": "76f5d85e-1231-4e44-95fa-9f20b0caf0a1",
+      "id": "bad58573-4c2f-43a3-8467-b93496cc36ff",
       "name": "Montar Resposta de Erro de Banco",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1760,
-        -80
+        -4832,
+        -848
       ]
     },
     {
@@ -83,13 +83,13 @@
         "width": 360,
         "color": 7
       },
-      "id": "0b089efb-d344-40bb-bdc2-7a2a7d9c6d82",
+      "id": "17639b7f-9de7-4290-b4f1-e2193889b3d1",
       "name": "Arquitetura do Fluxo",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2656,
-        -240
+        -5904,
+        -1008
       ]
     },
     {
@@ -98,13 +98,13 @@
         "height": 204,
         "color": 6
       },
-      "id": "9a1cc1b4-7e4d-425d-89b7-755f43d06ace",
+      "id": "3dd6b89c-b7d0-4722-b000-b429d9dc5d15",
       "name": "Reset de Flags",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2096,
-        -416
+        -5344,
+        -1184
       ]
     },
     {
@@ -114,13 +114,13 @@
         "width": 280,
         "color": 2
       },
-      "id": "a88a7b46-6041-4a8a-9224-30c51cc48dbc",
+      "id": "d6376341-fa80-4feb-a1db-9b0fc32a01d8",
       "name": "Resposta de Sucesso",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1520,
-        -288
+        -4624,
+        -1056
       ]
     },
     {
@@ -130,13 +130,13 @@
         "width": 280,
         "color": 3
       },
-      "id": "bd8653de-9b94-4145-a5cb-70caa4afc231",
+      "id": "fefe0d94-6e85-447f-b686-cb40174531a1",
       "name": "Caminho de Erro",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1520,
-        -96
+        -4640,
+        -864
       ]
     }
   ],
@@ -188,7 +188,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "24449b7f-3e06-49ee-b511-941d08b59904",
+  "versionId": "bdfa36ff-2488-47e3-a0c5-0f15ab54a4c3",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

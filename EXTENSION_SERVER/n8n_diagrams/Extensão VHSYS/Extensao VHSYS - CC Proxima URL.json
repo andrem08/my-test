@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "556abc5d-1284-48c3-ad6b-5096f6def58f",
+      "id": "1ba31ca7-0e86-4418-b57d-4d9de3bf3bf4",
       "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -3280,
-        -240
+        -6128,
+        -928
       ]
     },
     {
@@ -18,13 +18,13 @@
         "query": "-- Busca o próximo centro de custo que precisa ser processado\n-- Opcional: filtra por centros modificados nos últimos N meses (months_back)\nWITH params AS (\n  SELECT {{ $json.months_back_sql }}::int AS months_back\n)\nSELECT\n  s.cc_id,\n  s.status_entradas,\n  s.status_saidas\nFROM auxiliary.status_processamento_cc s\nCROSS JOIN params p\nWHERE (s.status_entradas = 0 OR s.status_saidas = 0)\n  AND (\n    p.months_back IS NULL\n    OR COALESCE(s.data_modificacao, s.data_cadastro) >= NOW() - (p.months_back || ' months')::interval\n  )\nORDER BY RANDOM()\nLIMIT 1;",
         "options": {}
       },
-      "id": "861185d6-742c-4668-8fe6-2cba88f7863f",
+      "id": "6e74c751-3b51-4413-9dfd-7bde6df19fa1",
       "name": "Buscar Proximo CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -3040,
-        -240
+        -5680,
+        -928
       ],
       "credentials": {
         "postgres": {
@@ -37,26 +37,26 @@
       "parameters": {
         "jsCode": "const input = $input.first().json || {};\nconst query = input.query || {};\nconst body = input.body || {};\n\nconst rawMonthsBack = query.months_back ?? body.months_back ?? null;\nlet monthsBack = null;\n\nif (rawMonthsBack !== null && rawMonthsBack !== undefined && rawMonthsBack !== '') {\n  const parsed = parseInt(String(rawMonthsBack), 10);\n  if (Number.isFinite(parsed) && parsed > 0 && parsed <= 24) {\n    monthsBack = parsed;\n  }\n}\n\nreturn {\n  months_back: monthsBack,\n  months_back_sql: monthsBack === null ? 'NULL' : String(monthsBack)\n};"
       },
-      "id": "14bc9d42-0d76-4707-9f53-4b4b242d6d40",
+      "id": "0dab8028-5054-4a6d-92b4-2583078361da",
       "name": "Extrair Filtro de Meses",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3200,
-        -240
+        -5904,
+        -928
       ]
     },
     {
       "parameters": {
         "jsCode": "// Monta URL e resposta com base no que ainda falta processar\nconst row = $input.first().json;\n\nif (!row || !row.cc_id) {\n  return { message: 'Nenhum CC para processar' };\n}\n\nconst ccId = row.cc_id;\nconst entryDone = row.status_entradas === 1;\nconst outputDone = row.status_saidas === 1;\n\n// Determina qual tipo processar\nlet type = 'entrada';\nlet urlType = 'Entrada';\n\nif (entryDone && !outputDone) {\n  type = 'saida';\n  urlType = 'Saida';\n}\n\n// Gera URL do VHSYS\nconst today = new Date();\nconst dd = String(today.getDate()).padStart(2, '0');\nconst mm = String(today.getMonth() + 1).padStart(2, '0');\nconst yyyy = today.getFullYear();\nconst dateStr = `${dd}/${mm}/${yyyy}`;\n\nconst vhsysUrl = `https://app.vhsys.com.br/Relatorio/Relatorio.CentroCustos.JSON.php?considerarData=pagamento&Data1=01/01/2002&Data2=${dateStr}&ListarCentroAtivoSemLancamento=1&modelo=2&Nome=&Cod=&Tipo=${urlType}&Centro=${ccId}&Categoria=null&buscar=1`;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_next_url',\n  event: 'url_gerada',\n  cc_id: ccId,\n  type: type,\n  level: 'info'\n}));\n\n// IMPORTANTE: TypeScript espera data.url.url (estrutura aninhada)\n// Linha 64 do updateReportCC.ts faz: const { url: dataUrl } = data\n// Linha 71 faz: await getData(dataUrl.url)\nreturn {\n  url: {\n    url: vhsysUrl,\n    cc_id: ccId,\n    type: type\n  }\n};"
       },
-      "id": "7b59dc33-67e2-4d83-b7d0-b711349dbe64",
+      "id": "71fc940a-7b38-4a90-8251-f3b499a4a4fd",
       "name": "Montar Resposta de URL",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2800,
-        -240
+        -5456,
+        -928
       ]
     },
     {
@@ -66,13 +66,13 @@
         "width": 420,
         "color": 7
       },
-      "id": "b7740e3b-9894-49ec-8915-3433a6da2be4",
+      "id": "f21d126b-22f4-4251-b30c-249e791264d2",
       "name": "Arquitetura do Fluxo",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -3776,
-        -320
+        -6624,
+        -1008
       ]
     },
     {
@@ -82,13 +82,13 @@
         "width": 360,
         "color": 6
       },
-      "id": "f53f86cb-196f-4303-99dd-51e04ea7df13",
+      "id": "621574d5-cb2d-4517-bca9-1cf3e1d23ec4",
       "name": "Selecao de Pendencia",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -3136,
-        -512
+        -5984,
+        -1200
       ]
     },
     {
@@ -98,13 +98,13 @@
         "width": 336,
         "color": 4
       },
-      "id": "4554a31b-93c2-479f-8422-a2a351f6a94f",
+      "id": "19922b45-f35b-44da-93ce-2454fcf23563",
       "name": "Montagem de URL",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -2608,
-        -304
+        -5248,
+        -992
       ]
     }
   ],
@@ -154,7 +154,7 @@
     "saveDataErrorExecution": "all",
     "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "ca057fb6-7999-469b-8a98-d56133e259d4",
+  "versionId": "2f4b93dd-bed1-4cf1-b638-7c91e06d5c0c",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

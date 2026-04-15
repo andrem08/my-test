@@ -8,13 +8,13 @@
         "width": 440,
         "color": 7
       },
-      "id": "fff14348-5add-488d-8ec6-8b8d8b8b3fea",
+      "id": "b5a0c362-36f4-429d-83ad-178263454f8b",
       "name": "Consolidacao e Fechamento",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -23552,
-        3456
+        -46544,
+        624
       ]
     },
     {
@@ -24,13 +24,13 @@
         "width": 456,
         "color": 2
       },
-      "id": "a3dc4ccb-e0f7-416e-b44f-e6c1eac86962",
+      "id": "accc1f5d-7d43-47d2-b9cf-863454a6bde2",
       "name": "Persistencia de Remocoes",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -24608,
-        3808
+        -47600,
+        976
       ]
     },
     {
@@ -40,13 +40,13 @@
         "width": 408,
         "color": 2
       },
-      "id": "405d4ba5-394c-4365-b022-4b6d29b35c6b",
+      "id": "df0e4b7f-d70d-4888-a81c-649af9434038",
       "name": "Persistencia de Inclusoes",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -24544,
-        2928
+        -47536,
+        96
       ]
     },
     {
@@ -56,13 +56,13 @@
         "width": 458,
         "color": 5
       },
-      "id": "8fdeeeef-11b9-4de0-9f78-714dd2f9d194",
+      "id": "02348538-8248-4cc6-aaf6-cbc3bba28d80",
       "name": "Caminho Sem Delta",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -25280,
-        4000
+        -48272,
+        1168
       ]
     },
     {
@@ -72,13 +72,13 @@
         "width": 404,
         "color": 6
       },
-      "id": "2f6cea80-21ef-400a-b420-b137a1053195",
+      "id": "fde5ae78-04dd-44f7-b73f-7d408beb2acb",
       "name": "Motor de Reconciliacao",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -25408,
-        3232
+        -48400,
+        400
       ]
     },
     {
@@ -88,13 +88,13 @@
         "width": 376,
         "color": 6
       },
-      "id": "7e824440-f7ec-49b0-96d9-5a34f9967d99",
+      "id": "17b62143-261c-4bab-8068-9b61cc994867",
       "name": "Escopo e Snapshot do Banco",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -25856,
-        3200
+        -48848,
+        368
       ]
     },
     {
@@ -104,13 +104,13 @@
         "width": 428,
         "color": 4
       },
-      "id": "b2fbeac2-bfda-4f7f-9811-1cb3ab7660f5",
+      "id": "6f38f9e5-767a-406f-ab0e-bfbcbe883160",
       "name": "Normalizacao de Registros",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -26384,
-        3344
+        -49376,
+        512
       ]
     },
     {
@@ -120,13 +120,13 @@
         "width": 392,
         "color": 4
       },
-      "id": "5e3506f2-de61-417a-a16f-bdc70ab08f05",
+      "id": "e20af8c9-e2b2-42d4-875b-bf314151bda8",
       "name": "Decodificacao e Early Exit",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -26944,
-        3408
+        -49936,
+        576
       ]
     },
     {
@@ -136,13 +136,13 @@
         "width": 344,
         "color": 3
       },
-      "id": "2d490e48-8ff1-4d4c-828a-df4e8b34b439",
+      "id": "1b613eca-f187-4b7c-902e-7af2dd7c4351",
       "name": "Contrato de Entrada",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -26912,
-        3872
+        -49904,
+        1040
       ]
     },
     {
@@ -152,13 +152,13 @@
         "width": 574,
         "color": 7
       },
-      "id": "d98f6fdf-3f65-4ea2-8e90-a65031839f19",
+      "id": "e2bac2b0-1dc1-43b6-8a9e-4c79b5ca3012",
       "name": "Arquitetura do Fluxo",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -27792,
-        3584
+        -50784,
+        752
       ]
     },
     {
@@ -167,13 +167,13 @@
         "query": "UPDATE auxiliary.status_processamento_cc\nSET \n  status_entradas = CASE WHEN '{{ $json.type }}' = 'entrada' THEN 1 ELSE status_entradas END,\n  status_saidas = CASE WHEN '{{ $json.type }}' = 'saida' THEN 1 ELSE status_saidas END\nWHERE cc_id = '{{ $json.cc_id }}';",
         "options": {}
       },
-      "id": "68907450-7ec9-4877-831f-23bfd521951a",
+      "id": "bdb0c44e-af00-47c3-a269-fa215ffc6853",
       "name": "No Changes Atualizar Status Final",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24896,
-        3744
+        -47888,
+        912
       ],
       "credentials": {
         "postgres": {
@@ -186,39 +186,39 @@
       "parameters": {
         "jsCode": "// Reaproveita update de status padrão no caminho de página vazia\nconst ctx = $input.first().json;\n\nreturn {\n  json: {\n    cc_id: ctx.cc_id,\n    type: ctx.type\n  }\n};"
       },
-      "id": "ccaca7f1-53e4-45a8-a2ca-f633a76975bd",
+      "id": "e4381338-4f88-4670-af3f-9f531e13ba5f",
       "name": "Empty Atualizar Status Final",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -25120,
-        3792
+        -48112,
+        960
       ]
     },
     {
       "parameters": {
         "jsCode": "const ctx = $input.first().json;\n\nreturn {\n  statusCode: ctx.statusCode || 400,\n  body: ctx.body || { error: 'Validation failed' }\n};"
       },
-      "id": "a3427844-66e3-4f2c-8a4e-5504b95b595c",
+      "id": "a37e58b1-8648-42c4-953d-7b3e289dfef3",
       "name": "Montar Resposta de Erro",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -26464,
-        3792
+        -49456,
+        960
       ]
     },
     {
       "parameters": {
         "jsCode": "const ctx = $input.first().json || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'completed',\n  cc_id: ctx.cc_id || 'unknown',\n  type: ctx.type || 'unknown',\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: { message: 'GET A NEW CC_REPORT BY CC id' }\n};"
       },
-      "id": "57f033f0-7d71-44e8-a06e-c4e4c8857509",
+      "id": "c8c5763b-8d3a-4274-8160-1019634214fc",
       "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -23776,
-        3552
+        -46768,
+        720
       ]
     },
     {
@@ -227,13 +227,13 @@
         "query": "UPDATE auxiliary.status_processamento_cc\nSET \n  status_entradas = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'entrada' THEN 1 ELSE status_entradas END,\n  status_saidas = CASE WHEN '{{ $('Ha Alteracoes?').item.json.type }}' = 'saida' THEN 1 ELSE status_saidas END\nWHERE cc_id = '{{ $('Ha Alteracoes?').item.json.cc_id }}';",
         "options": {}
       },
-      "id": "28c8b239-47d9-45f7-bc11-7ddcef464761",
+      "id": "2e2c9242-0995-41bb-bdf6-904b15f2a1dc",
       "name": "Atualizar Status Final",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24000,
-        3328
+        -46992,
+        496
       ],
       "credentials": {
         "postgres": {
@@ -248,13 +248,13 @@
         "combineBy": "combineAll",
         "options": {}
       },
-      "id": "4b411c56-c1bb-494b-a91e-de32b64d7df2",
+      "id": "8ae274c1-ea31-4ba2-9ab5-c149b5bad93e",
       "name": "Mesclar Resultados",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        -24224,
-        3328
+        -47216,
+        496
       ]
     },
     {
@@ -265,13 +265,13 @@
           "queryBatching": "single"
         }
       },
-      "id": "a6c75a64-f069-47cc-9ef1-81c172313b5a",
+      "id": "b77d231e-a141-409a-9f8e-f30ad7020050",
       "name": "Excluir Registros",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24448,
-        3568
+        -47440,
+        736
       ],
       "credentials": {
         "postgres": {
@@ -306,26 +306,26 @@
         },
         "options": {}
       },
-      "id": "f7270ba9-1ef0-4056-a602-12df45e5ec1e",
+      "id": "2c924cbc-d24e-4eee-917a-0f3d2c85f855",
       "name": "Pular Exclusao?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -24672,
-        3504
+        -47664,
+        672
       ]
     },
     {
       "parameters": {
         "jsCode": "// Prepara delete em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toDelete = diff.to_delete || [];\n\nif (toDelete.length === 0) {\n  return [{ json: { _skip_delete: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst ids_sql = toDelete.map((id) => `'${esc(id)}'`).join(', ');\n\nreturn [{\n  json: {\n    _skip_delete: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    delete_count: toDelete.length,\n    ids_sql\n  }\n}];"
       },
-      "id": "f226dcc8-ad39-43c4-86cd-f7eb74359f00",
+      "id": "084db16f-d013-4b13-a3d5-f1428e7386cc",
       "name": "Preparar Exclusoes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24896,
-        3504
+        -47888,
+        672
       ]
     },
     {
@@ -336,13 +336,13 @@
           "queryBatching": "single"
         }
       },
-      "id": "9e6ed485-66e6-4a2f-a650-89f5994d58b9",
+      "id": "be6640c9-5d21-49a0-a76f-1004914e3ef3",
       "name": "Inserir Registros",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -24448,
-        3184
+        -47440,
+        352
       ],
       "credentials": {
         "postgres": {
@@ -377,26 +377,26 @@
         },
         "options": {}
       },
-      "id": "d1f79020-f9e2-4aa4-ac21-1a475bff577a",
+      "id": "86cd5d9b-30c3-4993-9e1e-f67a694eb058",
       "name": "Pular Insercao?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -24672,
-        3264
+        -47664,
+        432
       ]
     },
     {
       "parameters": {
         "jsCode": "// Prepara insert em lote com escaping padronizado\nconst diff = $input.first().json;\nconst toInsert = diff.to_insert || [];\n\nif (toInsert.length === 0) {\n  return [{ json: { _skip_insert: true, cc_id: diff.cc_id, type: diff.type } }];\n}\n\nconst esc = (v) => String(v ?? '').replace(/'/g, \"''\");\nconst num = (v, fallback = 0) => {\n  const n = Number(String(v ?? '').replace(',', '.'));\n  return Number.isFinite(n) ? n : fallback;\n};\n\nconst values_sql = toInsert.map((rec) => {\n  const venc = num(rec.VENCIMENTO, 0);\n  const valor = num(rec.VALOR, 0);\n  return `(\n  '${esc(rec.ID)}',\n  '${esc(rec.ID_SEED)}',\n  '${esc(rec.CC)}',\n  '${esc(rec.ID_CC)}',\n  '${esc(rec.CC_LABEL)}',\n  to_timestamp(${venc})::timestamp,\n  '${esc(rec.FORNECEDOR)}',\n  '${esc(rec.NOME_DESPESA)}',\n  '${esc(rec.SITUACAO)}',\n  '${esc(rec.CATEGORIA)}',\n  ${valor},\n  '${esc(rec.TYPE)}'\n)`;\n}).join(',\\n');\n\nreturn [{\n  json: {\n    _skip_insert: false,\n    cc_id: diff.cc_id,\n    type: diff.type,\n    insert_count: toInsert.length,\n    values_sql\n  }\n}];"
       },
-      "id": "80c4abff-b147-48a9-9dc3-0d1950b2e862",
+      "id": "5c57907d-742e-4d88-a7cc-8bd543badf31",
       "name": "Preparar Insercoes",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -24896,
-        3264
+        -47888,
+        432
       ]
     },
     {
@@ -424,26 +424,26 @@
         },
         "options": {}
       },
-      "id": "9a40bd2f-a49a-4dff-87c4-177a0c7f90ef",
+      "id": "590c550b-5607-4c55-ac25-7891b8290dac",
       "name": "Ha Alteracoes?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -25120,
-        3504
+        -48112,
+        672
       ]
     },
     {
       "parameters": {
         "jsCode": "// Calcula diff entre extensão e DB com leitura direta dos nós para evitar merge custoso\nconst currentRecords = $items('Normalizar Registros', 0, 0)\n  .map(item => item.json)\n  .filter(r => r && !r._empty && r.ID);\n\nconst dbRecords = $input.all()\n  .map(item => item.json)\n  .filter(r => r && r.id);\n\nconst extensionIds = new Set(currentRecords.map(r => r.ID));\nconst currentData = Object.fromEntries(currentRecords.map(r => [r.ID, r]));\nconst dbIds = new Set(dbRecords.map(r => r.id));\n\nconst toInsert = [];\nfor (const id of extensionIds) {\n  if (!dbIds.has(id)) toInsert.push(currentData[id]);\n}\n\nconst toDelete = [];\nfor (const id of dbIds) {\n  if (!extensionIds.has(id)) toDelete.push(id);\n}\n\nconst ccId = currentRecords[0]?.ID_CC || $('Selecionar Contexto').item.json.cc_id || '';\nconst type = currentRecords[0]?.TYPE || $('Selecionar Contexto').item.json.type || '';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'diff_calculated',\n  cc_id: ccId,\n  type: type,\n  extension_count: currentRecords.length,\n  db_count: dbRecords.length,\n  to_insert: toInsert.length,\n  to_delete: toDelete.length,\n  level: 'info'\n}));\n\nreturn {\n  json: {\n    cc_id: ccId,\n    type: type,\n    to_insert: toInsert,\n    to_delete: toDelete,\n    has_changes: toInsert.length > 0 || toDelete.length > 0\n  }\n};"
       },
-      "id": "e1580816-fa03-4724-8720-844d1f1a2ac4",
+      "id": "7827fc5d-f8f0-4378-85d9-d1d80aa42a03",
       "name": "Calcular Diferencas",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -25344,
-        3504
+        -48336,
+        672
       ]
     },
     {
@@ -452,13 +452,13 @@
         "query": "SELECT \"id\", \"id_cc\", \"type\"\nFROM raw_data.\"vhx_relatorio_cc\"\nWHERE \"id_cc\" = '{{ $json.cc_id }}' AND \"type\" = '{{ $json.type }}';",
         "options": {}
       },
-      "id": "25019c3e-8e0e-4112-923d-586efff93057",
+      "id": "c3f32dd3-2775-4e58-9b1a-cb23a2be4a8f",
       "name": "Buscar Registros Existentes",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -25568,
-        3504
+        -48560,
+        672
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -472,13 +472,13 @@
       "parameters": {
         "jsCode": "// Reduz execução redundante: passa apenas contexto necessário para query única no DB\nconst first = $input.first().json;\nreturn [{\n  json: {\n    cc_id: first.ID_CC,\n    type: first.TYPE\n  }\n}];"
       },
-      "id": "9d5b57ca-c1ef-46d9-82c3-fa65ad960815",
+      "id": "ad49b64d-8b74-4bc6-b422-f7aa2d618b68",
       "name": "Selecionar Contexto",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -25792,
-        3504
+        -48784,
+        672
       ]
     },
     {
@@ -506,63 +506,63 @@
         },
         "options": {}
       },
-      "id": "511c7d7d-044a-482e-93de-39cb704fa792",
+      "id": "004372c9-2bd9-4aef-af24-d641aeb2359c",
       "name": "Ha Registros?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -26016,
-        3600
+        -49008,
+        768
       ]
     },
     {
       "parameters": {
         "jsCode": "// Verifica se página é válida e formata registros\nconst ctx = $input.first().json.payload;\nconst data = ctx.data;\n\nif (!data.source || !data.source.subItens || !data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'invalid_page',\n    cc_id: ctx.cc_id,\n    level: 'warn'\n  }));\n  return [{ json: { _empty: true, cc_id: ctx.cc_id, type: ctx.type } }];\n}\n\nconst source = data.source;\nconst ccLabel = source.itens[0].CentroCustos;\nconst subItens = source.subItens.ID1;\nconst ccId = ctx.cc_id;\nconst type = ctx.type;\n\nfunction generateIdToken(seed) {\n  let hash = 0;\n  for (let i = 0; i < seed.length; i++) {\n    const char = seed.charCodeAt(i);\n    hash = ((hash << 5) - hash) + char;\n    hash = hash & hash;\n  }\n  return Math.abs(hash).toString(16);\n}\n\nfunction extractCcValue(input) {\n  const match = String(input || '').match(/CC[-\\s]*(\\d+)/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractNumericPart(input) {\n  const match = String(input || '').match(/\\b(\\d{6})\\b/);\n  return match ? match[1] : '-1';\n}\n\nfunction extractPrefix(input) {\n  const match = String(input || '').match(/^[A-Z]{2}-[A-Z0-9]{3}/);\n  return match ? match[0] : '-1';\n}\n\nfunction extractCcTextValue(input) {\n  const normalized = String(input || '');\n  const index = normalized.indexOf('CC-');\n  return index !== -1 ? normalized.slice(index + 3, index + 9) : '-1';\n}\n\nfunction extractCcTextValueExceptions(input) {\n  const normalized = String(input || '').replace(/\\//g, '');\n  const index = normalized.indexOf('CC-');\n  if (index === -1) return '-1';\n  const endIndex = normalized.indexOf('/', index);\n  return endIndex === -1 ? normalized.slice(index + 3, index + 9) : normalized.slice(index + 3, endIndex);\n}\n\nfunction getCcLabel(labelText) {\n  if (labelText === 'RT - Vendas') return 'Vendas';\n  if (labelText === 'Marketing') return 'Marketing';\n  if (labelText === 'Vendas') return 'Vendas';\n  if (labelText === 'Administração') return 'Administração';\n\n  let label = extractCcValue(labelText);\n  if (label === '-1') {\n    label = extractNumericPart(labelText);\n    if (label === '-1') {\n      label = extractPrefix(labelText);\n      if (label === '-1') {\n        label = extractCcTextValue(labelText);\n        if (label === '-1') {\n          label = extractCcTextValueExceptions(labelText);\n        }\n      }\n    }\n  }\n  return label;\n}\n\nfunction buildSubItemSignature(item) {\n  const normalizedValue = (value) => String(value ?? \"\").trim();\n\n  return [\n    normalizedValue(item.CC_LABEL),\n    normalizedValue(item.Vencimento),\n    normalizedValue(item.Fornecedor),\n    normalizedValue(item.NomeDespesa),\n    normalizedValue(item.Situacao),\n    normalizedValue(item.Categoria),\n    normalizedValue(item.Valor),\n    normalizedValue(item.TYPE)\n  ].join(\"|\");\n}\n\nfunction annotateWithOccurrenceIndex(arr) {\n  const occurrenceBySignature = new Map();\n\n  return arr.map((item) => {\n    const signature = buildSubItemSignature(item);\n    const occurrence = occurrenceBySignature.get(signature) || 0;\n    occurrenceBySignature.set(signature, occurrence + 1);\n\n    return { occurrence, ...item };\n  });\n}\n\nconst flattened = annotateWithOccurrenceIndex(subItens);\nconst ccSemantic = getCcLabel(ccLabel);\n\nconst formattedRecords = flattened.map(item => {\n  const INDEX = item.occurrence;\n  const VENCIMENTO = item.Vencimento;\n  const FORNECEDOR = item.Fornecedor;\n  const NOME_DESPESA = item.NomeDespesa;\n  const SITUACAO = item.Situacao;\n  const VALOR = item.Valor;\n  const CATEGORIA = item.Categoria;\n\n  const SEED = `${INDEX}-${ccId}-${NOME_DESPESA}-${VENCIMENTO}-${FORNECEDOR}-${VALOR}-${SITUACAO}-${type}-${CATEGORIA}`;\n  const TOKEN = generateIdToken(SEED);\n\n  return {\n    json: {\n      ID: TOKEN,\n      ID_SEED: SEED,\n      CC: ccSemantic,\n      CC_LABEL: ccLabel,\n      ID_CC: ccId,\n      VENCIMENTO: VENCIMENTO,\n      FORNECEDOR: FORNECEDOR,\n      NOME_DESPESA: NOME_DESPESA,\n      SITUACAO: SITUACAO,\n      CATEGORIA: CATEGORIA,\n      VALOR: VALOR,\n      TYPE: type\n    }\n  };\n});\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'records_formatted',\n  cc_id: ccId,\n  type: type,\n  count: formattedRecords.length,\n  level: 'info'\n}));\n\nif (formattedRecords.length === 0) {\n  return [{ json: { _empty: true, cc_id: ccId, type: type } }];\n}\n\nreturn formattedRecords;"
       },
-      "id": "672ab2ce-1e91-4109-a9ab-599ad21874ab",
+      "id": "a1f50cee-c1f9-44ce-96bc-a075378fbe5b",
       "name": "Normalizar Registros",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -26240,
-        3600
+        -49232,
+        768
       ]
     },
     {
       "parameters": {
         "jsCode": "// Guard de early-exit antes de decode profundo\nconst ctx = $input.first().json;\nconst payload = ctx.payload || {};\n\nif (!payload.data || !payload.data.source || !payload.data.source.subItens || !payload.data.source.subItens.ID1) {\n  console.log(JSON.stringify({\n    timestamp: new Date().toISOString(),\n    route: 'cc_report',\n    event: 'early_empty_before_decode',\n    cc_id: payload.cc_id || 'unknown',\n    level: 'info'\n  }));\n\n  return {\n    payload: {\n      cc_id: payload.cc_id,\n      type: payload.type,\n      data: { source: null }\n    }\n  };\n}\n\nfunction decodeHtml(obj) {\n  if (typeof obj === 'string') {\n    return obj\n      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')\n      .replace(/&quot;/g, '\"').replace(/&#39;/g, \"'\").replace(/&#x27;/g, \"'\")\n      .replace(/&#x2F;/g, '/').replace(/&nbsp;/g, ' ');\n  }\n  if (Array.isArray(obj)) return obj.map(decodeHtml);\n  if (typeof obj === 'object' && obj !== null) {\n    const out = {};\n    for (const k in obj) out[k] = decodeHtml(obj[k]);\n    return out;\n  }\n  return obj;\n}\n\nconst decoded = decodeHtml(payload);\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'decoded_html',\n  cc_id: decoded.cc_id,\n  level: 'info'\n}));\n\nreturn { payload: decoded };"
       },
-      "id": "a0f5aed7-f37c-435e-907d-dbb0e8a8a517",
+      "id": "85f723ba-8992-431a-afa9-d9b95be9976d",
       "name": "Decodificar HTML",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -26464,
-        3600
+        -49456,
+        768
       ]
     },
     {
       "parameters": {
         "jsCode": "// Valida payload da extensão\nconst input = $input.first().json;\nconst body = input.body || input;\n\nif (!body.data || !body.type || !body.cc_id) {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Missing required fields: data, type, cc_id' }\n  };\n}\n\nif (body.type !== 'entrada' && body.type !== 'saida') {\n  return {\n    _valid: false,\n    statusCode: 400,\n    body: { error: 'Invalid type: must be entrada or saida' }\n  };\n}\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'cc_report',\n  event: 'input_validated',\n  cc_id: body.cc_id,\n  type: body.type,\n  level: 'info'\n}));\n\nreturn { _valid: true, payload: body };"
       },
-      "id": "b5f21b08-daec-4e58-9ace-8397b69f236e",
+      "id": "2ef61ab9-e642-4bd4-adc4-1e52038b0718",
       "name": "Validar Entrada",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -26912,
-        3696
+        -49904,
+        864
       ]
     },
     {
       "parameters": {},
-      "id": "415268f6-d287-4cff-9583-060c4f3e8764",
+      "id": "eed877d1-e924-43bb-92b5-52f53bfa56ea",
       "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -27136,
-        3696
+        -50128,
+        864
       ]
     },
     {
@@ -590,13 +590,13 @@
         },
         "options": {}
       },
-      "id": "779e5ac0-8200-4622-b1fb-659858e981d5",
+      "id": "73a32a14-e3ce-4f63-a40a-32cdfb549585",
       "name": "Entrada Válida?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -26688,
-        3696
+        -49680,
+        864
       ]
     }
   ],
@@ -869,7 +869,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "f58bbf16-261b-4956-99f5-7e7e3812234b",
+  "versionId": "d5b29242-9b6b-4a32-afd8-a848ea11a9c8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"

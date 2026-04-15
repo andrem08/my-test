@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        -160,
+        -176
       ],
-      "id": "3f6e9ab8-2720-44c0-8402-491a27df7c14",
+      "id": "a631649d-0862-4941-b1b6-826e7bb05712",
       "name": "When clicking ‘Execute workflow’"
     },
     {
@@ -20,10 +20,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        0,
-        176
+        -160,
+        0
       ],
-      "id": "855565d3-40a0-4e1e-9f37-fd7b33394283",
+      "id": "4f17519d-508d-42d3-accc-746d5de5e6e0",
       "name": "Webhook",
       "webhookId": "681fc287-d331-49c8-acdb-3b504e298db5"
     },
@@ -33,7 +33,7 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "0 */30 5-21 * * *"
+              "expression": "0 0,30 5-21 * * 1-5"
             }
           ]
         }
@@ -41,26 +41,26 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.3,
       "position": [
-        0,
-        368
+        -160,
+        192
       ],
-      "id": "2440b6f4-2325-4135-940f-58167b43c5b1",
+      "id": "91ab2042-6c4c-4911-8fb8-f8d5243a1374",
       "name": "Schedule Trigger"
     },
     {
       "parameters": {
-        "content": "## Agendamento\n\nExecuta a cada 30 minutos apenas entre 05:00 e 21:59.\n\nCron usado no Schedule Trigger:\n`0 */30 5-21 * * *`\n\nFora da janela 22:00-05:00, o fluxo nao dispara.",
-        "height": 160,
+        "content": "## Agendamento\n\nExecuta a cada 30 minutos apenas entre 05:00 e 21:59, de segunda a sexta. Não aos finais de semana.\n\nCron usado no Schedule Trigger:\n0 0,30 5-21 * * 1-5\n\nFora da janela 22:00-05:00, o fluxo nao dispara.",
+        "height": 224,
         "width": 360,
         "color": 5
       },
-      "id": "b7f5c28e-7f59-4f8f-a8c2-4c7fbc4e6d1f",
+      "id": "7f410386-bd20-44bd-92c0-a7e153a4fe16",
       "name": "Sticky Note - Agendamento",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        240,
-        320
+        -624,
+        -64
       ]
     },
     {
@@ -85,10 +85,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        544,
-        192
+        224,
+        0
       ],
-      "id": "cb5648bb-5d7a-4b99-ac82-047a67a34c47",
+      "id": "ab56e4e6-1309-4dc2-9034-374e9fcc0d75",
       "name": "Chamada do Flow para popular APIs",
       "alwaysOutputData": true
     },
@@ -114,10 +114,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        784,
-        192
+        464,
+        0
       ],
-      "id": "2dcc1327-4ac5-4113-b060-b9a4e39a7e8d",
+      "id": "9ba094b1-5920-4373-a3a3-bef0985e6741",
       "name": "Chamada do Flow para popular tabelas auxiliares",
       "alwaysOutputData": true
     }
@@ -172,9 +172,13 @@
   "active": true,
   "settings": {
     "executionOrder": "v1",
-    "binaryMode": "separate"
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "timezone": "America/Sao_Paulo",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
   },
-  "versionId": "274925e3-8d15-49c4-94f1-396faa02739e",
+  "versionId": "a4accf14-b8ed-4e03-b328-ca4374121570",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

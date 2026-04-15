@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {},
-      "id": "4fc10c74-8e32-4aa9-84e9-90f89d219710",
+      "id": "94eed588-b846-4f0e-af57-fa11831e4561",
       "name": "Inicio do Fluxo",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -640,
-        128
+        -1792,
+        64
       ]
     },
     {
@@ -24,10 +24,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -208,
-        48
+        -1360,
+        -32
       ],
-      "id": "891c1027-a1ac-4068-bf35-1aa620284e6c",
+      "id": "39b8dce9-f967-4be3-874c-4215188b5a67",
       "name": "Resetar Status dos Servicos",
       "credentials": {
         "postgres": {
@@ -44,10 +44,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        32
+        -912,
+        -48
       ],
-      "id": "d04e6558-9947-47d3-bf0d-bd958cdb9b6e",
+      "id": "aeeba5c2-3478-46fd-9abf-d4da11bd9615",
       "name": "Montar Resposta de Sucesso"
     },
     {
@@ -57,10 +57,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        256
+        -912,
+        192
       ],
-      "id": "90fd945b-fe12-48c6-bc75-1cae4fbd3e18",
+      "id": "4d9fba1f-bcea-4aab-9429-e01c735f1273",
       "name": "Montar Resposta de Erro"
     },
     {
@@ -75,10 +75,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -208,
-        256
+        -1360,
+        192
       ],
-      "id": "6f15e89b-2446-4ade-9f28-938cc5c5a694",
+      "id": "1003a150-8adb-43d4-aa5c-706823bfa247",
       "name": "Resetar Status do Relatorio CC",
       "credentials": {
         "postgres": {
@@ -95,13 +95,13 @@
         "width": 420,
         "color": 6
       },
-      "id": "fff5b5bd-684c-4d13-b51e-1681e78bc204",
+      "id": "69c548cb-13cc-448e-ac6c-4e3a59faf016",
       "name": "Entrada de Dados",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1088,
-        48
+        -2240,
+        -32
       ]
     },
     {
@@ -111,13 +111,13 @@
         "width": 420,
         "color": 2
       },
-      "id": "8d98789e-df26-46a8-9a42-7996277ec4bc",
+      "id": "c67ec29d-913b-4692-a32b-fd730cf8eb23",
       "name": "Limpeza dos Servicos",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -384,
-        -272
+        -1536,
+        -352
       ]
     },
     {
@@ -127,13 +127,13 @@
         "width": 420,
         "color": 2
       },
-      "id": "5fcf9a02-0973-42ba-9463-b5f499c5d926",
+      "id": "6d8c4226-ef3a-4e44-8e49-c5ccae2ac017",
       "name": "Limpeza do Relatorio CC",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -368,
-        464
+        -1520,
+        400
       ]
     },
     {
@@ -143,13 +143,13 @@
         "width": 420,
         "color": 5
       },
-      "id": "fc46e59d-9e90-4268-b325-ac37ad03a0fd",
+      "id": "38efb7b9-101d-46d9-b994-a1460f571fb2",
       "name": "Retorno do Fluxo",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        464,
-        96
+        -688,
+        32
       ]
     }
   ],
@@ -214,7 +214,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "9dfb81f2-2a8d-47cc-b3af-bd62a91f8ca1",
+  "versionId": "2ee2c071-026a-4b0c-8680-20dbf2980130",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

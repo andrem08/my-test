@@ -1,0 +1,432 @@
+{
+  "name": "Rota API VHSYS - SystemRT",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -15488,
+        -1712
+      ],
+      "id": "85445a24-4efe-4bb1-ad18-6fe4f75d4bd3",
+      "name": "Entrada da Rota VHSYS"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', 1, NULL, NOW(), NULL) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, started_at = EXCLUDED.started_at, finished_at = NULL;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "0b76891b-047e-4a94-bdfa-52e97f161d60",
+      "name": "Marcar Task Pendente",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -15264,
+        -1712
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vhsys.com/v2/{{ $('Entrada da Rota VHSYS').item.json.url }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpMultipleHeadersAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "offset",
+              "value": "0"
+            },
+            {
+              "name": "limit",
+              "value": "250"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cache-Control",
+              "value": "no-cache"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "pagination": {
+            "pagination": {
+              "parameters": {
+                "parameters": [
+                  {
+                    "name": "offset",
+                    "value": "={{ $response.body.paging.offset + $response.body.paging.limit }}"
+                  }
+                ]
+              },
+              "paginationCompleteWhen": "other",
+              "completeExpression": "={{ !$response.body || !$response.body.data || $response.body.data.length === 0 || ($response.body.paging.offset + $response.body.paging.limit) >= $response.body.paging.total }}"
+            }
+          }
+        }
+      },
+      "id": "24929113-1815-46d5-bb85-cd5b024c9c9e",
+      "name": "Buscar API VHSYS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -15040,
+        -1712
+      ],
+      "retryOnFail": true,
+      "credentials": {
+        "httpMultipleHeadersAuth": {
+          "id": "lUbH3RC2CTV1GD3G",
+          "name": "VHSYS Auth Token"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoint = $('Entrada da Rota VHSYS').first().json || {};\nconst e = $input.first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'api',\n    source_flow: 'vhsys',\n    system: endpoint.system || 'vhsys',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: e.message || e.error || 'Falha ao consultar API VHSYS',\n      details: e\n    }\n  }\n}];"
+      },
+      "id": "7f151ae6-807c-4003-bed4-50ed23712fb5",
+      "name": "Formatar Erro API VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14816,
+        -1616
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoint = $('Entrada da Rota VHSYS').first().json || {};\nconst pages = $input.all();\nlet rows = [];\n\nfor (const item of pages) {\n  const arr = item.json && Array.isArray(item.json.data) ? item.json.data : [];\n  rows = rows.concat(arr);\n}\n\nif (rows.length === 0) {\n  return [{\n    json: {\n      status: 'success',\n      source_flow: 'vhsys',\n      system: endpoint.system || 'vhsys',\n      url: endpoint.url,\n      table: endpoint.table,\n      id_field: endpoint.id_field,\n      primary_key: endpoint.primary_key || endpoint.id_field,\n      processed_rows: 0,\n      message: 'API retornou sem registros'\n    }\n  }];\n}\n\nreturn rows.map((r) => ({\n  json: {\n    record: r\n  }\n}));"
+      },
+      "id": "138eaf30-e77c-4d23-8b3d-6cc084b04914",
+      "name": "Extrair Dados VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14816,
+        -1808
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoint = $('Entrada da Rota VHSYS').first().json || {};\nconst table = endpoint.table;\nconst idField = endpoint.id_field;\n\nfunction isZeroDateString(value) {\n  if (typeof value !== 'string') return false;\n  const s = value.trim();\n  return /^(?:0000-00-00)(?:[ T]00:00:00(?:\\.0+)?)?$/.test(s);\n}\n\nfunction toSql(v) {\n  if (v === null || v === undefined || v === '') return 'NULL';\n  if (isZeroDateString(v)) return 'NULL';\n  if (typeof v === 'number') return String(v);\n  if (typeof v === 'boolean') return v ? 'true' : 'false';\n\n  const s = (typeof v === 'object') ? JSON.stringify(v) : String(v);\n  const q = String.fromCharCode(39);\n  return q + s.split(q).join(q + q).split('$').join('$ ') + q;\n}\n\nconst records = $input\n  .all()\n  .map((item) => item.json?.record)\n  .filter((r) => r && typeof r === 'object' && !Array.isArray(r));\n\nif (!table || !idField || records.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst fieldSet = new Set();\nfor (const rec of records) {\n  for (const key of Object.keys(rec)) {\n    if (!key.startsWith('_') && !key.startsWith('$')) fieldSet.add(key);\n  }\n}\n\nconst fields = Array.from(fieldSet);\nif (!fields.includes(idField)) fields.unshift(idField);\n\nif (fields.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst columns = fields.join(', ');\nconst updateFields = fields.filter((f) => f !== idField);\nconst updates = (updateFields.length > 0)\n  ? updateFields.map((f) => `${f}=EXCLUDED.${f}`).join(', ')\n  : `${idField}=EXCLUDED.${idField}`;\n\nconst valuesList = records\n  .map((rec) => `(${fields.map((f) => toSql(rec[f])).join(', ')})`)\n  .join(', ');\n\nconst upsertQuery = `WITH upserted AS (INSERT INTO raw_data.${table} (${columns}) VALUES ${valuesList} ON CONFLICT (${idField}) DO UPDATE SET ${updates} RETURNING 1) SELECT COUNT(*)::int AS affected_rows FROM upserted;`;\nreturn [{ json: { upsert_query: upsertQuery } }];"
+      },
+      "id": "1ac77116-d105-4d49-beb3-ac1b7558f80d",
+      "name": "Preparar UPSERT VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -14592,
+        -1808
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "{{ $json.upsert_query || 'SELECT 0::int AS affected_rows;' }}",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "68e8624f-0a8f-4a34-b562-ba3b927a53b0",
+      "name": "UPSERT VHSYS no Banco",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -14368,
+        -1808
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "rows",
+        "options": {}
+      },
+      "id": "9b40bc03-6f61-491a-ab82-44fc2cefa763",
+      "name": "Consolidar Sucesso DB VHSYS",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -14144,
+        -1904
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', 2, NULL, NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "39deb623-fac9-4852-a5d6-bbb7d18bff21",
+      "name": "Marcar Task Completo",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -13920,
+        -1904
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = Array.isArray($json.rows) ? $json.rows : [];\nconst endpoint = $('Entrada da Rota VHSYS').first().json || {};\nconst processedRows = rows.reduce((acc, r) => acc + Number(r.affected_rows || 0), 0);\n\nreturn [{\n  json: {\n    status: 'success',\n    source_flow: 'vhsys',\n    system: endpoint.system || 'vhsys',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    processed_rows: processedRows,\n    message: 'UPSERT concluido com sucesso'\n  }\n}];"
+      },
+      "id": "a482a958-4379-417e-8a68-d9bb6c148d70",
+      "name": "Resultado Sucesso VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -13696,
+        -1904
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "errors",
+        "options": {}
+      },
+      "id": "01497540-f23d-4b58-bd4d-2b62f204e7c2",
+      "name": "Consolidar Erros DB VHSYS",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -14144,
+        -1712
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "cdd29326-5be6-47da-ad2d-d28c29a5e00e",
+      "name": "Marcar Task com Erro",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -13920,
+        -1712
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const errors = Array.isArray($json.errors) ? $json.errors : [];\nconst first = errors[0] || {};\nconst endpoint = $('Entrada da Rota VHSYS').first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'database',\n    source_flow: 'vhsys',\n    system: endpoint.system || 'vhsys',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: first.message || first.error || 'Falha no UPSERT VHSYS',\n      total_errors: errors.length,\n      sample: first\n    }\n  }\n}];"
+      },
+      "id": "d11b9e62-dbaa-4fbd-b60b-d57e8529899e",
+      "name": "Resultado Erro DB VHSYS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -13696,
+        -1712
+      ]
+    }
+  ],
+  "pinData": {
+    "Entrada da Rota VHSYS": [
+      {
+        "json": {
+          "system": "vhsys",
+          "url": "ordens-servico",
+          "table": "vhs_ordens_servico",
+          "id_field": "id_ordem",
+          "primary_key": "id_ordem"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Entrada da Rota VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Marcar Task Pendente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Task Pendente": {
+      "main": [
+        [
+          {
+            "node": "Buscar API VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar API VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Extrair Dados VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Formatar Erro API VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Dados VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Preparar UPSERT VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar UPSERT VHSYS": {
+      "main": [
+        [
+          {
+            "node": "UPSERT VHSYS no Banco",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPSERT VHSYS no Banco": {
+      "main": [
+        [
+          {
+            "node": "Consolidar Sucesso DB VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Consolidar Erros DB VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Sucesso DB VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Marcar Task Completo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Task Completo": {
+      "main": [
+        [
+          {
+            "node": "Resultado Sucesso VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidar Erros DB VHSYS": {
+      "main": [
+        [
+          {
+            "node": "Marcar Task com Erro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Marcar Task com Erro": {
+      "main": [
+        [
+          {
+            "node": "Resultado Erro DB VHSYS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "5333ffc3-e6a1-4205-b31a-ac53b8d5ca39",
+  "meta": {
+    "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
+  },
+  "id": "eueJSgUWsgnfmtrM",
+  "tags": []
+}

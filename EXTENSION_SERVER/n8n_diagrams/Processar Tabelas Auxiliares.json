@@ -1,15 +1,15 @@
 {
-  "name": "Processamento de tabelas auxiliares",
+  "name": "Processar Tabelas Auxiliares",
   "nodes": [
     {
       "parameters": {},
-      "id": "a6206ed9-b439-413d-9f9d-4c02a3e9d421",
+      "id": "ff465cae-4ac4-4e9c-9afb-606f609640d7",
       "name": "Quando Chamado por Outro Workflow",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1,
       "position": [
-        -880,
-        352
+        -1728,
+        160
       ]
     },
     {
@@ -21,13 +21,13 @@
           "queryBatching": "single"
         }
       },
-      "id": "da5144de-2656-459f-86c3-f06fe1afd8ec",
+      "id": "edf4501d-ac05-464d-bba0-cbf5551e16cf",
       "name": "Popular Status Processamento CC",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -640,
-        352
+        -1488,
+        160
       ],
       "credentials": {
         "postgres": {
@@ -40,29 +40,29 @@
       "parameters": {
         "jsCode": "const row = $input.first().json || {};\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'status_processamento_cc/seed',\n  event: 'seed_completed',\n  total_ccs: Number(row.total_ccs || 0),\n  inserted_ccs: Number(row.inserted_ccs || 0),\n  updated_ccs: Number(row.updated_ccs || 0),\n  level: 'info'\n}));\n\nreturn {\n  statusCode: 201,\n  body: {\n    message: 'Status de processamento dos centros de custo inicializado com sucesso',\n    table: 'auxiliary.status_processamento_cc',\n    total_ccs: Number(row.total_ccs || 0),\n    inserted_ccs: Number(row.inserted_ccs || 0),\n    updated_ccs: Number(row.updated_ccs || 0)\n  }\n};"
       },
-      "id": "5a8da214-de5e-421e-8446-529a4b473ea4",
+      "id": "15f6fd2a-20a3-40c3-b545-0441c564e6d9",
       "name": "Montar Resposta de Sucesso",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -400,
-        352
+        -1248,
+        160
       ]
     },
     {
       "parameters": {
         "content": "## Seed da Tabela\n\nPopula auxiliary.status_processamento_cc a partir de raw_data.vhs_centro_custos.\n\nCada CC recebe uma linha com:\n- status_entradas = 0\n- status_saidas = 0\n- data_cadastro = data_cad_centro\n- data_modificacao = data_mod_centro\n\nEm conflito por cc_id, atualiza as datas para manter sincronizado.",
-        "height": 228,
+        "height": 308,
         "width": 392,
         "color": 6
       },
-      "id": "0c2ebc11-1992-4a34-b014-4abd3e84adc4",
+      "id": "fc51c9fb-af2d-4a0a-acbc-cfe1622a83d7",
       "name": "Seed da Tabela",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -704,
-        64
+        -1200,
+        -160
       ]
     },
     {
@@ -72,12 +72,12 @@
         "width": 404,
         "color": 7
       },
-      "id": "0fe75315-105b-46a6-a5c6-f542f50431b3",
+      "id": "abffcf99-6513-4c1c-a95a-b8c9224b160c",
       "name": "Fluxo Base",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -1200,
+        -2192,
         96
       ]
     }
@@ -112,7 +112,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "f0b1c5d2-36c1-4f74-aabb-a8fd74d858ac",
+  "versionId": "828b4187-2e57-4755-911e-6c00132b77f6",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
