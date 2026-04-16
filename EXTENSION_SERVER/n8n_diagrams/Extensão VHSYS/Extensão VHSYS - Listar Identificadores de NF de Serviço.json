@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Erro de leitura do banco\nconst errData = $input.first().json;\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_read_error',\n  message: errData.message || 'Unknown DB error',\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: 'Could not read service labels' }\n};"
+        "jsCode": "// Erro de leitura do banco\nconst errData = $input.first().json;\nconst dbMessage = errData.message || errData.error || 'Unknown DB error';\n\nconsole.log(JSON.stringify({\n  timestamp: new Date().toISOString(),\n  route: 'nf_service_labels_ids',\n  event: 'db_read_error',\n  message: dbMessage,\n  level: 'error'\n}));\n\nreturn {\n  statusCode: 500,\n  body: { ok: false, error: 'Database read error', message: dbMessage }\n};"
       },
       "id": "dd28b764-4048-48f5-96ba-2ecac39ab82f",
       "name": "Montar Resposta de Erro de Banco",
