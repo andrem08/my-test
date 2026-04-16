@@ -188,7 +188,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', 2, NULL, NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', 2, NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
@@ -242,7 +242,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, finished_at) VALUES ('{{ $('Entrada da Rota VHSYS').first().json.system || 'vhsys' }}', '{{ $('Entrada da Rota VHSYS').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
@@ -423,7 +423,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "5333ffc3-e6a1-4205-b31a-ac53b8d5ca39",
+  "versionId": "98362f72-82f1-46dd-8069-c16d7f3d9955",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

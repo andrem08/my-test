@@ -8,88 +8,180 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -8864,
-        -1888
+        -1184,
+        384
       ],
-      "id": "47bd01c5-1e74-41f7-9f78-fed37e374dfa",
+      "id": "b0060b6f-3d11-4475-a380-82bc89bbb4d0",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "master-endpoints-001",
-              "name": "endpoints",
-              "type": "array",
-              "value": "={{ [\n  { system: 'vhsys', url: 'pedidos', table: 'vhs_pedidos', id_field: 'id_ped', primary_key: 'id_ped' },\n  { system: 'vhsys', url: 'clientes', table: 'vhs_clientes', id_field: 'id_cliente', primary_key: 'id_cliente' },\n  { system: 'vhsys', url: 'categorias-financeiras', table: 'vhs_categorias_financeiras', id_field: 'id_categoria', primary_key: 'id_categoria' },\n  { system: 'vhsys', url: 'contas-bancarias', table: 'vhs_bancos', id_field: 'id_banco_cad', primary_key: 'id_banco_cad' },\n  { system: 'vhsys', url: 'produtos', table: 'vhs_produtos', id_field: 'id_produto', primary_key: 'id_produto' },\n  { system: 'vhsys', url: 'contas-pagar', table: 'vhs_contas_pagar', id_field: 'id_conta_pag', primary_key: 'id_conta_pag' },\n  { system: 'vhsys', url: 'contas-receber', table: 'vhs_contas_receber', id_field: 'id_conta_rec', primary_key: 'id_conta_rec' },\n  { system: 'vhsys', url: 'extratos', table: 'vhs_extratos', id_field: 'id_fluxo', primary_key: 'id_fluxo' },\n  { system: 'vhsys', url: 'centros-custo', table: 'vhs_centro_custos', id_field: 'id_centro_custos', primary_key: 'id_centro_custos' },\n  { system: 'vhsys', url: 'notas-fiscais', table: 'vhs_notas_fiscais', id_field: 'id_venda', primary_key: 'id_venda' },\n  { system: 'vhsys', url: 'ordens-compra', table: 'vhs_ordens_compra', id_field: 'id_ordem', primary_key: 'id_ordem' },\n  { system: 'vhsys', url: 'entradas-mercadoria', table: 'vhs_entradas_mercadoria', id_field: 'id_entrada', primary_key: 'id_entrada' },\n  { system: 'vhsys', url: 'ordens-servico', table: 'vhs_ordens_servico', id_field: 'id_ordem', primary_key: 'id_ordem' },\n\n  { system: 'clockify', url: 'users', table: 'clk_usuarios', id_field: 'id', primary_key: 'id' },\n  { system: 'clockify', url: 'projects', table: 'clk_projetos', id_field: 'id', primary_key: 'id' },\n  { system: 'clockify', url: 'tags', table: 'clk_tags', id_field: 'id', primary_key: 'id' },\n  { system: 'clockify', url: 'clients', table: 'clk_clientes', id_field: 'id', primary_key: 'id' },\n\n  { system: 'clockify_report', url: 'detailed', table: 'clk_time_entries', id_field: 'id', primary_key: 'id', dateRangeEnd: $now.setZone('UTC').toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\"), dateRangeStart: $now.setZone('UTC').minus({ years: 6 }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") }\n] }}"
-            }
-          ]
-        },
-        "includeOtherFields": true,
+        "mode": "raw",
+        "jsonOutput": "{\n  \"endpoints\": [\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"pedidos\",\n      \"table\": \"vhs_pedidos\",\n      \"id_field\": \"id_ped\",\n      \"primary_key\": \"id_ped\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"clientes\",\n      \"table\": \"vhs_clientes\",\n      \"id_field\": \"id_cliente\",\n      \"primary_key\": \"id_cliente\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"categorias-financeiras\",\n      \"table\": \"vhs_categorias_financeiras\",\n      \"id_field\": \"id_categoria\",\n      \"primary_key\": \"id_categoria\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-bancarias\",\n      \"table\": \"vhs_bancos\",\n      \"id_field\": \"id_banco_cad\",\n      \"primary_key\": \"id_banco_cad\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"produtos\",\n      \"table\": \"vhs_produtos\",\n      \"id_field\": \"id_produto\",\n      \"primary_key\": \"id_produto\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-pagar\",\n      \"table\": \"vhs_contas_pagar\",\n      \"id_field\": \"id_conta_pag\",\n      \"primary_key\": \"id_conta_pag\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-receber\",\n      \"table\": \"vhs_contas_receber\",\n      \"id_field\": \"id_conta_rec\",\n      \"primary_key\": \"id_conta_rec\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"extratos\",\n      \"table\": \"vhs_extratos\",\n      \"id_field\": \"id_fluxo\",\n      \"primary_key\": \"id_fluxo\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"centros-custo\",\n      \"table\": \"vhs_centro_custos\",\n      \"id_field\": \"id_centro_custos\",\n      \"primary_key\": \"id_centro_custos\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"notas-fiscais\",\n      \"table\": \"vhs_notas_fiscais\",\n      \"id_field\": \"id_venda\",\n      \"primary_key\": \"id_venda\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"ordens-compra\",\n      \"table\": \"vhs_ordens_compra\",\n      \"id_field\": \"id_ordem\",\n      \"primary_key\": \"id_ordem\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"entradas-mercadoria\",\n      \"table\": \"vhs_entradas_mercadoria\",\n      \"id_field\": \"id_entrada\",\n      \"primary_key\": \"id_entrada\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"ordens-servico\",\n      \"table\": \"vhs_ordens_servico\",\n      \"id_field\": \"id_ordem\",\n      \"primary_key\": \"id_ordem\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"users\",\n      \"table\": \"clk_usuarios\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"projects\",\n      \"table\": \"clk_projetos\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"tags\",\n      \"table\": \"clk_tags\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"clients\",\n      \"table\": \"clk_clientes\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify_report\",\n      \"url\": \"detailed\",\n      \"table\": \"clk_time_entries\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\",\n      \"dateRangeEnd\": \"2026-04-14T05:58:00.976\",\n      \"dateRangeStart\": \"2018-04-14T05:58:00.976\"\n    }\n  ]\n}",
         "options": {}
       },
-      "id": "d1a8eae8-0146-4918-8c48-d0f32c7d8a8f",
+      "id": "052306f1-6612-4ecc-bc02-84b73797d316",
       "name": "Configurar Endpoints Master",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8640,
-        -1600
+        -960,
+        464
       ]
     },
     {
       "parameters": {
-        "jsCode": "const input = $json || {};\nconst allEndpoints = Array.isArray(input.endpoints) ? input.endpoints : [];\n\nfunction normalizeSystem(value) {\n  return String(value || '').trim().toLowerCase();\n}\n\nlet systems = [];\nif (Array.isArray(input.systems) && input.systems.length > 0) systems = input.systems.map(normalizeSystem);\nelse if (input.system) systems = [normalizeSystem(input.system)];\nelse systems = ['vhsys', 'clockify', 'clockify_report', 'glpi'];\n\nconst systemSet = new Set(systems);\nlet filtered = allEndpoints.filter((e) => systemSet.has(String(e.system || '').toLowerCase()));\n\nif (input.url) filtered = filtered.filter((e) => String(e.url) === String(input.url));\nif (input.table) filtered = filtered.filter((e) => String(e.table) === String(input.table));\n\nreturn [{ json: { endpoints: filtered, request: input } }];"
-      },
-      "id": "4c0f07d0-f089-4966-82c1-2d6466d04f61",
-      "name": "Filtrar Endpoints por Input",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -8416,
-        -1600
-      ]
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, started_at, finished_at)\nVALUES ('{{ $json.system }}', '{{ $json.url }}', 0, NULL, NULL)\nON CONFLICT (system, endpoint)\nDO UPDATE SET\nstatus = EXCLUDED.status,\nstarted_at = EXCLUDED.started_at,\nfinished_at = EXCLUDED.finished_at;\n\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "eueJSgUWsgnfmtrM",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/eueJSgUWsgnfmtrM",
+          "cachedResultName": "Rota API VHSYS - SystemRT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
+            "system": "={{ $json.system }}",
+            "url": "={{ $json.url }}",
+            "table": "={{ $json.table }}",
+            "id_field": "={{ $json.id_field }}",
+            "primary_key": "={{ $json.primary_key }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
         "options": {
-          "connectionTimeout": 30,
-          "queryBatching": "single",
-          "replaceEmptyStrings": true
+          "waitForSubWorkflow": false
         }
       },
-      "id": "c20145c0-3752-4a09-b343-2a84f24ec755",
-      "name": "Inserir Task Inicial",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.3,
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        -8016,
-        -1760
+        160,
+        -32
       ],
-      "credentials": {
-        "postgres": {
-          "id": "tnATsHmPQ4uK6XL9",
-          "name": "Dev Database"
-        }
-      },
-      "onError": "continueErrorOutput"
+      "id": "50bcc5de-4371-4224-a9e4-cd4f27b0cbed",
+      "name": "Executar Rota VHSYS",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
-        "fieldToSplitOut": "endpoints",
-        "options": {}
+        "workflowId": {
+          "__rl": true,
+          "value": "7cVSYPzv96K6c95G",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/7cVSYPzv96K6c95G",
+          "cachedResultName": "Rota API Clockify - SystemRT"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
+            "system": "={{ $json.system }}",
+            "url": "={{ $json.url }}",
+            "table": "={{ $json.table }}",
+            "id_field": "={{ $json.id_field }}",
+            "primary_key": "={{ $json.primary_key }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
       },
-      "id": "e148bd5c-34b1-4da2-b754-255e001713b3",
-      "name": "Split Endpoints",
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
       "position": [
-        -8192,
-        -1600
-      ]
+        160,
+        160
+      ],
+      "id": "07a9fa1f-5329-4cf3-812a-f6c1a1b9a647",
+      "name": "Executar Rota Clockify",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "xbfPAGqmeDthfNSN",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
+            "system": "={{ $json.system }}",
+            "url": "={{ $json.url }}",
+            "table": "={{ $json.table }}",
+            "id_field": "={{ $json.id_field }}",
+            "primary_key": "={{ $json.primary_key }}",
+            "dateRangeStart": "={{ $now.setZone('UTC').minus({ years: Number($json.rangeStartYears || 0) }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") }}",
+            "dateRangeEnd": "={{ $now.setZone('UTC').minus({ years: Number($json.rangeEndYears || 0) }).toFormat(\"yyyy-MM-dd'T'HH:mm:ss.SSS\") }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        352
+      ],
+      "id": "a486e7f7-5cbd-452b-bfdd-011ab9d39a6a",
+      "name": "Executar Rota Clockify Report",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "s3L6C6tMHmFfidx0",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
+            "system": "={{ $json.system }}",
+            "url": "={{ $json.url }}",
+            "table": "={{ $json.table }}",
+            "id_field": "={{ $json.id_field }}",
+            "primary_key": "={{ $json.primary_key }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        544
+      ],
+      "id": "d5639552-a521-4bae-a1b5-a9afc0892eab",
+      "name": "Executar Rota GLPI",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -198,171 +290,60 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -7968,
-        -1536
+        -64,
+        224
       ],
-      "id": "2639995d-69dd-453f-b331-43b2312c3f6b",
+      "id": "a792c323-16eb-4dd8-83a2-f515caa522a5",
       "name": "Rotear por Sistema"
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "eueJSgUWsgnfmtrM",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
-            "system": "={{ $json.system }}",
-            "url": "={{ $json.url }}",
-            "table": "={{ $json.table }}",
-            "id_field": "={{ $json.id_field }}",
-            "primary_key": "={{ $json.primary_key }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "mode": "each",
-        "options": {
-          "waitForSubWorkflow": false
-        }
+        "mode": "chooseBranch"
       },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
       "position": [
-        -7744,
-        -1888
+        -288,
+        256
       ],
-      "id": "96c2eb35-1845-4682-84d7-ee99d1032a40",
-      "name": "Executar Rota VHSYS",
-      "alwaysOutputData": true
+      "id": "c889e6c0-4e4d-4afa-ab49-695e008396e9",
+      "name": "Sincronizar Task e Roteamento"
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "7cVSYPzv96K6c95G",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
-            "system": "={{ $json.system }}",
-            "url": "={{ $json.url }}",
-            "table": "={{ $json.table }}",
-            "id_field": "={{ $json.id_field }}",
-            "primary_key": "={{ $json.primary_key }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "mode": "each",
-        "options": {
-          "waitForSubWorkflow": false
-        }
+        "path": "39e51bf9-af30-4b71-ba7d-f39d2a6db938",
+        "options": {}
       },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
       "position": [
-        -7744,
-        -1680
+        -1184,
+        768
       ],
-      "id": "999583ac-fa6f-4603-8fd3-2684992ac987",
-      "name": "Executar Rota Clockify",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "xbfPAGqmeDthfNSN",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
-            "system": "={{ $json.system }}",
-            "url": "={{ $json.url }}",
-            "table": "={{ $json.table }}",
-            "id_field": "={{ $json.id_field }}",
-            "primary_key": "={{ $json.primary_key }}",
-            "dateRangeStart": "={{ $json.dateRangeStart }}",
-            "dateRangeEnd": "={{ $json.dateRangeEnd }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "mode": "each",
-        "options": {
-          "waitForSubWorkflow": false
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7744,
-        -1488
-      ],
-      "id": "65523dd4-caeb-4ad0-a97e-226c9b5e0399",
-      "name": "Executar Rota Clockify Report",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "s3L6C6tMHmFfidx0",
-          "mode": "id"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "execution_id": "={{ $('When Executed by Another Workflow').executionId }}",
-            "system": "={{ $json.system }}",
-            "url": "={{ $json.url }}",
-            "table": "={{ $json.table }}",
-            "id_field": "={{ $json.id_field }}",
-            "primary_key": "={{ $json.primary_key }}"
-          },
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "mode": "each",
-        "options": {
-          "waitForSubWorkflow": false
-        }
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
-      "position": [
-        -7744,
-        -1296
-      ],
-      "id": "20e618a4-b68e-4148-bc27-e687bebe4716",
-      "name": "Executar Rota GLPI",
-      "alwaysOutputData": true
+      "id": "d183a402-ff7a-43b6-b20d-f71246204d75",
+      "name": "Webhook",
+      "webhookId": "39e51bf9-af30-4b71-ba7d-f39d2a6db938"
     },
     {
       "parameters": {},
-      "id": "0045453f-df16-44d5-8612-1eff98343fe4",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        576
+      ],
+      "id": "fe940ce3-e545-4784-8b02-0800f264474c",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "id": "72f642db-2318-49a0-8dd6-684b8ae602a9",
       "name": "Aguardar Polling",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -6672,
-        -1408
+        160,
+        960
       ],
       "webhookId": "800159b6-e05c-42a3-9a6b-b412b2183b74"
     },
@@ -376,13 +357,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "ec19d20e-9cdb-4c9e-ace1-18ed2d883150",
+      "id": "d82a6562-83fe-4bb2-932d-7140d3b6fe7a",
       "name": "Verificar Tasks Pendentes",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -7152,
-        -1424
+        -288,
+        864
       ],
       "credentials": {
         "postgres": {
@@ -394,25 +375,43 @@
     },
     {
       "parameters": {
+        "jsCode": "const results = Array.isArray($json.results) ? $json.results : [];\nconst errors = results.filter((r) => r && r.status === 'error');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      status: 'error',\n      total_endpoints: results.length,\n      total_success: 0,\n      total_errors: errors.length,\n      errors,\n      results: errors\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    status: 'success',\n    total_endpoints: results.length,\n    total_success: results.length,\n    total_errors: 0,\n    errors: [],\n    results\n  }\n}];"
+      },
+      "id": "99afae95-5ce4-44e8-8da7-435840efca96",
+      "name": "Resumo Final Master",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "endpoints",
+        "options": {}
+      },
+      "id": "4649c0da-6b50-494d-a289-9888f5742e3f",
+      "name": "Split Endpoints",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        480
+      ]
+    },
+    {
+      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
             "leftValue": "",
-            "typeValidation": "loose",
-            "version": 2
+            "typeValidation": "strict",
+            "version": 3
           },
           "conditions": [
             {
-              "id": "pending-greater-zero-001",
-              "leftValue": "={{ Number($json.total_endpoints || 0) - Number($json.finished_endpoints || 0) }}",
-              "rightValue": 0,
-              "operator": {
-                "type": "number",
-                "operation": "larger"
-              }
-            },
-            {
-              "id": "ccf5572e-9099-4312-b2fe-246b9c4437b1",
+              "id": "8c98ed86-8ffd-4422-8a21-a6a82873167a",
               "leftValue": "={{ $json.total_endpoints }}",
               "rightValue": "={{ $json.finished_endpoints }}",
               "operator": {
@@ -423,71 +422,42 @@
           ],
           "combinator": "and"
         },
-        "looseTypeValidation": true,
         "options": {}
       },
-      "id": "56455baa-3e4e-484e-8bdc-37d3ea7a7b8f",
-      "name": "Decidir Prosseguir",
       "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
+      "typeVersion": 2.3,
       "position": [
-        -6912,
-        -1424
-      ]
+        -64,
+        784
+      ],
+      "id": "3ee44468-f678-4282-96c5-c135661ff672",
+      "name": "Decidir Prosseguir"
     },
     {
       "parameters": {
-        "aggregate": "aggregateAllItemData",
-        "destinationFieldName": "results",
-        "options": {}
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status)\nVALUES ('{{ $json.system }}', '{{ $json.url }}', 0)\nON CONFLICT (system, endpoint)\nDO UPDATE SET\nstatus = EXCLUDED.status,\nstarted_at = EXCLUDED.started_at,\nfinished_at = EXCLUDED.finished_at;\n\n",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
       },
-      "type": "n8n-nodes-base.aggregate",
-      "typeVersion": 1,
+      "id": "e5127521-ad6d-4837-b669-beb362fa2ba9",
+      "name": "Inserir Task Inicial",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
       "position": [
-        -7520,
-        -1504
+        -512,
+        816
       ],
-      "id": "e844a85c-a9e0-486e-8288-60f9c5cf9caa",
-      "name": "Consolidar Resultados"
-    },
-    {
-      "parameters": {
-        "jsCode": "const results = Array.isArray($json.results) ? $json.results : [];\nconst errors = results.filter((r) => r && r.status === 'error');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      status: 'error',\n      total_endpoints: results.length,\n      total_success: 0,\n      total_errors: errors.length,\n      errors,\n      results: errors\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    status: 'success',\n    total_endpoints: results.length,\n    total_success: results.length,\n    total_errors: 0,\n    errors: [],\n    results\n  }\n}];"
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
       },
-      "id": "2ba6d7e4-dde5-48d0-a00d-93003e89618f",
-      "name": "Resumo Final Master",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -6688,
-        -1568
-      ]
-    },
-    {
-      "parameters": {
-        "path": "39e51bf9-af30-4b71-ba7d-f39d2a6db938",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2.1,
-      "position": [
-        -8864,
-        -1504
-      ],
-      "id": "6606d844-c4a1-48d7-9139-5a32d664d1af",
-      "name": "Webhook",
-      "webhookId": "39e51bf9-af30-4b71-ba7d-f39d2a6db938"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -8864,
-        -1696
-      ],
-      "id": "7877c682-4ca2-449a-aa3a-356eade52099",
-      "name": "When clicking ‘Execute workflow’"
+      "onError": "continueErrorOutput"
     }
   ],
   "pinData": {},
@@ -507,34 +477,7 @@
       "main": [
         [
           {
-            "node": "Filtrar Endpoints por Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Filtrar Endpoints por Input": {
-      "main": [
-        [
-          {
             "node": "Split Endpoints",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Endpoints": {
-      "main": [
-        [
-          {
-            "node": "Inserir Task Inicial",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Rotear por Sistema",
             "type": "main",
             "index": 0
           }
@@ -573,55 +516,22 @@
         ]
       ]
     },
-    "Executar Rota VHSYS": {
+    "Webhook": {
       "main": [
         [
           {
-            "node": "Consolidar Resultados",
+            "node": "Configurar Endpoints Master",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Executar Rota Clockify": {
+    "When clicking ‘Execute workflow’": {
       "main": [
         [
           {
-            "node": "Consolidar Resultados",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Executar Rota Clockify Report": {
-      "main": [
-        [
-          {
-            "node": "Consolidar Resultados",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Executar Rota GLPI": {
-      "main": [
-        [
-          {
-            "node": "Consolidar Resultados",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Consolidar Resultados": {
-      "main": [
-        [
-          {
-            "node": "Verificar Tasks Pendentes",
+            "node": "Configurar Endpoints Master",
             "type": "main",
             "index": 0
           }
@@ -650,6 +560,22 @@
         ]
       ]
     },
+    "Split Endpoints": {
+      "main": [
+        [
+          {
+            "node": "Sincronizar Task e Roteamento",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Inserir Task Inicial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Decidir Prosseguir": {
       "main": [
         [
@@ -668,22 +594,27 @@
         ]
       ]
     },
-    "Webhook": {
+    "Inserir Task Inicial": {
       "main": [
         [
           {
-            "node": "Configurar Endpoints Master",
+            "node": "Sincronizar Task e Roteamento",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Verificar Tasks Pendentes",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "When clicking ‘Execute workflow’": {
+    "Sincronizar Task e Roteamento": {
       "main": [
         [
           {
-            "node": "Configurar Endpoints Master",
+            "node": "Rotear por Sistema",
             "type": "main",
             "index": 0
           }
@@ -699,7 +630,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "c2a56878-69cb-42b2-8c8f-16286ef99f40",
+  "versionId": "0c113e87-2099-488f-96b3-1ad7ac6d7a46",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
