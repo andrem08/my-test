@@ -17,7 +17,8 @@
             "method": "={{ $json.method }}",
             "query": "={{ $json.query }}",
             "body": "={{ $json.body }}",
-            "parameters": "={{ $json.parameters }}"
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -46,7 +47,14 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -73,7 +81,9 @@
         ],
         "path": "vhsys-router",
         "responseMode": "responseNode",
-        "options": {}
+        "options": {
+          "rawBody": true
+        }
       },
       "id": "38ec87ac-6569-494c-b9c4-7fd3aba8acf1",
       "name": "Entrada HTTP do Router VHSYS",
@@ -144,7 +154,8 @@
             "method": "={{ $json.method }}",
             "query": "={{ $json.query }}",
             "body": "={{ $json.body }}",
-            "parameters": "={{ $json.parameters }}"
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
           },
           "matchingColumns": [],
           "schema": [],
@@ -173,7 +184,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -201,7 +218,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -263,7 +286,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -291,7 +320,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -319,7 +354,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -841,7 +882,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('PUT').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('PUT').toString().toUpperCase();\nconst query  = req.query || {};\n\nconst rawBodyFallback = (() => {\n  if (typeof req.rawBody === 'string' && req.rawBody.trim()) return req.rawBody;\n  if (req.rawBody && typeof req.rawBody === 'object') {\n    if (typeof req.rawBody.data === 'string' && req.rawBody.data.trim()) return req.rawBody.data;\n    if (typeof req.rawBody.body === 'string' && req.rawBody.body.trim()) return req.rawBody.body;\n  }\n  return null;\n})();\n\nconst body = (() => {\n  if (req.body !== undefined && req.body !== null) {\n    if (typeof req.body === 'string') return req.body;\n    if (typeof req.body === 'object' && Object.keys(req.body).length > 0) return req.body;\n  }\n  return rawBodyFallback ?? (req.body ?? {});\n})();\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body && typeof body === 'object' && body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\nconst hasBody = (() => {\n  if (typeof body === 'string') return body.trim().length > 0;\n  if (body && typeof body === 'object') return Object.keys(body).length > 0;\n  return Boolean(body);\n})();\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  hasBody,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
       "id": "8f79b050-fa41-4cb3-acb5-92dea7960f98",
       "name": "Extrair Rota e Parametros (PUT)",
@@ -854,7 +895,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('GET').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('GET').toString().toUpperCase();\nconst query  = req.query || {};\n\nconst rawBodyFallback = (() => {\n  if (typeof req.rawBody === 'string' && req.rawBody.trim()) return req.rawBody;\n  if (req.rawBody && typeof req.rawBody === 'object') {\n    if (typeof req.rawBody.data === 'string' && req.rawBody.data.trim()) return req.rawBody.data;\n    if (typeof req.rawBody.body === 'string' && req.rawBody.body.trim()) return req.rawBody.body;\n  }\n  return null;\n})();\n\nconst body = (() => {\n  if (req.body !== undefined && req.body !== null) {\n    if (typeof req.body === 'string') return req.body;\n    if (typeof req.body === 'object' && Object.keys(req.body).length > 0) return req.body;\n  }\n  return rawBodyFallback ?? (req.body ?? {});\n})();\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body && typeof body === 'object' && body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\nconst hasBody = (() => {\n  if (typeof body === 'string') return body.trim().length > 0;\n  if (body && typeof body === 'object') return Object.keys(body).length > 0;\n  return Boolean(body);\n})();\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  hasBody,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
       "id": "05b96f03-d074-484f-be74-75cf25bab9e9",
       "name": "Extrair Rota e Parametros (GET)",
@@ -867,7 +908,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('POST').toString().toUpperCase();\nconst body   = req.body  || {};\nconst query  = req.query || {};\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  Object.keys(body).length > 0,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
+        "jsCode": "// ─────────────────────────────────────────────\n// VHSYS Router — Extract Route & Parameters\n// Extrai rota lógica, parâmetros de query e monta\n// envelope canônico para todos os sub-workflows.\n// ─────────────────────────────────────────────\nconst req   = $input.item.json;\nconst method = ('POST').toString().toUpperCase();\nconst query  = req.query || {};\n\nconst rawBodyFallback = (() => {\n  if (typeof req.rawBody === 'string' && req.rawBody.trim()) return req.rawBody;\n  if (req.rawBody && typeof req.rawBody === 'object') {\n    if (typeof req.rawBody.data === 'string' && req.rawBody.data.trim()) return req.rawBody.data;\n    if (typeof req.rawBody.body === 'string' && req.rawBody.body.trim()) return req.rawBody.body;\n  }\n  return null;\n})();\n\nconst body = (() => {\n  if (req.body !== undefined && req.body !== null) {\n    if (typeof req.body === 'string') return req.body;\n    if (typeof req.body === 'object' && Object.keys(req.body).length > 0) return req.body;\n  }\n  return rawBodyFallback ?? (req.body ?? {});\n})();\n\n// Extrair rota de múltiplas fontes possíveis\nlet route = 'unknown';\n\n// 1. Verificar query parameter ?route=\nif (query.route) {\n  route = query.route.toString().trim();\n} \n// 2. Verificar body.route (para POST)\nelse if (body && typeof body === 'object' && body.route) {\n  route = body.route.toString().trim();\n}\n// 3. Verificar path da URL (para /webhook/vhsys-router/employers_general_data)\nelse if (req.params && req.params.path) {\n  const pathParts = req.params.path.split('/');\n  const lastPart = pathParts[pathParts.length - 1];\n  if (lastPart && lastPart !== 'vhsys-router') {\n    route = lastPart.toString().trim();\n  }\n}\n// 4. Tentar extrair do webhook path completo\nelse if (req.webhookUrl || req.url) {\n  const url = req.webhookUrl || req.url;\n  const match = url.match(/\\/([^/?]+)(\\?|$)/);\n  if (match && match[1] && match[1] !== 'vhsys-router') {\n    route = match[1].toString().trim();\n  }\n}\n\n// Limpar a rota de qualquer parâmetro que possa ter \"grudado\"\nroute = route.split('?')[0].split('&')[0];\n\n// Extrair parâmetros específicos comuns\nconst parameters = {\n  rt_token: query.rt_token || 'YfdDQlECBBBXTwAqsrCLU88jds465VbPIevKuZnKLP9N4OwFl',\n  // Outros parâmetros podem ser adicionados aqui conforme necessário\n};\n\n// Remover parâmetros já extraídos do query object para evitar duplicação\nconst cleanQuery = { ...query };\ndelete cleanQuery.route;\ndelete cleanQuery.rt_token;\n\nconst hasBody = (() => {\n  if (typeof body === 'string') return body.trim().length > 0;\n  if (body && typeof body === 'object') return Object.keys(body).length > 0;\n  return Boolean(body);\n})();\n\n// Log estruturado — sem campos sensíveis (mascarar token)\nconst logData = {\n  timestamp: new Date().toISOString(),\n  event:     'router_request',\n  route,\n  method,\n  has_body:  hasBody,\n  has_rt_token: !!parameters.rt_token,\n  other_params: Object.keys(cleanQuery).length,\n  url: req.webhookUrl || req.url || 'unknown',\n  level:     'info'\n};\n\n// Log com token mascarado para segurança\nif (parameters.rt_token) {\n  logData.rt_token_prefix = parameters.rt_token.substring(0, 8) + '...';\n}\n\nconsole.log(JSON.stringify(logData));\n\nreturn { \n  route, \n  method, \n  body, \n  query: cleanQuery, \n  parameters, \n  original_request: req \n};"
       },
       "id": "566672db-b37a-4aff-bcfb-dfe852d21ba5",
       "name": "Extrair Rota e Parametros (POST)",
@@ -953,7 +994,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -1047,7 +1094,13 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -1075,7 +1128,14 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -1103,7 +1163,14 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -1131,7 +1198,14 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "route": "={{ $json.route }}",
+            "method": "={{ $json.method }}",
+            "query": "={{ $json.query }}",
+            "body": "={{ $json.body }}",
+            "parameters": "={{ $json.parameters }}",
+            "original_request": "={{ $json.original_request }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,

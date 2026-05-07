@@ -8,24 +8,39 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
+<<<<<<< HEAD
         -8864,
         -1600
+=======
+        -1184,
+        384
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ],
-      "id": "47bd01c5-1e74-41f7-9f78-fed37e374dfa",
+      "id": "b0060b6f-3d11-4475-a380-82bc89bbb4d0",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
         "mode": "raw",
+<<<<<<< HEAD
         "jsonOutput": "{\"endpoints\":[{\"system\":\"vhsys\",\"url\":\"pedidos\",\"table\":\"vhs_pedidos\",\"id_field\":\"id_ped\",\"primary_key\":\"id_ped\"},{\"system\":\"vhsys\",\"url\":\"clientes\",\"table\":\"vhs_clientes\",\"id_field\":\"id_cliente\",\"primary_key\":\"id_cliente\"},{\"system\":\"vhsys\",\"url\":\"categorias-financeiras\",\"table\":\"vhs_categorias_financeiras\",\"id_field\":\"id_categoria\",\"primary_key\":\"id_categoria\"},{\"system\":\"vhsys\",\"url\":\"contas-bancarias\",\"table\":\"vhs_bancos\",\"id_field\":\"id_banco_cad\",\"primary_key\":\"id_banco_cad\"},{\"system\":\"vhsys\",\"url\":\"produtos\",\"table\":\"vhs_produtos\",\"id_field\":\"id_produto\",\"primary_key\":\"id_produto\"},{\"system\":\"vhsys\",\"url\":\"contas-pagar\",\"table\":\"vhs_contas_pagar\",\"id_field\":\"id_conta_pag\",\"primary_key\":\"id_conta_pag\"},{\"system\":\"vhsys\",\"url\":\"contas-receber\",\"table\":\"vhs_contas_receber\",\"id_field\":\"id_conta_rec\",\"primary_key\":\"id_conta_rec\"},{\"system\":\"vhsys\",\"url\":\"extratos\",\"table\":\"vhs_extratos\",\"id_field\":\"id_fluxo\",\"primary_key\":\"id_fluxo\"},{\"system\":\"vhsys\",\"url\":\"centros-custo\",\"table\":\"vhs_centro_custos\",\"id_field\":\"id_centro_custos\",\"primary_key\":\"id_centro_custos\"},{\"system\":\"vhsys\",\"url\":\"notas-fiscais\",\"table\":\"vhs_notas_fiscais\",\"id_field\":\"id_venda\",\"primary_key\":\"id_venda\"},{\"system\":\"vhsys\",\"url\":\"ordens-compra\",\"table\":\"vhs_ordens_compra\",\"id_field\":\"id_ordem\",\"primary_key\":\"id_ordem\"},{\"system\":\"vhsys\",\"url\":\"entradas-mercadoria\",\"table\":\"vhs_entradas_mercadoria\",\"id_field\":\"id_entrada\",\"primary_key\":\"id_entrada\"},{\"system\":\"vhsys\",\"url\":\"ordens-servico\",\"table\":\"vhs_ordens_servico\",\"id_field\":\"id_ordem\",\"primary_key\":\"id_ordem\"},{\"system\":\"clockify\",\"url\":\"users\",\"table\":\"clk_usuarios\",\"id_field\":\"id\",\"primary_key\":\"id\"},{\"system\":\"clockify\",\"url\":\"projects\",\"table\":\"clk_projetos\",\"id_field\":\"id\",\"primary_key\":\"id\"},{\"system\":\"clockify\",\"url\":\"tags\",\"table\":\"clk_tags\",\"id_field\":\"id\",\"primary_key\":\"id\"},{\"system\":\"clockify\",\"url\":\"clients\",\"table\":\"clk_clientes\",\"id_field\":\"id\",\"primary_key\":\"id\"},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":0,\"rangeEndYears\":1},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":1,\"rangeEndYears\":2},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":2,\"rangeEndYears\":3},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":3,\"rangeEndYears\":4},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":4,\"rangeEndYears\":5},{\"system\":\"clockify_report\",\"url\":\"detailed\",\"table\":\"clk_time_entries\",\"id_field\":\"id\",\"primary_key\":\"id\",\"rangeStartYears\":5,\"rangeEndYears\":6}]}"
+=======
+        "jsonOutput": "{\n  \"endpoints\": [\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"pedidos\",\n      \"table\": \"vhs_pedidos\",\n      \"id_field\": \"id_ped\",\n      \"primary_key\": \"id_ped\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"clientes\",\n      \"table\": \"vhs_clientes\",\n      \"id_field\": \"id_cliente\",\n      \"primary_key\": \"id_cliente\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"categorias-financeiras\",\n      \"table\": \"vhs_categorias_financeiras\",\n      \"id_field\": \"id_categoria\",\n      \"primary_key\": \"id_categoria\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-bancarias\",\n      \"table\": \"vhs_bancos\",\n      \"id_field\": \"id_banco_cad\",\n      \"primary_key\": \"id_banco_cad\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"produtos\",\n      \"table\": \"vhs_produtos\",\n      \"id_field\": \"id_produto\",\n      \"primary_key\": \"id_produto\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-pagar\",\n      \"table\": \"vhs_contas_pagar\",\n      \"id_field\": \"id_conta_pag\",\n      \"primary_key\": \"id_conta_pag\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"contas-receber\",\n      \"table\": \"vhs_contas_receber\",\n      \"id_field\": \"id_conta_rec\",\n      \"primary_key\": \"id_conta_rec\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"extratos\",\n      \"table\": \"vhs_extratos\",\n      \"id_field\": \"id_fluxo\",\n      \"primary_key\": \"id_fluxo\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"centros-custo\",\n      \"table\": \"vhs_centro_custos\",\n      \"id_field\": \"id_centro_custos\",\n      \"primary_key\": \"id_centro_custos\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"notas-fiscais\",\n      \"table\": \"vhs_notas_fiscais\",\n      \"id_field\": \"id_venda\",\n      \"primary_key\": \"id_venda\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"ordens-compra\",\n      \"table\": \"vhs_ordens_compra\",\n      \"id_field\": \"id_ordem\",\n      \"primary_key\": \"id_ordem\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"entradas-mercadoria\",\n      \"table\": \"vhs_entradas_mercadoria\",\n      \"id_field\": \"id_entrada\",\n      \"primary_key\": \"id_entrada\"\n    },\n    {\n      \"system\": \"vhsys\",\n      \"url\": \"ordens-servico\",\n      \"table\": \"vhs_ordens_servico\",\n      \"id_field\": \"id_ordem\",\n      \"primary_key\": \"id_ordem\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"users\",\n      \"table\": \"clk_usuarios\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"projects\",\n      \"table\": \"clk_projetos\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"tags\",\n      \"table\": \"clk_tags\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify\",\n      \"url\": \"clients\",\n      \"table\": \"clk_clientes\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\"\n    },\n    {\n      \"system\": \"clockify_report\",\n      \"url\": \"detailed\",\n      \"table\": \"clk_time_entries\",\n      \"id_field\": \"id\",\n      \"primary_key\": \"id\",\n      \"dateRangeEnd\": \"2026-04-14T05:58:00.976\",\n      \"dateRangeStart\": \"2018-04-14T05:58:00.976\"\n    }\n  ]\n}",
+        "options": {}
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       },
-      "id": "d1a8eae8-0146-4918-8c48-d0f32c7d8a8f",
+      "id": "052306f1-6612-4ecc-bc02-84b73797d316",
       "name": "Configurar Endpoints Master",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
+<<<<<<< HEAD
         -8640,
         -1504
+=======
+        -960,
+        464
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ]
     },
     {
@@ -60,10 +75,17 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
+<<<<<<< HEAD
         -7744,
         -1888
       ],
       "id": "96c2eb35-1845-4682-84d7-ee99d1032a40",
+=======
+        160,
+        -32
+      ],
+      "id": "50bcc5de-4371-4224-a9e4-cd4f27b0cbed",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Executar Rota VHSYS",
       "alwaysOutputData": true
     },
@@ -99,10 +121,17 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
+<<<<<<< HEAD
         -7744,
         -1696
       ],
       "id": "999583ac-fa6f-4603-8fd3-2684992ac987",
+=======
+        160,
+        160
+      ],
+      "id": "07a9fa1f-5329-4cf3-812a-f6c1a1b9a647",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Executar Rota Clockify",
       "alwaysOutputData": true
     },
@@ -138,10 +167,17 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
+<<<<<<< HEAD
         -7744,
         -1504
       ],
       "id": "65523dd4-caeb-4ad0-a97e-226c9b5e0399",
+=======
+        160,
+        352
+      ],
+      "id": "a486e7f7-5cbd-452b-bfdd-011ab9d39a6a",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Executar Rota Clockify Report",
       "alwaysOutputData": true
     },
@@ -175,10 +211,17 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
+<<<<<<< HEAD
         -7744,
         -1312
       ],
       "id": "20e618a4-b68e-4148-bc27-e687bebe4716",
+=======
+        160,
+        544
+      ],
+      "id": "d5639552-a521-4bae-a1b5-a9afc0892eab",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Executar Rota GLPI",
       "alwaysOutputData": true
     },
@@ -289,24 +332,40 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
+<<<<<<< HEAD
         -7968,
         -1648
+=======
+        -64,
+        224
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ],
-      "id": "2639995d-69dd-453f-b331-43b2312c3f6b",
+      "id": "a792c323-16eb-4dd8-83a2-f515caa522a5",
       "name": "Rotear por Sistema"
     },
     {
       "parameters": {
+<<<<<<< HEAD
         "mode": "chooseBranch",
         "output": "input1"
+=======
+        "mode": "chooseBranch"
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
+<<<<<<< HEAD
         -7840,
         -1504
       ],
       "id": "9a21c5b3-9c29-4f15-b3ce-7c6d91d8b2c1",
+=======
+        -288,
+        256
+      ],
+      "id": "c889e6c0-4e4d-4afa-ab49-695e008396e9",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Sincronizar Task e Roteamento"
     },
     {
@@ -317,10 +376,17 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
+<<<<<<< HEAD
         -8864,
         -1216
       ],
       "id": "6606d844-c4a1-48d7-9139-5a32d664d1af",
+=======
+        -1184,
+        768
+      ],
+      "id": "d183a402-ff7a-43b6-b20d-f71246204d75",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Webhook",
       "webhookId": "39e51bf9-af30-4b71-ba7d-f39d2a6db938"
     },
@@ -329,21 +395,37 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         -8864,
         -1408
       ],
       "id": "7877c682-4ca2-449a-aa3a-356eade52099",
+=======
+        -1184,
+        576
+      ],
+      "id": "fe940ce3-e545-4784-8b02-0800f264474c",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {},
+<<<<<<< HEAD
       "id": "7399bcec-3044-4c9c-9e7c-ec8465306b23",
+=======
+      "id": "72f642db-2318-49a0-8dd6-684b8ae602a9",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Aguardar Polling",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
+<<<<<<< HEAD
         -7296,
         -1024
+=======
+        160,
+        960
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ],
       "webhookId": "800159b6-e05c-42a3-9a6b-b412b2183b74"
     },
@@ -357,13 +439,22 @@
           "replaceEmptyStrings": true
         }
       },
+<<<<<<< HEAD
       "id": "74569be1-83cf-4e44-804a-f80f2dd6e058",
+=======
+      "id": "d82a6562-83fe-4bb2-932d-7140d3b6fe7a",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Verificar Tasks Pendentes",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
+<<<<<<< HEAD
         -7744,
         -1120
+=======
+        -288,
+        864
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ],
       "credentials": {
         "postgres": {
@@ -377,13 +468,22 @@
       "parameters": {
         "jsCode": "const results = Array.isArray($json.results) ? $json.results : [];\nconst errors = results.filter((r) => r && r.status === 'error');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      status: 'error',\n      total_endpoints: results.length,\n      total_success: 0,\n      total_errors: errors.length,\n      errors,\n      results: errors\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    status: 'success',\n    total_endpoints: results.length,\n    total_success: results.length,\n    total_errors: 0,\n    errors: [],\n    results\n  }\n}];"
       },
+<<<<<<< HEAD
       "id": "8a9cbfbc-406a-4334-9be2-3d75ab05f521",
+=======
+      "id": "99afae95-5ce4-44e8-8da7-435840efca96",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Resumo Final Master",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
+<<<<<<< HEAD
         -7296,
         -1248
+=======
+        160,
+        736
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ]
     },
     {
@@ -391,13 +491,22 @@
         "fieldToSplitOut": "endpoints",
         "options": {}
       },
+<<<<<<< HEAD
       "id": "e148bd5c-34b1-4da2-b754-255e001713b3",
+=======
+      "id": "4649c0da-6b50-494d-a289-9888f5742e3f",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "name": "Split Endpoints",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
+<<<<<<< HEAD
         -8192,
         -1504
+=======
+        -736,
+        480
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ]
     },
     {
@@ -426,6 +535,7 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
+<<<<<<< HEAD
       "position": [
         -7520,
         -1200
@@ -457,6 +567,39 @@
           "name": "Dev Database"
         }
       },
+=======
+      "position": [
+        -64,
+        784
+      ],
+      "id": "3ee44468-f678-4282-96c5-c135661ff672",
+      "name": "Decidir Prosseguir"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status)\nVALUES ('{{ $json.system }}', '{{ $json.url }}', 0)\nON CONFLICT (system, endpoint)\nDO UPDATE SET\nstatus = EXCLUDED.status,\nstarted_at = EXCLUDED.started_at,\nfinished_at = EXCLUDED.finished_at;\n\n",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "e5127521-ad6d-4837-b669-beb362fa2ba9",
+      "name": "Inserir Task Inicial",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -512,
+        816
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       "onError": "continueErrorOutput"
     }
   ],
@@ -516,13 +659,24 @@
         ]
       ]
     },
-    "Executar Rota VHSYS": {
+    "Webhook": {
       "main": [
+<<<<<<< HEAD
         []
+=======
+        [
+          {
+            "node": "Configurar Endpoints Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
       ]
     },
-    "Executar Rota Clockify": {
+    "When clicking ‘Execute workflow’": {
       "main": [
+<<<<<<< HEAD
         []
       ]
     },
@@ -549,6 +703,8 @@
     },
     "When clicking ‘Execute workflow’": {
       "main": [
+=======
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
         [
           {
             "node": "Configurar Endpoints Master",
@@ -650,7 +806,11 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
+<<<<<<< HEAD
   "versionId": "8e708fc2-8dcc-4446-a05e-07f1ed7c8f9a",
+=======
+  "versionId": "0c113e87-2099-488f-96b3-1ad7ac6d7a46",
+>>>>>>> 9b81fbdca0c8e5d130ef1a57b602fbe3b4928fe4
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
