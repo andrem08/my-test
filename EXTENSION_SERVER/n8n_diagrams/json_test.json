@@ -1,1373 +1,177 @@
 {
-  "tables": [
+  "endpoints": [
     {
-      "schema": "raw_data",
-      "table_name": "vhx_relatorio_cc",
-      "fields": [
-        {
-          "name": "id",
-          "type": "VARCHAR(255)",
-          "primary_key": true
-        },
-        {
-          "name": "id_seed",
-          "type": "TEXT"
-        },
-        {
-          "name": "type",
-          "type": "TEXT"
-        },
-        {
-          "name": "id_cc",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cc",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cc_label",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "vencimento",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "fornecedor",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_despesa",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "situacao",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "categoria",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "valor",
-          "type": "DECIMAL(15,2)"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_vhx_relatorio_cc_id_cc",
-          "columns": [
-            "id_cc"
-          ]
-        },
-        {
-          "name": "idx_vhx_relatorio_cc_categoria",
-          "columns": [
-            "categoria"
-          ]
-        },
-        {
-          "name": "idx_vhx_relatorio_cc_situacao",
-          "columns": [
-            "situacao"
-          ]
-        },
-        {
-          "name": "idx_vhx_relatorio_cc_type",
-          "columns": [
-            "type"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Relatório de Centro de Custos extraído do VHSYS via Extensão do Chrome"
-        },
-        {
-          "type": "column",
-          "column": "id",
-          "comment": "Identificador único deterministico (hash) do registro"
-        },
-        {
-          "type": "column",
-          "column": "id_seed",
-          "comment": "Semente para geração do hash"
-        },
-        {
-          "type": "column",
-          "column": "valor",
-          "comment": "Valor numérico normalizado (sem vírgula)"
-        },
-        {
-          "type": "column",
-          "column": "type",
-          "comment": "Tipo: 'entrada' ou 'saida'"
-        }
-      ]
+      "system": "vhsys",
+      "url": "pedidos",
+      "table": "vhs_pedidos",
+      "id_field": "id_ped",
+      "primary_key": "id_ped"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_despesas_recorrentes",
-      "fields": [
-        {
-          "name": "id_custo",
-          "type": "VARCHAR(255)",
-          "primary_key": true
-        },
-        {
-          "name": "id_empresa",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_conta",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "id_categoria",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "categoria_custo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "id_banco",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "id_fornecedor",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_fornecedor",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "vencimento_custo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "valor_custo",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "observacoes_custo",
-          "type": "TEXT"
-        },
-        {
-          "name": "id_centro_custos",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "status_custo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "forma_pagamento",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "periodicidade",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "dia_semana_ocorrencia",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "dia_mes_ocorrencia",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "intervalo_dias_ocorrencia",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "data_inicio_ocorrencia",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_fim_ocorrencia",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_cad_custo",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "lixeira",
-          "type": "VARCHAR(16)"
-        }
-      ],
-      "checks": [
-        {
-          "constraint": "lixeira IN ('Sim', 'Nao')"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_vhx_desp_rec_empresa",
-          "columns": [
-            "id_empresa"
-          ]
-        },
-        {
-          "name": "idx_vhx_desp_rec_categoria",
-          "columns": [
-            "id_categoria"
-          ]
-        },
-        {
-          "name": "idx_vhx_desp_rec_fornecedor",
-          "columns": [
-            "id_fornecedor"
-          ]
-        },
-        {
-          "name": "idx_vhx_desp_rec_centro_custos",
-          "columns": [
-            "id_centro_custos"
-          ]
-        },
-        {
-          "name": "idx_vhx_desp_rec_status",
-          "columns": [
-            "status_custo"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Tabela principal de despesas recorrentes extraídas do VHSYS via Extensão Chrome."
-        },
-        {
-          "type": "column",
-          "column": "id_custo",
-          "comment": "Chave primária - Identificador da despesa recorrente"
-        },
-        {
-          "type": "column",
-          "column": "observacoes_custo",
-          "comment": "HTML decoded, armazena observações detalhadas (pode ser NULL)"
-        },
-        {
-          "type": "column",
-          "column": "data_inicio_ocorrencia",
-          "comment": "Data de início convertida de string para TIMESTAMP"
-        },
-        {
-          "type": "column",
-          "column": "data_fim_ocorrencia",
-          "comment": "Data de término convertida de string para TIMESTAMP"
-        },
-        {
-          "type": "column",
-          "column": "lixeira",
-          "comment": "Flag de exclusão lógica (geralmente 'Sim' ou 'Nao')"
-        }
-      ]
+      "system": "vhsys",
+      "url": "clientes",
+      "table": "vhs_clientes",
+      "id_field": "id_cliente",
+      "primary_key": "id_cliente"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_funcionarios",
-      "fields": [
-        {
-          "name": "id_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "rg_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "cpf_funcionario",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "matricula_funcionario",
-          "type": "VARCHAR(50)",
-          "primary_key": true
-        },
-        {
-          "name": "sexo_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "local_nascimento_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "orgao_emissor_rg",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "serie_ctps_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "cep_funcionario",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "endereco_funcionario",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "numero_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "bairro_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cidade_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "uf_funcionario",
-          "type": "VARCHAR(2)"
-        },
-        {
-          "name": "complemento_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "celular_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "fone_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "email_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_pai_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_mae_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "observacoes_funcionario",
-          "type": "TEXT"
-        },
-        {
-          "name": "pis_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "ctps_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "uf_ctps_funcionario",
-          "type": "VARCHAR(2)"
-        },
-        {
-          "name": "banco_funcionario",
-          "type": "VARCHAR(100)"
-        },
-        {
-          "name": "agencia_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "conta_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "cargo_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_cargo_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cbo_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "departamento_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "trabalho_inicio",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "trabalho_termino",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "intervalo_inicio",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "intervalo_termino",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "salario_funcionario",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "status_funcionario",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "data_admissao_funcionario",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_demissao_funcionario",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_nascimento_funcionario",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_cadastro",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_modificacao",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "created_at",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "updated_at",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "checks": [
-        {
-          "constraint": "sexo_funcionario IN ('Masculino', 'Feminino', 'Outro')"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_vhx_funcionarios_matricula",
-          "columns": [
-            "matricula_funcionario"
-          ],
-          "unique": true
-        },
-        {
-          "name": "idx_vhx_funcionarios_cpf",
-          "columns": [
-            "cpf_funcionario"
-          ]
-        },
-        {
-          "name": "idx_vhx_funcionarios_status",
-          "columns": [
-            "status_funcionario"
-          ]
-        },
-        {
-          "name": "idx_vhx_funcionarios_cargo",
-          "columns": [
-            "cargo_funcionario"
-          ]
-        },
-        {
-          "name": "idx_vhx_funcionarios_departamento",
-          "columns": [
-            "departamento_funcionario"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Cadastro principal de funcionários extraído do VHSYS via Extensão Chrome."
-        },
-        {
-          "type": "column",
-          "column": "id_funcionario",
-          "comment": "Chave primária - Identificador do funcionário"
-        },
-        {
-          "type": "column",
-          "column": "matricula_funcionario",
-          "comment": "Matrícula única do funcionário (usada para upsert no N8N)"
-        },
-        {
-          "type": "column",
-          "column": "salario_funcionario",
-          "comment": "Salário convertido para formato numérico DECIMAL(15,2)"
-        },
-        {
-          "type": "column",
-          "column": "status_funcionario",
-          "comment": "Status atual do funcionário (ex: Ativo, Desligado)"
-        },
-        {
-          "type": "column",
-          "column": "data_demissao_funcionario",
-          "comment": "Data de desligamento do funcionário (pode ser NULL)"
-        }
-      ]
+      "system": "vhsys",
+      "url": "categorias-financeiras",
+      "table": "vhs_categorias_financeiras",
+      "id_field": "id_categoria",
+      "primary_key": "id_categoria"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_beneficios_funcionarios",
-      "fields": [
-        {
-          "name": "benefit_id",
-          "type": "VARCHAR(255)",
-          "primary_key": true
-        },
-        {
-          "name": "id_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "valor",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "created_at",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "updated_at",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "checks": [],
-      "indexes": [
-        {
-          "name": "idx_vhx_beneficios_funcionario",
-          "columns": [
-            "id_funcionario"
-          ]
-        },
-        {
-          "name": "idx_vhx_beneficios_nome",
-          "columns": [
-            "nome"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Benefícios vinculados aos funcionários extraídos do VHSYS via Extensão Chrome."
-        },
-        {
-          "type": "column",
-          "column": "benefit_id",
-          "comment": "Chave primária - Identificador único do registro de benefício (geralmente um hash)"
-        },
-        {
-          "type": "column",
-          "column": "id_funcionario",
-          "comment": "Chave estrangeira lógica para a tabela vhx_funcionarios"
-        },
-        {
-          "type": "column",
-          "column": "nome",
-          "comment": "Nome ou tipo do benefício (Ex: Transporte, Plano de Saúde, Refeição)"
-        },
-        {
-          "type": "column",
-          "column": "valor",
-          "comment": "Valor monetário do benefício (numérico)"
-        }
-      ]
+      "system": "vhsys",
+      "url": "contas-bancarias",
+      "table": "vhs_bancos",
+      "id_field": "id_banco_cad",
+      "primary_key": "id_banco_cad"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_dependentes",
-      "fields": [
-        {
-          "name": "dependents_id",
-          "type": "VARCHAR(255)",
-          "primary_key": true
-        },
-        {
-          "name": "id_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_funcionario",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "nome_dependente",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "tipo_dependente",
-          "type": "VARCHAR(100)"
-        },
-        {
-          "name": "fone_dependente",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "rg",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "cpf",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "data_nascimento",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "created_at",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "updated_at",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "checks": [],
-      "indexes": [
-        {
-          "name": "idx_vhx_dependentes_funcionario",
-          "columns": [
-            "id_funcionario"
-          ]
-        },
-        {
-          "name": "idx_vhx_dependentes_tipo",
-          "columns": [
-            "tipo_dependente"
-          ]
-        },
-        {
-          "name": "idx_vhx_dependentes_cpf",
-          "columns": [
-            "cpf"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Cadastro de dependentes dos funcionários extraído do VHSYS via Extensão Chrome."
-        },
-        {
-          "type": "column",
-          "column": "dependents_id",
-          "comment": "Chave primária - Identificador único do registro de dependente (hash)"
-        },
-        {
-          "type": "column",
-          "column": "id_funcionario",
-          "comment": "Chave estrangeira lógica para a tabela vhx_funcionarios"
-        },
-        {
-          "type": "column",
-          "column": "tipo_dependente",
-          "comment": "Grau de parentesco ou tipo de dependência (Ex: Conjuge, Filho)"
-        },
-        {
-          "type": "column",
-          "column": "data_nascimento",
-          "comment": "Data de nascimento do dependente convertida para TIMESTAMP"
-        }
-      ]
+      "system": "vhsys",
+      "url": "produtos",
+      "table": "vhs_produtos",
+      "id_field": "id_produto",
+      "primary_key": "id_produto"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_notas_venda",
-      "fields": [
-        {
-          "name": "id_registro",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "nota",
-          "type": "VARCHAR(50)",
-          "primary_key": true
-        },
-        {
-          "name": "cliente",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cnpj",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "razao_social",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "endereco",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "numero",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "complemento",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "bairro",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cidade",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "estado",
-          "type": "VARCHAR(2)"
-        },
-        {
-          "name": "cep",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "email",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "telefone",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "vendedor",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "valor_produtos",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_desconto",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_frete",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_total",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "total_parcelas",
-          "type": "INTEGER"
-        },
-        {
-          "name": "valor_icms",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_ipi",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_st",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "peso_bruto",
-          "type": "DECIMAL(15,3)"
-        },
-        {
-          "name": "peso_liquido",
-          "type": "DECIMAL(15,3)"
-        },
-        {
-          "name": "transportadora",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "data_pedido",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "qtde_produtos",
-          "type": "INTEGER"
-        },
-        {
-          "name": "total_unidades",
-          "type": "INTEGER"
-        },
-        {
-          "name": "cfop",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "natureza",
-          "type": "VARCHAR(500)"
-        },
-        {
-          "name": "contas",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "estoque",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "comissao",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "chave",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "protocolo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "data_emissao",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_autorizacao",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "situacao",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "data_cad",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_mod",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "observacoes",
-          "type": "TEXT"
-        },
-        {
-          "name": "observacoes_internas",
-          "type": "TEXT"
-        },
-        {
-          "name": "categoria_financeira",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "volumes",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "emitido_por",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cancelado_por",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "data_cancelamento",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_vhx_notas_venda_cnpj",
-          "columns": [
-            "cnpj"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_venda_cliente",
-          "columns": [
-            "cliente"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_venda_situacao",
-          "columns": [
-            "situacao"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_venda_data_emissao",
-          "columns": [
-            "data_emissao"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Relatório Completo de Notas Fiscais de Venda extraído do VHSYS via Webhook (n8n)."
-        },
-        {
-          "type": "column",
-          "column": "nota",
-          "comment": "Chave primária - Número da Nota Fiscal"
-        },
-        {
-          "type": "column",
-          "column": "data_emissao",
-          "comment": "Data em formato Unix Timestamp (Epoch)"
-        },
-        {
-          "type": "column",
-          "column": "id_registro",
-          "comment": "ID interno do registro no VHSYS (Mapeado do campo ID)"
-        }
-      ]
+      "system": "vhsys",
+      "url": "contas-pagar",
+      "table": "vhs_contas_pagar",
+      "id_field": "id_conta_pag",
+      "primary_key": "id_conta_pag"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_notas_servico",
-      "fields": [
-        {
-          "name": "id_registro",
-          "type": "VARCHAR(50)",
-          "primary_key": true
-        },
-        {
-          "name": "rps",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "nota",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "cliente",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cnpj",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "endereco",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "numero",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "complemento",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "bairro",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "cidade",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "estado",
-          "type": "VARCHAR(2)"
-        },
-        {
-          "name": "cep",
-          "type": "VARCHAR(20)"
-        },
-        {
-          "name": "email",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "telefone",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "vendedor",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "valor_servicos",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_total",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "total_parcelas",
-          "type": "INTEGER"
-        },
-        {
-          "name": "valor_deducoes",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliquota",
-          "type": "DECIMAL(5,2)"
-        },
-        {
-          "name": "valor_iss",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "iss_retido",
-          "type": "VARCHAR(10)"
-        },
-        {
-          "name": "valor_cofins",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_pis",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_csll",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_ir",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_inss",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_tributos",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "data_pedido",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "local_prestacao",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "contas",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "chave",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "protocolo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "descricao",
-          "type": "TEXT"
-        },
-        {
-          "name": "data_emissao",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "situacao",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "data_cad",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "data_mod",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "indexes": [
-        {
-          "name": "idx_vhx_notas_servico_cnpj",
-          "columns": [
-            "cnpj"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_servico_cliente",
-          "columns": [
-            "cliente"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_servico_situacao",
-          "columns": [
-            "situacao"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_servico_rps",
-          "columns": [
-            "rps"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Relatório de Notas Fiscais de Serviço extraído do VHSYS via Webhook (n8n)."
-        },
-        {
-          "type": "column",
-          "column": "id_registro",
-          "comment": "Chave primária - ID interno único do registro no VHSYS"
-        },
-        {
-          "type": "column",
-          "column": "rps",
-          "comment": "Número do RPS (Recibo Provisório de Serviços)"
-        },
-        {
-          "type": "column",
-          "column": "nota",
-          "comment": "Número da Nota Fiscal (pode ser 0 quando a nota ainda não foi emitida)"
-        },
-        {
-          "type": "column",
-          "column": "data_emissao",
-          "comment": "Data em formato Unix Timestamp (Epoch). Pode vir vazio para notas não emitidas."
-        },
-        {
-          "type": "column",
-          "column": "situacao",
-          "comment": "Status atual da nota (Ex: Atendido, Cancelado, Em Aberto)"
-        }
-      ]
+      "system": "vhsys",
+      "url": "contas-receber",
+      "table": "vhs_contas_receber",
+      "id_field": "id_conta_rec",
+      "primary_key": "id_conta_rec"
     },
     {
-      "schema": "raw_data",
-      "table_name": "vhx_notas_servicos_faturamento",
-      "fields": [
-        {
-          "name": "id_servico",
-          "type": "VARCHAR(50)",
-          "primary_key": true
-        },
-        {
-          "name": "obs_interno_pedido",
-          "type": "TEXT"
-        },
-        {
-          "name": "obs_pedido",
-          "type": "TEXT"
-        },
-        {
-          "name": "numero_processo",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "condicao_pagamento",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "condicao_pagamento_id",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "valor_iss",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliq_iss",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_ir",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliq_ir",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_contribuicao",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliq_contribuicao",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_pis",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliq_pis",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_cofins",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "aliq_cofins",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_material",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_tributos_mun",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_aliq_tributos_mun",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_tributos",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_aliq_tributos",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_imposto",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_aliquota",
-          "type": "DECIMAL(15,4)"
-        },
-        {
-          "name": "valor_base_calculo",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_condicionado",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_incondicionado",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_deducoes",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "itemLista_servico",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "valor_total_nota",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "valor_total_servicos",
-          "type": "DECIMAL(15,2)"
-        },
-        {
-          "name": "desc_servicos",
-          "type": "TEXT"
-        },
-        {
-          "name": "serie_nota",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "id_pedido",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "vendedor_pedido_id",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "vendedor_pedido",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "ultrapassar_limite_credito",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "contas_pedido",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "id_cliente",
-          "type": "VARCHAR(50)"
-        },
-        {
-          "name": "nome_cliente",
-          "type": "VARCHAR(255)"
-        },
-        {
-          "name": "created_at",
-          "type": "TIMESTAMP"
-        },
-        {
-          "name": "updated_at",
-          "type": "TIMESTAMP"
-        }
-      ],
-      "checks": [],
-      "indexes": [
-        {
-          "name": "idx_vhx_notas_servicos_faturamento_pedido",
-          "columns": [
-            "id_pedido"
-          ]
-        },
-        {
-          "name": "idx_vhx_notas_servicos_faturamento_cliente",
-          "columns": [
-            "id_cliente"
-          ]
-        }
-      ],
-      "comments": [
-        {
-          "type": "table",
-          "comment": "Dados internos de faturamento, pedidos e quebra de impostos de Notas de Serviço, extraídos do VHSYS via Extensão Chrome."
-        },
-        {
-          "type": "column",
-          "column": "id_servico",
-          "comment": "Chave primária - ID do faturamento/serviço no VHSYS"
-        },
-        {
-          "type": "column",
-          "column": "id_pedido",
-          "comment": "Chave estrangeira de ligação lógica com o pedido originador"
-        },
-        {
-          "type": "column",
-          "column": "valor_contribuicao",
-          "comment": "Refere-se ao valor de CSLL extraído da nota"
-        }
-      ]
+      "system": "vhsys",
+      "url": "extratos",
+      "table": "vhs_extratos",
+      "id_field": "id_fluxo",
+      "primary_key": "id_fluxo"
+    },
+    {
+      "system": "vhsys",
+      "url": "centros-custo",
+      "table": "vhs_centro_custos",
+      "id_field": "id_centro_custos",
+      "primary_key": "id_centro_custos"
+    },
+    {
+      "system": "vhsys",
+      "url": "notas-fiscais",
+      "table": "vhs_notas_fiscais",
+      "id_field": "id_venda",
+      "primary_key": "id_venda"
+    },
+    {
+      "system": "vhsys",
+      "url": "ordens-compra",
+      "table": "vhs_ordens_compra",
+      "id_field": "id_ordem",
+      "primary_key": "id_ordem"
+    },
+    {
+      "system": "vhsys",
+      "url": "entradas-mercadoria",
+      "table": "vhs_entradas_mercadoria",
+      "id_field": "id_entrada",
+      "primary_key": "id_entrada"
+    },
+    {
+      "system": "vhsys",
+      "url": "ordens-servico",
+      "table": "vhs_ordens_servico",
+      "id_field": "id_ordem",
+      "primary_key": "id_ordem"
+    },
+    {
+      "system": "clockify",
+      "url": "users",
+      "table": "clk_usuarios",
+      "id_field": "id",
+      "primary_key": "id"
+    },
+    {
+      "system": "clockify",
+      "url": "projects",
+      "table": "clk_projetos",
+      "id_field": "id",
+      "primary_key": "id"
+    },
+    {
+      "system": "clockify",
+      "url": "tags",
+      "table": "clk_tags",
+      "id_field": "id",
+      "primary_key": "id"
+    },
+    {
+      "system": "clockify",
+      "url": "clients",
+      "table": "clk_clientes",
+      "id_field": "id",
+      "primary_key": "id"
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 0,
+      "rangeEndYears": 1
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 1,
+      "rangeEndYears": 2
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 2,
+      "rangeEndYears": 3
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 3,
+      "rangeEndYears": 4
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 4,
+      "rangeEndYears": 5
+    },
+    {
+      "system": "clockify_report",
+      "url": "detailed",
+      "table": "clk_time_entries",
+      "id_field": "id",
+      "primary_key": "id",
+      "rangeStartYears": 5,
+      "rangeEndYears": 6
     }
   ]
 }

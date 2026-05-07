@@ -8,29 +8,29 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -1008,
-        -192
+        -5888,
+        -800
       ],
-      "id": "557a2cc5-9320-4eb6-89d1-53cedb361f52",
+      "id": "32dbb484-c3c1-4889-aded-05752e98348e",
       "name": "Entrada da Rota Clockify Report"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify Report').first().json.system || 'clockify_report' }}', '{{ $('Entrada da Rota Clockify Report').first().json.url }}', 1, NULL, NOW(), NULL) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, started_at = EXCLUDED.started_at, finished_at = NULL;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $json.system }}', '{{ $json.url }}', 1, NULL, NOW(), NULL) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, started_at = EXCLUDED.started_at, finished_at = NULL;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-pending-clockify-report-001",
+      "id": "0734af5e-59d7-46c3-9ab1-7f7fc14bf139",
       "name": "Marcar Task Pendente",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -784,
-        -192
+        -5664,
+        -800
       ],
       "credentials": {
         "postgres": {
@@ -39,19 +39,6 @@
         }
       },
       "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "const endpoint = $('Entrada da Rota Clockify Report').first().json || {};\n\nfunction asDate(v, fallback) {\n  const d = new Date(v);\n  return Number.isNaN(d.getTime()) ? fallback : d;\n}\n\nfunction formatUtcNoTz(d) {\n  return d.toISOString().slice(0, 23);\n}\n\nconst endDefault = new Date();\nconst startDefault = new Date(endDefault);\nstartDefault.setUTCFullYear(startDefault.getUTCFullYear() - 6);\n\nconst start = asDate(endpoint.dateRangeStart, startDefault);\nconst end = asDate(endpoint.dateRangeEnd, endDefault);\n\nif (start >= end) {\n  return [{\n    json: {\n      ...endpoint,\n      dateRangeStart: formatUtcNoTz(start),\n      dateRangeEnd: formatUtcNoTz(end),\n      period_index: 0\n    }\n  }];\n}\n\nconst periods = [];\nlet cursor = new Date(start);\nlet idx = 0;\n\nwhile (cursor < end) {\n  const next = new Date(cursor);\n  next.setUTCMonth(next.getUTCMonth() + 4);\n  if (next > end) next.setTime(end.getTime());\n  if (next <= cursor) break;\n\n  periods.push({\n    json: {\n      ...endpoint,\n      dateRangeStart: formatUtcNoTz(cursor),\n      dateRangeEnd: formatUtcNoTz(next),\n      period_index: idx++\n    }\n  });\n\n  cursor = next;\n}\n\nreturn periods;"
-      },
-      "id": "4f99df80-3d08-4d05-bf98-f3cf8c5798ec",
-      "name": "Gerar Periodos 4 Meses",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -784,
-        -192
-      ]
     },
     {
       "parameters": {
@@ -74,13 +61,13 @@
           }
         }
       },
-      "id": "16e447b0-7b29-4e13-a59f-2025974b59a2",
+      "id": "fbba4b47-0621-4350-9a16-8af48a3b2d07",
       "name": "Buscar API Clockify Report",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -560,
-        -192
+        -5216,
+        -800
       ],
       "retryOnFail": true,
       "credentials": {
@@ -95,58 +82,58 @@
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota Clockify Report').first().json || {};\nconst e = $input.first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'api',\n    source_flow: 'clockify_report',\n    system: endpoint.system || 'clockify_report',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: e.message || e.error || 'Falha ao consultar API Clockify Report',\n      details: e\n    }\n  }\n}];"
       },
-      "id": "77522a30-22e2-43e8-8696-62eaae261541",
+      "id": "76a45221-5742-4269-9720-a0555548ce99",
       "name": "Formatar Erro API Clockify Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -336,
-        -96
+        -4992,
+        -704
       ]
     },
     {
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota Clockify Report').first().json || {};\nconst rows = $input.all().flatMap((item) => item.json.timeentries || []);\n\nfunction toNumberOrNull(value) {\n  if (value === null || value === undefined || value === '') return null;\n  const n = Number(value);\n  return Number.isFinite(n) ? n : null;\n}\n\nfunction pickMoneyAmount(value) {\n  if (value === null || value === undefined || value === '') return null;\n  if (typeof value === 'number') return value;\n  if (typeof value === 'object') {\n    if (value === null) return null;\n    if ('amount' in value) return toNumberOrNull(value.amount);\n  }\n  return toNumberOrNull(value);\n}\n\nif (rows.length === 0) {\n  return [{\n    json: {\n      status: 'success',\n      source_flow: 'clockify_report',\n      system: endpoint.system || 'clockify_report',\n      url: endpoint.url,\n      table: endpoint.table,\n      id_field: endpoint.id_field,\n      primary_key: endpoint.primary_key || endpoint.id_field,\n      processed_rows: 0,\n      message: 'API retornou sem registros'\n    }\n  }];\n}\n\nreturn rows.map((r) => ({\n  json: {\n    record: {\n      id: r._id || null,\n      description: r.description || null,\n      userId: r.userId || null,\n      userName: r.userName || null,\n      userEmail: r.userEmail || null,\n      projectId: r.projectId || null,\n      projectName: r.projectName || null,\n      projectColor: r.projectColor || null,\n      clientId: r.clientId || null,\n      clientName: r.clientName || null,\n      taskId: r.taskId || null,\n      approvalRequestId: r.approvalRequestId || null,\n      time_start: r.timeInterval?.start || null,\n      time_end: r.timeInterval?.end || null,\n      time_duration: toNumberOrNull(r.timeInterval?.duration),\n      time_timezone: r.timeInterval?.timeZone || null,\n      time_zoned_start: r.timeInterval?.zonedStart || null,\n      time_zoned_end: r.timeInterval?.zonedEnd || null,\n      time_off_start: toNumberOrNull(r.timeInterval?.offStart),\n      time_off_end: toNumberOrNull(r.timeInterval?.offEnd),\n      billable: r.billable ?? null,\n      type: r.type || null,\n      isLocked: r.isLocked ?? null,\n      currency: r.currency || null,\n      amount: pickMoneyAmount(r.amount),\n      rate: pickMoneyAmount(r.rate),\n      earnedAmount: pickMoneyAmount(r.earnedAmount),\n      earnedRate: pickMoneyAmount(r.earnedRate),\n      costAmount: pickMoneyAmount(r.costAmount),\n      costRate: pickMoneyAmount(r.costRate)\n    }\n  }\n}));"
       },
-      "id": "02072aa3-d719-4dd1-9eb5-e16e0bb16a7c",
+      "id": "0568b075-7e8b-461e-bd25-e0d9dfeac6c5",
       "name": "Extrair Dados Clockify Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -336,
-        -288
+        -4992,
+        -896
       ]
     },
     {
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota Clockify Report').first().json || {};\nconst table = endpoint.table;\nconst idField = endpoint.id_field;\n\nfunction toSql(v) {\n  if (v === null || v === undefined || v === '') return 'NULL';\n  if (typeof v === 'number') return String(v);\n  if (typeof v === 'boolean') return v ? 'true' : 'false';\n\n  const s = (typeof v === 'object') ? JSON.stringify(v) : String(v);\n  const q = String.fromCharCode(39);\n  return q + s.split(q).join(q + q).split('$').join('$ ') + q;\n}\n\nconst records = $input\n  .all()\n  .map((item) => item.json?.record)\n  .filter((r) => r && typeof r === 'object' && !Array.isArray(r));\n\nif (!table || !idField || records.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst fieldSet = new Set();\nfor (const rec of records) {\n  for (const key of Object.keys(rec)) {\n    if (!key.startsWith('_') && !key.startsWith('$')) fieldSet.add(key);\n  }\n}\n\nconst fields = Array.from(fieldSet);\nif (!fields.includes(idField)) fields.unshift(idField);\n\nif (fields.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst columns = fields.join(', ');\nconst updateFields = fields.filter((f) => f !== idField);\nconst updates = (updateFields.length > 0)\n  ? updateFields.map((f) => `${f}=EXCLUDED.${f}`).join(', ')\n  : `${idField}=EXCLUDED.${idField}`;\n\nconst valuesList = records\n  .map((rec) => `(${fields.map((f) => toSql(rec[f])).join(', ')})`)\n  .join(', ');\n\nconst upsertQuery = `WITH upserted AS (INSERT INTO raw_data.${table} (${columns}) VALUES ${valuesList} ON CONFLICT (${idField}) DO UPDATE SET ${updates} RETURNING 1) SELECT COUNT(*)::int AS affected_rows FROM upserted;`;\nreturn [{ json: { upsert_query: upsertQuery } }];"
       },
-      "id": "5676d55d-5181-4e9f-ae13-38f5382d0425",
+      "id": "e20f5884-c626-45da-a023-f1f745ffc269",
       "name": "Preparar UPSERT Clockify Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -112,
-        -384
+        -4768,
+        -896
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "={{ $json.upsert_query || 'SELECT 0::int AS affected_rows;' }}",
+        "query": "{{ $json.upsert_query || 'SELECT 0::int AS affected_rows;' }}",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "ff597957-88f3-4f2f-a821-639049a57de4",
+      "id": "de0b1283-f291-4490-b1b7-abf9c4be0970",
       "name": "UPSERT Clockify Report no Banco",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        112,
-        -288
+        -4544,
+        -896
       ],
       "credentials": {
         "postgres": {
@@ -162,32 +149,32 @@
         "destinationFieldName": "rows",
         "options": {}
       },
-      "id": "9e17f68f-992f-43ea-9152-3bdbaf423686",
+      "id": "8915e84c-acf7-48ef-a003-e4e6c8516249",
       "name": "Consolidar Sucesso DB Clockify Report",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        112,
-        -384
+        -4320,
+        -992
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify Report').first().json.system || 'clockify_report' }}', '{{ $('Entrada da Rota Clockify Report').first().json.url }}', 2, NULL, NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, finished_at) VALUES ('{{ $('Entrada da Rota Clockify Report').first().json.system || 'clockify_report' }}', '{{ $('Entrada da Rota Clockify Report').first().json.url }}', 2, NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-success-clockify-report-001",
+      "id": "148ca691-2284-4473-b3ed-6dfab8733ddf",
       "name": "Marcar Task Completo",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        336,
-        -384
+        -4096,
+        -992
       ],
       "credentials": {
         "postgres": {
@@ -201,13 +188,13 @@
       "parameters": {
         "jsCode": "const rows = Array.isArray($json.rows) ? $json.rows : [];\nconst endpoint = $('Entrada da Rota Clockify Report').first().json || {};\nconst processedRows = rows.reduce((acc, r) => acc + Number(r.affected_rows || 0), 0);\n\nreturn [{\n  json: {\n    status: 'success',\n    source_flow: 'clockify_report',\n    system: endpoint.system || 'clockify_report',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    processed_rows: processedRows,\n    message: 'UPSERT concluido com sucesso'\n  }\n}];"
       },
-      "id": "9ee72fc4-5067-4421-a583-cce71e6c4a2e",
+      "id": "ce4175d2-d336-4b97-84f4-de67732bae24",
       "name": "Resultado Sucesso Clockify Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        -384
+        -3872,
+        -992
       ]
     },
     {
@@ -216,32 +203,32 @@
         "destinationFieldName": "errors",
         "options": {}
       },
-      "id": "6bacd334-8f61-4c2f-9246-d58c2009ccac",
+      "id": "d8fc0d9c-a293-4a23-b55b-e65cad3c0d6f",
       "name": "Consolidar Erros DB Clockify Report",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        112,
-        -192
+        -4320,
+        -800
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify Report').first().json.system || 'clockify_report' }}', '{{ $('Entrada da Rota Clockify Report').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, finished_at) VALUES ('{{ $('Entrada da Rota Clockify Report').first().json.system || 'clockify_report' }}', '{{ $('Entrada da Rota Clockify Report').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-error-clockify-report-001",
+      "id": "8e577fa8-08e3-497e-aa26-dfd755759ba5",
       "name": "Marcar Task com Erro",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        336,
-        -192
+        -4096,
+        -800
       ],
       "credentials": {
         "postgres": {
@@ -255,17 +242,44 @@
       "parameters": {
         "jsCode": "const errors = Array.isArray($json.errors) ? $json.errors : [];\nconst first = errors[0] || {};\nconst endpoint = $('Entrada da Rota Clockify Report').first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'database',\n    source_flow: 'clockify_report',\n    system: endpoint.system || 'clockify_report',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: first.message || first.error || 'Falha no UPSERT Clockify Report',\n      total_errors: errors.length,\n      sample: first\n    }\n  }\n}];"
       },
-      "id": "9a3ddb42-b3fb-498c-a439-98c9f0c9402c",
+      "id": "a80c70f7-d0e0-4ea2-b976-de8ec6705ff4",
       "name": "Resultado Erro DB Clockify Report",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        336,
-        -192
+        -3872,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoint = $('Entrada da Rota Clockify Report').first().json || {};\n\nfunction parseDateUtcSmart(v, fallback) {\n  if (v === null || v === undefined || v === '') return new Date(fallback);\n  if (v instanceof Date) return Number.isNaN(v.getTime()) ? new Date(fallback) : new Date(v.getTime());\n\n  const s = String(v).trim();\n  if (!s) return new Date(fallback);\n\n  // Se já tem timezone (Z ou +/-HH:MM), mantém.\n  if (/[zZ]$|[+-]\\d{2}:\\d{2}$/.test(s)) {\n    const d = new Date(s);\n    return Number.isNaN(d.getTime()) ? new Date(fallback) : d;\n  }\n\n  // Se vier sem timezone, força UTC.\n  const normalized =\n    /^\\d{4}-\\d{2}-\\d{2}$/.test(s) ? `${s}T00:00:00.000Z` :\n    /^\\d{4}-\\d{2}-\\d{2}T/.test(s) ? `${s}Z` :\n    s;\n\n  const d = new Date(normalized);\n  return Number.isNaN(d.getTime()) ? new Date(fallback) : d;\n}\n\nfunction formatUtcNoTz(d) {\n  return d.toISOString().slice(0, 23); // yyyy-MM-ddTHH:mm:ss.SSS\n}\n\nfunction addMonthsUtcSafe(date, months) {\n  const y = date.getUTCFullYear();\n  const m = date.getUTCMonth();\n  const day = date.getUTCDate();\n  const hh = date.getUTCHours();\n  const mm = date.getUTCMinutes();\n  const ss = date.getUTCSeconds();\n  const ms = date.getUTCMilliseconds();\n\n  const totalMonths = m + months;\n  const targetYear = y + Math.floor(totalMonths / 12);\n  const targetMonth = ((totalMonths % 12) + 12) % 12;\n\n  const lastDay = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();\n  const safeDay = Math.min(day, lastDay);\n\n  return new Date(Date.UTC(targetYear, targetMonth, safeDay, hh, mm, ss, ms));\n}\n\nconst endDefault = new Date();\nconst startDefault = new Date(endDefault);\nstartDefault.setUTCFullYear(startDefault.getUTCFullYear() - 6);\n\nconst start = parseDateUtcSmart(endpoint.dateRangeStart, startDefault);\nconst end = parseDateUtcSmart(endpoint.dateRangeEnd, endDefault);\n\nif (start >= end) {\n  return [{\n    json: {\n      ...endpoint,\n      dateRangeStart: formatUtcNoTz(start),\n      dateRangeEnd: formatUtcNoTz(end),\n      period_index: 0\n    }\n  }];\n}\n\nconst periods = [];\nlet cursor = new Date(start.getTime());\nlet idx = 0;\nconst STEP_MONTHS = 2; // aqui: 2 meses\n\nwhile (cursor < end) {\n  let next = addMonthsUtcSafe(cursor, STEP_MONTHS);\n  if (next > end) next = new Date(end.getTime());\n  if (next <= cursor) break;\n\n  const isLast = next.getTime() === end.getTime();\n  const chunkEnd = isLast ? next : new Date(next.getTime() - 1);\n\n  periods.push({\n    json: {\n      ...endpoint,\n      dateRangeStart: formatUtcNoTz(cursor),\n      dateRangeEnd: formatUtcNoTz(chunkEnd),\n      period_index: idx++\n    }\n  });\n\n  cursor = next;\n}\n\nreturn periods;"
+      },
+      "id": "b1d70eb2-c9aa-49e5-b8c5-822c90b23867",
+      "name": "Gerar Periodos Mensais",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5440,
+        -800
       ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Entrada da Rota Clockify Report": [
+      {
+        "json": {
+          "system": "clockify_report",
+          "url": "detailed",
+          "table": "clk_time_entries",
+          "id_field": "id",
+          "primary_key": "id",
+          "dateRangeEnd": "2026-04-14T05:58:00.976",
+          "dateRangeStart": "2025-04-14T05:58:00.976"
+        }
+      }
+    ]
+  },
   "connections": {
     "Entrada da Rota Clockify Report": {
       "main": [
@@ -282,18 +296,7 @@
       "main": [
         [
           {
-            "node": "Gerar Periodos 4 Meses",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Gerar Periodos 4 Meses": {
-      "main": [
-        [
-          {
-            "node": "Buscar API Clockify Report",
+            "node": "Gerar Periodos Mensais",
             "type": "main",
             "index": 0
           }
@@ -401,14 +404,25 @@
           }
         ]
       ]
+    },
+    "Gerar Periodos Mensais": {
+      "main": [
+        [
+          {
+            "node": "Buscar API Clockify Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
-    "executionOrder": "v0",
+    "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "24a59eef-50a5-42af-9818-06dd847a7de6",
+  "versionId": "674867c6-c207-43ed-9f1a-eeec6b071682",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

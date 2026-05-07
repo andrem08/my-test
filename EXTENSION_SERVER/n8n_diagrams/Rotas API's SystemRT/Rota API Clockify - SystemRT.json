@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -1104,
-        -160
+        -5664,
+        -608
       ],
-      "id": "83d84c1d-3d60-4703-866f-8c783e3391c2",
+      "id": "4f360083-4e48-4e5b-9698-06a445680df0",
       "name": "Entrada da Rota Clockify"
     },
     {
@@ -24,13 +24,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-pending-clockify-001",
+      "id": "f7a43f55-9d7d-46ce-9373-06fae7a3517d",
       "name": "Marcar Task Pendente",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -880,
-        -160
+        -5440,
+        -608
       ],
       "credentials": {
         "postgres": {
@@ -42,7 +42,7 @@
     },
     {
       "parameters": {
-        "url": "=https://api.clockify.me/api/v1/workspaces/{{ $json.RT_CLOCKFY_WORKSPACE_ID || '608b750c2b299c6bb6e955f7' }}/{{ $json.url }}",
+        "url": "=https://api.clockify.me/api/v1/workspaces/{{ $json.RT_CLOCKFY_WORKSPACE_ID || '608b750c2b299c6bb6e955f7' }}/{{ $('Entrada da Rota Clockify').item.json.url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendQuery": true,
@@ -75,13 +75,13 @@
           }
         }
       },
-      "id": "364a0fe4-8143-44d8-bb31-20d7278eb0cb",
+      "id": "247dbbbd-12a4-4ca5-99a4-26885f9d615f",
       "name": "Buscar API Clockify",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -656,
-        -160
+        -5216,
+        -624
       ],
       "retryOnFail": true,
       "credentials": {
@@ -96,58 +96,58 @@
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota Clockify').first().json || {};\nconst e = $input.first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'api',\n    source_flow: 'clockify',\n    system: endpoint.system || 'clockify',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: e.message || e.error || 'Falha ao consultar API Clockify',\n      details: e\n    }\n  }\n}];"
       },
-      "id": "5666e6c3-777d-4663-b9cf-5cfd8e340290",
+      "id": "5cc6bd19-be70-4f41-8877-77724f138d36",
       "name": "Formatar Erro API Clockify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        -64
+        -4768,
+        -544
       ]
     },
     {
       "parameters": {
-        "jsCode": "const endpoint = $('Entrada da Rota Clockify').first().json || {};\nconst pages = $input.all();\n\nfunction asList(value) {\n  if (Array.isArray(value)) return value;\n  if (value && typeof value === 'object') {\n    if (Array.isArray(value.data)) return value.data;\n    if (Array.isArray(value.value)) return value.value;\n    return [value];\n  }\n  return [];\n}\n\nfunction toStr(v) {\n  if (v === null || v === undefined) return null;\n  return String(v);\n}\n\nfunction transformUsers(users) {\n  return users.map((user) => {\n    const settings = user.settings || {};\n    return {\n      id: toStr(user.id) || '',\n      email: user.email ?? null,\n      name: user.name ?? null,\n      profile_picture: user.profilePicture ?? null,\n      active_workspace: user.activeWorkspace ?? null,\n      default_workspace: user.defaultWorkspace ?? null,\n      status: user.status ?? null,\n      week_start: settings.weekStart ?? null,\n      time_zone: settings.timeZone ?? null,\n      time_format: settings.timeFormat ?? null,\n      date_format: settings.dateFormat ?? null,\n      send_newsletter: settings.sendNewsletter ?? null,\n      weekly_updates: settings.weeklyUpdates ?? null,\n      long_running: settings.longRunning ?? null,\n      scheduled_reports: settings.scheduledReports ?? null,\n      approval: settings.approval ?? null,\n      pto: settings.pto ?? null,\n      alerts: settings.alerts ?? null,\n      reminders: settings.reminders ?? null,\n      time_tracking_manual: settings.timeTrackingManual ?? null,\n      is_compact_view_on: settings.isCompactViewOn ?? null,\n      dashboard_selection: settings.dashboardSelection ?? null,\n      dashboard_view_type: settings.dashboardViewType ?? null,\n      dashboard_pin_to_top: settings.dashboardPinToTop ?? null,\n      project_list_collapse: settings.projectListCollapse ?? null,\n      collapse_all_project_lists: settings.collapseAllProjectLists ?? null,\n      group_similar_entries_disabled: settings.groupSimilarEntriesDisabled ?? null,\n      my_start_of_day: settings.myStartOfDay ?? null,\n      project_picker_task_filter: settings.projectPickerTaskFilter ?? null,\n      lang: settings.lang ?? null,\n      multi_factor_enabled: settings.multiFactorEnabled ?? null,\n      theme: settings.theme ?? null,\n      scheduling: settings.scheduling ?? null,\n      onboarding: settings.onboarding ?? null,\n      invoice_reminders: settings.invoiceReminders ?? null,\n      show_only_working_days: settings.showOnlyWorkingDays ?? null,\n      memberships: user.memberships ?? null,\n      summary_report_settings: settings.summaryReportSettings ?? null,\n      custom_fields: user.customFields ?? null\n    };\n  });\n}\n\nfunction transformProjects(projects) {\n  return projects.map((project) => {\n    const hourlyRate = project.hourlyRate || {};\n    const costRate = project.costRate || {};\n    const estimate = project.estimate || {};\n    const timeEstimate = project.timeEstimate || {};\n    const budgetEstimate = project.budgetEstimate || {};\n\n    return {\n      id: toStr(project.id) || '',\n      name: project.name ?? null,\n      client_id: project.clientId ?? null,\n      workspace_id: project.workspaceId ?? null,\n      billable: project.billable ?? null,\n      archived: project.archived ?? null,\n      color: project.color ?? null,\n      duration: project.duration ?? null,\n      client_name: project.clientName ?? null,\n      note: project.note ?? null,\n      public: project.public ?? null,\n      template: project.template ?? null,\n      hourly_amount: hourlyRate.amount ?? null,\n      hourly_currency: hourlyRate.currency ?? null,\n      cost_amount: costRate.amount ?? null,\n      cost_currency: costRate.currency ?? null,\n      estimate_value: estimate.estimate ?? null,\n      estimate_type: estimate.type ?? null,\n      time_est_estimate: timeEstimate.estimate ?? null,\n      time_est_type: timeEstimate.type ?? null,\n      time_est_reset_option: timeEstimate.resetOption ?? null,\n      time_est_active: timeEstimate.active ?? null,\n      time_est_include_non_billable: timeEstimate.includeNonBillable ?? null,\n      budget_est_estimate: budgetEstimate.estimate ?? null,\n      budget_est_type: budgetEstimate.type ?? null,\n      budget_est_reset_option: budgetEstimate.resetOption ?? null,\n      budget_est_active: budgetEstimate.active ?? null,\n      memberships: project.memberships ?? null\n    };\n  });\n}\n\nfunction transformClients(clients) {\n  return clients.map((client) => ({\n    id: toStr(client.id) || '',\n    name: client.name ?? null,\n    email: client.email ?? null,\n    cc_emails: client.ccEmails ?? null,\n    workspace_id: client.workspaceId ?? null,\n    archived: client.archived ?? null,\n    address: client.address ?? null,\n    note: client.note ?? null,\n    currency_id: client.currencyId ?? null,\n    currency_code: client.currencyCode ?? null\n  }));\n}\n\nfunction transformTags(tags) {\n  return tags.map((tag) => ({\n    id: toStr(tag.id) || '',\n    name: tag.name ?? null,\n    workspace_id: tag.workspaceId ?? null,\n    archived: tag.archived ?? null\n  }));\n}\n\nfunction normalizeByEndpoint(rows, url) {\n  const u = String(url || '').toLowerCase();\n  if (u === 'users') return transformUsers(rows);\n  if (u === 'projects') return transformProjects(rows);\n  if (u === 'clients') return transformClients(rows);\n  if (u === 'tags') return transformTags(rows);\n\n  return rows.map((item) => {\n    if (item && typeof item === 'object') {\n      return { ...item, id: toStr(item.id) || '' };\n    }\n    return { id: toStr(item) || '', value: item };\n  });\n}\n\nconst rows = pages.flatMap((item) => asList(item.json));\nif (rows.length === 0) {\n  return [{\n    json: {\n      status: 'success',\n      source_flow: 'clockify',\n      system: endpoint.system || 'clockify',\n      url: endpoint.url,\n      table: endpoint.table,\n      id_field: endpoint.id_field,\n      primary_key: endpoint.primary_key || endpoint.id_field,\n      processed_rows: 0,\n      message: 'API retornou sem registros'\n    }\n  }];\n}\n\nconst normalized = normalizeByEndpoint(rows, endpoint.url);\nreturn normalized.map((r) => ({ json: { record: r } }));"
+        "jsCode": "const endpoint = $('Entrada da Rota Clockify').first().json || {};\nconst pages = $input.all();\n\nfunction asList(value) {\n  if (Array.isArray(value)) return value;\n  if (value && typeof value === 'object') {\n    if (Array.isArray(value.data)) return value.data;\n    if (Array.isArray(value.value)) return value.value;\n    return [value];\n  }\n  return [];\n}\n\nfunction toStr(v) {\n  if (v === null || v === undefined) return null;\n  return String(v);\n}\n\nfunction pick(...vals) {\n  for (const v of vals) {\n    if (v !== null && v !== undefined) return v;\n  }\n  return null;\n}\n\nfunction parseIsoDurationToSeconds(input) {\n  if (!input || typeof input !== 'string') return null;\n  const m = input.match(/^P(?:\\d+Y)?(?:\\d+M)?(?:\\d+D)?(?:T(?:(\\d+)H)?(?:(\\d+)M)?(?:(\\d+)S)?)?$/i);\n  if (!m) return null;\n  const h = Number(m[1] || 0);\n  const min = Number(m[2] || 0);\n  const s = Number(m[3] || 0);\n  return h * 3600 + min * 60 + s;\n}\n\nfunction transformTimeEntries(entries) {\n  return entries.map((te) => {\n    const t = te.timeInterval || {};\n    const user = te.user || {};\n    const project = te.project || {};\n    const client = te.client || {};\n    const rate = te.hourlyRate || te.rate || {};\n    const earned = te.earnedAmount || {};\n    const cost = te.costRate || {};\n\n    return {\n      id: toStr(te.id) || '',\n      description: te.description ?? null,\n      userId: pick(te.userId, user.id),\n      userName: pick(te.userName, user.name),\n      userEmail: pick(te.userEmail, user.email),\n      projectId: pick(te.projectId, project.id),\n      projectName: pick(te.projectName, project.name),\n      projectColor: pick(te.projectColor, project.color),\n      clientId: pick(te.clientId, client.id),\n      clientName: pick(te.clientName, client.name),\n      taskId: pick(te.taskId, te.task?.id),\n      approvalRequestId: pick(te.approvalRequestId, te.approvalRequest?.id),\n      time_start: t.start ?? null,\n      time_end: t.end ?? null,\n      time_duration: pick(te.time_duration, te.timeDuration, parseIsoDurationToSeconds(t.duration)),\n      time_timezone: pick(t.timeZone, te.timeZone),\n      time_zoned_start: pick(t.zonedStart, te.time_zoned_start, te.timeZonedStart),\n      time_zoned_end: pick(t.zonedEnd, te.time_zoned_end, te.timeZonedEnd),\n      time_off_start: pick(t.offsetStart, te.time_off_start, te.timeOffStart),\n      time_off_end: pick(t.offsetEnd, te.time_off_end, te.timeOffEnd),\n      billable: te.billable ?? null,\n      type: te.type ?? null,\n      isLocked: te.isLocked ?? null,\n      currency: pick(rate.currency, te.currency),\n      amount: pick(rate.amount, te.amount),\n      rate: pick(rate.rate, te.rate),\n      earnedAmount: pick(earned.amount, te.earnedAmount),\n      earnedRate: pick(earned.rate, te.earnedRate),\n      costAmount: pick(cost.amount, te.costAmount),\n      costRate: pick(cost.rate, te.costRate)\n    };\n  });\n}\n\nfunction transformUsers(users) {\n  return users.map((user) => {\n    const settings = user.settings || {};\n    return {\n      id: toStr(user.id) || '',\n      email: user.email ?? null,\n      name: user.name ?? null,\n      profilePicture: user.profilePicture ?? null,\n      activeWorkspace: user.activeWorkspace ?? null,\n      defaultWorkspace: user.defaultWorkspace ?? null,\n      status: user.status ?? null,\n      weekStart: settings.weekStart ?? null,\n      timeZone: settings.timeZone ?? null,\n      timeFormat: settings.timeFormat ?? null,\n      dateFormat: settings.dateFormat ?? null,\n      sendNewsletter: settings.sendNewsletter ?? null,\n      weeklyUpdates: settings.weeklyUpdates ?? null,\n      longRunning: settings.longRunning ?? null,\n      scheduledReports: settings.scheduledReports ?? null,\n      approval: settings.approval ?? null,\n      pto: settings.pto ?? null,\n      alerts: settings.alerts ?? null,\n      reminders: settings.reminders ?? null,\n      timeTrackingManual: settings.timeTrackingManual ?? null,\n      isCompactViewOn: settings.isCompactViewOn ?? null,\n      dashboardSelection: settings.dashboardSelection ?? null,\n      dashboardViewType: settings.dashboardViewType ?? null,\n      dashboardPinToTop: settings.dashboardPinToTop ?? null,\n      projectListCollapse: settings.projectListCollapse ?? null,\n      collapseAllProjectLists: settings.collapseAllProjectLists ?? null,\n      groupSimilarEntriesDisabled: settings.groupSimilarEntriesDisabled ?? null,\n      myStartOfDay: settings.myStartOfDay ?? null,\n      projectPickerTaskFilter: settings.projectPickerTaskFilter ?? null,\n      lang: settings.lang ?? null,\n      multiFactorEnabled: settings.multiFactorEnabled ?? null,\n      theme: settings.theme ?? null,\n      scheduling: settings.scheduling ?? null,\n      onboarding: settings.onboarding ?? null,\n      invoiceReminders: settings.invoiceReminders ?? null,\n      showOnlyWorkingDays: settings.showOnlyWorkingDays ?? null,\n      memberships: user.memberships ?? null,\n      summaryReportSettings: settings.summaryReportSettings ?? null,\n      customFields: user.customFields ?? null\n    };\n  });\n}\n\nfunction transformProjects(projects) {\n  return projects.map((project) => {\n    const hourlyRate = project.hourlyRate || {};\n    const costRate = project.costRate || {};\n    const estimate = project.estimate || {};\n    const timeEstimate = project.timeEstimate || {};\n    const budgetEstimate = project.budgetEstimate || {};\n\n    return {\n      id: toStr(project.id) || '',\n      name: project.name ?? null,\n      clientId: project.clientId ?? null,\n      workspaceId: project.workspaceId ?? null,\n      system: endpoint.system || 'clockify',\n      billable: project.billable ?? null,\n      archived: project.archived ?? null,\n      color: project.color ?? null,\n      duration: project.duration ?? null,\n      duration_minutes: project.duration_minutes ?? null,\n      clientName: project.clientName ?? null,\n      note: project.note ?? null,\n      public: project.public ?? null,\n      template: project.template ?? null,\n      hourly_amount: hourlyRate.amount ?? null,\n      hourly_currency: hourlyRate.currency ?? null,\n      cost_amount: costRate.amount ?? null,\n      cost_currency: costRate.currency ?? null,\n      estimate_value: estimate.estimate ?? null,\n      estimate_type: estimate.type ?? null,\n      time_est_estimate: timeEstimate.estimate ?? null,\n      time_est_type: timeEstimate.type ?? null,\n      time_est_reset_option: timeEstimate.resetOption ?? null,\n      time_est_active: timeEstimate.active ?? null,\n      time_est_include_non_billable: timeEstimate.includeNonBillable ?? null,\n      budget_est_estimate: budgetEstimate.estimate ?? null,\n      budget_est_type: budgetEstimate.type ?? null,\n      budget_est_reset_option: budgetEstimate.resetOption ?? null,\n      budget_est_active: budgetEstimate.active ?? null,\n      memberships: project.memberships ?? null\n    };\n  });\n}\n\nfunction transformClients(clients) {\n  return clients.map((client) => ({\n    id: toStr(client.id) || '',\n    name: client.name ?? null,\n    email: client.email ?? null,\n    ccEmails: client.ccEmails ?? null,\n    workspaceId: client.workspaceId ?? null,\n    archived: client.archived ?? null,\n    address: client.address ?? null,\n    note: client.note ?? null,\n    currencyId: client.currencyId ?? null,\n    currencyCode: client.currencyCode ?? null\n  }));\n}\n\nfunction transformTags(tags) {\n  return tags.map((tag) => ({\n    id: toStr(tag.id) || '',\n    name: tag.name ?? null,\n    workspaceId: tag.workspaceId ?? null,\n    archived: tag.archived ?? null\n  }));\n}\n\nfunction normalizeByEndpoint(rows, url) {\n  const u = String(url || '').toLowerCase();\n\n  if (u === 'users') return transformUsers(rows);\n  if (u === 'projects') return transformProjects(rows);\n  if (u === 'clients') return transformClients(rows);\n  if (u === 'tags') return transformTags(rows);\n  if (u === 'time-entries' || u === 'time_entries' || u === 'timeentries') return transformTimeEntries(rows);\n\n  return rows.map((item) => {\n    if (item && typeof item === 'object') {\n      return { ...item, id: toStr(item.id) || '' };\n    }\n    return { id: toStr(item) || '', value: item };\n  });\n}\n\nconst rows = pages.flatMap((item) => asList(item.json));\nif (rows.length === 0) {\n  return [{\n    json: {\n      status: 'success',\n      source_flow: 'clockify',\n      system: endpoint.system || 'clockify',\n      url: endpoint.url,\n      table: endpoint.table,\n      id_field: endpoint.id_field,\n      primary_key: endpoint.primary_key || endpoint.id_field,\n      processed_rows: 0,\n      message: 'API retornou sem registros'\n    }\n  }];\n}\n\nconst normalized = normalizeByEndpoint(rows, endpoint.url);\nreturn normalized.map((r) => ({ json: { record: r } }));"
       },
-      "id": "e5b1728f-3c2d-4b55-b261-83507c5ed434",
+      "id": "b1650fd2-d61c-4b93-b73c-95de0f527d6c",
       "name": "Extrair Dados Clockify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -432,
-        -256
+        -4992,
+        -720
       ]
     },
     {
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota Clockify').first().json || {};\nconst table = endpoint.table;\nconst idField = endpoint.id_field;\n\nfunction toSql(v) {\n  if (v === null || v === undefined || v === '') return 'NULL';\n  if (typeof v === 'number') return String(v);\n  if (typeof v === 'boolean') return v ? 'true' : 'false';\n\n  const s = (typeof v === 'object') ? JSON.stringify(v) : String(v);\n  const q = String.fromCharCode(39);\n  return q + s.split(q).join(q + q).split('$').join('$ ') + q;\n}\n\nconst records = $input\n  .all()\n  .map((item) => item.json?.record)\n  .filter((r) => r && typeof r === 'object' && !Array.isArray(r));\n\nif (!table || !idField || records.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst fieldSet = new Set();\nfor (const rec of records) {\n  for (const key of Object.keys(rec)) {\n    if (!key.startsWith('_') && !key.startsWith('$')) fieldSet.add(key);\n  }\n}\n\nconst fields = Array.from(fieldSet);\nif (!fields.includes(idField)) fields.unshift(idField);\n\nif (fields.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst columns = fields.join(', ');\nconst updateFields = fields.filter((f) => f !== idField);\nconst updates = (updateFields.length > 0)\n  ? updateFields.map((f) => `${f}=EXCLUDED.${f}`).join(', ')\n  : `${idField}=EXCLUDED.${idField}`;\n\nconst valuesList = records\n  .map((rec) => `(${fields.map((f) => toSql(rec[f])).join(', ')})`)\n  .join(', ');\n\nconst upsertQuery = `WITH upserted AS (INSERT INTO raw_data.${table} (${columns}) VALUES ${valuesList} ON CONFLICT (${idField}) DO UPDATE SET ${updates} RETURNING 1) SELECT COUNT(*)::int AS affected_rows FROM upserted;`;\nreturn [{ json: { upsert_query: upsertQuery } }];"
       },
-      "id": "44471c44-cf36-40c5-a1bf-c66fcd5907ca",
+      "id": "16f99f4b-fb09-4017-90b3-dd47c6ce5023",
       "name": "Preparar UPSERT Clockify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -208,
-        -352
+        -4768,
+        -720
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "={{ $json.upsert_query || 'SELECT 0::int AS affected_rows;' }}",
+        "query": "{{ $json.upsert_query || 'SELECT 0::int AS affected_rows;' }}",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "a6c5cb30-fb0e-40bc-9ddc-009564de2373",
+      "id": "ea7a9916-faae-4035-8bf4-00ff87fbba84",
       "name": "UPSERT Clockify no Banco",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        16,
-        -256
+        -4544,
+        -720
       ],
       "credentials": {
         "postgres": {
@@ -163,32 +163,32 @@
         "destinationFieldName": "rows",
         "options": {}
       },
-      "id": "05495067-0c56-4984-a645-1306d91e1bc4",
+      "id": "6d6da8df-cd80-467d-98f7-6d4d8e52473d",
       "name": "Consolidar Sucesso DB Clockify",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        16,
-        -352
+        -4320,
+        -816
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify').first().json.system || 'clockify' }}', '{{ $('Entrada da Rota Clockify').first().json.url }}', 2, NULL, NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, finished_at) VALUES ('{{ $('Entrada da Rota Clockify').first().json.system || 'clockify' }}', '{{ $('Entrada da Rota Clockify').first().json.url }}', 2, NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = NULL, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-success-clockify-001",
+      "id": "fef8e64f-fac5-45c2-8a11-79aac903cdc6",
       "name": "Marcar Task Completo",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        240,
-        -352
+        -4096,
+        -816
       ],
       "credentials": {
         "postgres": {
@@ -202,13 +202,13 @@
       "parameters": {
         "jsCode": "const rows = Array.isArray($json.rows) ? $json.rows : [];\nconst endpoint = $('Entrada da Rota Clockify').first().json || {};\nconst processedRows = rows.reduce((acc, r) => acc + Number(r.affected_rows || 0), 0);\n\nreturn [{\n  json: {\n    status: 'success',\n    source_flow: 'clockify',\n    system: endpoint.system || 'clockify',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    processed_rows: processedRows,\n    message: 'UPSERT concluido com sucesso'\n  }\n}];"
       },
-      "id": "f411a0fb-12a6-4e14-bfed-81f28168fef9",
+      "id": "3db0e1e8-1d17-49bf-9952-7504a9338a42",
       "name": "Resultado Sucesso Clockify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        -352
+        -3872,
+        -816
       ]
     },
     {
@@ -217,32 +217,32 @@
         "destinationFieldName": "errors",
         "options": {}
       },
-      "id": "ea2d0f0d-a373-4b24-89e2-e29b7a8c1973",
+      "id": "202fd8ec-cae1-40f4-bdb5-59ff5aa5808d",
       "name": "Consolidar Erros DB Clockify",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        16,
-        -160
+        -4320,
+        -624
       ]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify').first().json.system || 'clockify' }}', '{{ $('Entrada da Rota Clockify').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, finished_at) VALUES ('{{ $('Entrada da Rota Clockify').first().json.system || 'clockify' }}', '{{ $('Entrada da Rota Clockify').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
         "options": {
           "connectionTimeout": 30,
           "queryBatching": "single",
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-error-clockify-001",
+      "id": "f1761d13-fc97-4594-9a87-2a5767843001",
       "name": "Marcar Task com Erro",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        240,
-        -160
+        -4096,
+        -624
       ],
       "credentials": {
         "postgres": {
@@ -256,17 +256,55 @@
       "parameters": {
         "jsCode": "const errors = Array.isArray($json.errors) ? $json.errors : [];\nconst first = errors[0] || {};\nconst endpoint = $('Entrada da Rota Clockify').first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'database',\n    source_flow: 'clockify',\n    system: endpoint.system || 'clockify',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: first.message || first.error || 'Falha no UPSERT Clockify',\n      total_errors: errors.length,\n      sample: first\n    }\n  }\n}];"
       },
-      "id": "1a03e514-c4c1-4908-a19b-4ce7f48833b3",
+      "id": "268f2b2b-b4d9-41c0-9d0a-38a80e0da735",
       "name": "Resultado Erro DB Clockify",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        -160
+        -3872,
+        -624
       ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO auxiliary.workflow_task_control (system, endpoint, status, error_message, started_at, finished_at) VALUES ('{{ $('Entrada da Rota Clockify').first().json.system || 'clockify' }}', '{{ $('Entrada da Rota Clockify').first().json.url }}', -1, '{{ ($json.errors && Array.isArray($json.errors) && $json.errors[0]) ? ($json.errors[0].json?.error?.message || 'Database error') : 'Unknown error' }}', NOW(), NOW()) ON CONFLICT (system, endpoint) DO UPDATE SET status = EXCLUDED.status, error_message = EXCLUDED.error_message, finished_at = EXCLUDED.finished_at;",
+        "options": {
+          "connectionTimeout": 30,
+          "queryBatching": "single",
+          "replaceEmptyStrings": true
+        }
+      },
+      "id": "09060b50-21e8-4a8a-8941-2c05eb9b6c4e",
+      "name": "Marcar Erro API",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.3,
+      "position": [
+        -4992,
+        -528
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "tnATsHmPQ4uK6XL9",
+          "name": "Dev Database"
+        }
+      },
+      "onError": "continueErrorOutput"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Entrada da Rota Clockify": [
+      {
+        "json": {
+          "system": "clockify",
+          "url": "projects",
+          "table": "clk_projetos",
+          "id_field": "id",
+          "primary_key": "id"
+        }
+      }
+    ]
+  },
   "connections": {
     "Entrada da Rota Clockify": {
       "main": [
@@ -287,7 +325,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Buscar API Clockify": {
@@ -301,7 +340,7 @@
         ],
         [
           {
-            "node": "Formatar Erro API Clockify",
+            "node": "Marcar Erro API",
             "type": "main",
             "index": 0
           }
@@ -391,6 +430,17 @@
           }
         ]
       ]
+    },
+    "Marcar Erro API": {
+      "main": [
+        [
+          {
+            "node": "Formatar Erro API Clockify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -398,7 +448,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "94a2c5f9-372d-4afc-bf2c-052610538cc5",
+  "versionId": "8d4f6326-0b62-4389-bb41-e68c35826624",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },

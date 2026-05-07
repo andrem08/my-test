@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -3552,
-        -336
+        -7328,
+        -800
       ],
-      "id": "053867f8-e1fe-4248-8f2f-4e2ef02227d5",
+      "id": "535ff26f-b3a1-4c7a-9c4e-bd81744d9a2b",
       "name": "Entrada da Rota GLPI"
     },
     {
@@ -24,13 +24,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-pending-glpi-001",
+      "id": "08559269-5c23-4d2c-a7da-c94903ba0cfa",
       "name": "Marcar Task Pendente",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -3328,
-        -336
+        -7104,
+        -800
       ],
       "credentials": {
         "postgres": {
@@ -60,13 +60,13 @@
           }
         }
       },
-      "id": "783dc7dc-3a9e-45be-bf0f-f8fb89394f23",
+      "id": "b8c02a73-96a5-4f9c-a1d7-3b9f379db2c6",
       "name": "GLPI Iniciar Sessão",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -3328,
-        -336
+        -6880,
+        -800
       ],
       "retryOnFail": true,
       "credentials": {
@@ -81,13 +81,13 @@
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota GLPI').first().json || {};\nconst e = $input.first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'api_init_session',\n    source_flow: 'glpi',\n    system: endpoint.system || 'glpi',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: e.message || e.error || 'Falha ao iniciar sessao GLPI',\n      details: e\n    }\n  }\n}];"
       },
-      "id": "35f3a338-64fd-4a5f-ab9f-477fd81ec17b",
+      "id": "1a668571-277f-472f-ad98-ec5378425a8e",
       "name": "Formatar Erro Init Session GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3104,
-        -240
+        -6656,
+        -704
       ]
     },
     {
@@ -114,13 +114,13 @@
           }
         }
       },
-      "id": "dd59712f-3fd4-4796-b42d-b02a12d8591d",
+      "id": "080a73a0-665a-4b47-8d02-1899bea021a6",
       "name": "Buscar API GLPI",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
       "position": [
-        -3104,
-        -432
+        -6656,
+        -896
       ],
       "retryOnFail": true,
       "credentials": {
@@ -135,39 +135,39 @@
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota GLPI').first().json || {};\nconst e = $input.first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'api',\n    source_flow: 'glpi',\n    system: endpoint.system || 'glpi',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: e.message || e.error || 'Falha ao consultar API GLPI',\n      details: e\n    }\n  }\n}];"
       },
-      "id": "770afc9c-a6c2-49c8-a8bf-8bbef2addbe3",
+      "id": "43f144bf-8af0-4702-ab33-a4bfe2bb945d",
       "name": "Formatar Erro API GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2880,
-        -336
+        -6432,
+        -800
       ]
     },
     {
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota GLPI').first().json || {};\nconst data = $input.first().json;\nlet rows = [];\n\nif (Array.isArray(data)) rows = data;\nelse if (data && Array.isArray(data.data)) rows = data.data;\nelse if (data && typeof data === 'object') rows = [data];\n\nif (rows.length === 0) {\n  return [{\n    json: {\n      status: 'success',\n      source_flow: 'glpi',\n      system: endpoint.system || 'glpi',\n      url: endpoint.url,\n      table: endpoint.table,\n      id_field: endpoint.id_field,\n      primary_key: endpoint.primary_key || endpoint.id_field,\n      processed_rows: 0,\n      message: 'API retornou sem registros'\n    }\n  }];\n}\n\nreturn rows.map((r) => ({ json: { record: r } }));"
       },
-      "id": "456e8448-5eb8-44da-a73b-5f0a48f69f0b",
+      "id": "7ef6cc62-5525-4803-a656-3330a5ef8aae",
       "name": "Extrair Dados GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2880,
-        -528
+        -6432,
+        -992
       ]
     },
     {
       "parameters": {
         "jsCode": "const endpoint = $('Entrada da Rota GLPI').first().json || {};\nconst table = endpoint.table;\nconst idField = endpoint.id_field;\n\nfunction toSql(v) {\n  if (v === null || v === undefined || v === '') return 'NULL';\n  if (typeof v === 'number') return String(v);\n  if (typeof v === 'boolean') return v ? 'true' : 'false';\n\n  const s = (typeof v === 'object') ? JSON.stringify(v) : String(v);\n  const q = String.fromCharCode(39);\n  return q + s.split(q).join(q + q).split('$').join('$ ') + q;\n}\n\nconst records = $input\n  .all()\n  .map((item) => item.json?.record)\n  .filter((r) => r && typeof r === 'object' && !Array.isArray(r));\n\nif (!table || !idField || records.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst fieldSet = new Set();\nfor (const rec of records) {\n  for (const key of Object.keys(rec)) {\n    if (!key.startsWith('_') && !key.startsWith('$')) fieldSet.add(key);\n  }\n}\n\nconst fields = Array.from(fieldSet);\nif (!fields.includes(idField)) fields.unshift(idField);\n\nif (fields.length === 0) {\n  return [{ json: { upsert_query: 'SELECT 0::int AS affected_rows;' } }];\n}\n\nconst columns = fields.join(', ');\nconst updateFields = fields.filter((f) => f !== idField);\nconst updates = (updateFields.length > 0)\n  ? updateFields.map((f) => `${f}=EXCLUDED.${f}`).join(', ')\n  : `${idField}=EXCLUDED.${idField}`;\n\nconst valuesList = records\n  .map((rec) => `(${fields.map((f) => toSql(rec[f])).join(', ')})`)\n  .join(', ');\n\nconst upsertQuery = `WITH upserted AS (INSERT INTO raw_data.${table} (${columns}) VALUES ${valuesList} ON CONFLICT (${idField}) DO UPDATE SET ${updates} RETURNING 1) SELECT COUNT(*)::int AS affected_rows FROM upserted;`;\nreturn [{ json: { upsert_query: upsertQuery } }];"
       },
-      "id": "390dae8a-e1ca-426f-b486-02450197cab8",
+      "id": "361c88b1-d19e-4d0e-9537-ceb63180b0a1",
       "name": "Preparar UPSERT GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2656,
-        -528
+        -6208,
+        -992
       ]
     },
     {
@@ -180,13 +180,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "3f698d6c-b01f-43c9-9cf8-eab92a05fefc",
+      "id": "62225ef3-a707-461f-94f6-40e4a35537b7",
       "name": "UPSERT GLPI no Banco",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -2432,
-        -528
+        -5984,
+        -992
       ],
       "credentials": {
         "postgres": {
@@ -202,13 +202,13 @@
         "destinationFieldName": "rows",
         "options": {}
       },
-      "id": "53f4c4c1-94ea-4f64-b504-3523887b0831",
+      "id": "b7cb0f9c-4efc-4508-94ad-8c74d2cae41c",
       "name": "Consolidar Sucesso DB GLPI",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        -2208,
-        -624
+        -5760,
+        -1088
       ]
     },
     {
@@ -221,13 +221,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-success-glpi-001",
+      "id": "a30f9468-b826-4ca4-aa55-1cfdcd40efda",
       "name": "Marcar Task Completo",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -1984,
-        -624
+        -5536,
+        -1088
       ],
       "credentials": {
         "postgres": {
@@ -241,13 +241,13 @@
       "parameters": {
         "jsCode": "const rows = Array.isArray($json.rows) ? $json.rows : [];\nconst endpoint = $('Entrada da Rota GLPI').first().json || {};\nconst processedRows = rows.reduce((acc, r) => acc + Number(r.affected_rows || 0), 0);\n\nreturn [{\n  json: {\n    status: 'success',\n    source_flow: 'glpi',\n    system: endpoint.system || 'glpi',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    processed_rows: processedRows,\n    message: 'UPSERT concluido com sucesso'\n  }\n}];"
       },
-      "id": "b76f0e20-6567-435f-abc2-1bf592622bce",
+      "id": "e5d09bc8-20b6-40ae-9907-31585e46d0e5",
       "name": "Resultado Sucesso GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1984,
-        -624
+        -5312,
+        -1088
       ]
     },
     {
@@ -256,13 +256,13 @@
         "destinationFieldName": "errors",
         "options": {}
       },
-      "id": "0b0ac28b-17c6-4cb4-8a46-662fe6b8af24",
+      "id": "8c24fc37-4b09-4f28-adeb-b19df3f57e62",
       "name": "Consolidar Erros DB GLPI",
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        -2208,
-        -432
+        -5760,
+        -896
       ]
     },
     {
@@ -275,13 +275,13 @@
           "replaceEmptyStrings": true
         }
       },
-      "id": "mark-task-error-glpi-001",
+      "id": "b81b81bc-0a80-430d-877d-d4c9cb2d17e4",
       "name": "Marcar Task com Erro",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.3,
       "position": [
-        -1984,
-        -432
+        -5536,
+        -896
       ],
       "credentials": {
         "postgres": {
@@ -295,17 +295,29 @@
       "parameters": {
         "jsCode": "const errors = Array.isArray($json.errors) ? $json.errors : [];\nconst first = errors[0] || {};\nconst endpoint = $('Entrada da Rota GLPI').first().json || {};\n\nreturn [{\n  json: {\n    status: 'error',\n    stage: 'database',\n    source_flow: 'glpi',\n    system: endpoint.system || 'glpi',\n    url: endpoint.url,\n    table: endpoint.table,\n    id_field: endpoint.id_field,\n    primary_key: endpoint.primary_key || endpoint.id_field,\n    error: {\n      message: first.message || first.error || 'Falha no UPSERT GLPI',\n      total_errors: errors.length,\n      sample: first\n    }\n  }\n}];"
       },
-      "id": "d84c32fa-b8df-4103-851c-fc221ef1488c",
+      "id": "6d24fef8-6564-4cf5-850c-d5616a7c861a",
       "name": "Resultado Erro DB GLPI",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1984,
-        -432
+        -5312,
+        -896
       ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Entrada da Rota GLPI": [
+      {
+        "json": {
+          "system": "glpi",
+          "url": "detailed",
+          "table": "glp_info",
+          "id_field": "id",
+          "primary_key": "id"
+        }
+      }
+    ]
+  },
   "connections": {
     "Entrada da Rota GLPI": {
       "main": [
@@ -455,7 +467,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "c42aa268-30d7-46a7-a0ec-73a9e1127e96",
+  "versionId": "2e8182d8-2e0f-425b-b03c-8251bd9082cd",
   "meta": {
     "instanceId": "175ab660dd3bf17d65cf916e76a2ea001cc6c2fa4fe3df8877aac583db87767c"
   },
